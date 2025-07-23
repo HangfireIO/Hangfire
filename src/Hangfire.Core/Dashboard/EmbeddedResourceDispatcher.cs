@@ -18,24 +18,25 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Dashboard
 {
     internal class EmbeddedResourceDispatcher : IDashboardDispatcher
     {
-        private readonly Assembly _assembly;
-        private readonly string _resourceName;
+        private readonly Assembly? _assembly;
+        private readonly string? _resourceName;
         private readonly string _contentType;
 
         public EmbeddedResourceDispatcher(
             [NotNull] string contentType,
-            [CanBeNull] Assembly assembly, 
-            [CanBeNull] string resourceName)
+            [CanBeNull] Assembly? assembly, 
+            [CanBeNull] string? resourceName)
         {
-            if (contentType == null) throw new ArgumentNullException(nameof(contentType));
-            
+            _contentType = contentType ?? throw new ArgumentNullException(nameof(contentType));
             _assembly = assembly;
             _resourceName = resourceName;
-            _contentType = contentType;
         }
 
         public async Task Dispatch(DashboardContext context)
@@ -48,12 +49,16 @@ namespace Hangfire.Dashboard
 
         protected virtual Task WriteResponse(DashboardResponse response)
         {
+            if (_assembly == null) throw new InvalidOperationException("No assembly specified for the resource dispatcher.");
+            if (_resourceName == null) throw new InvalidOperationException("No resource name specified for the resource dispatcher.");
             return WriteResource(response, _assembly, _resourceName);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Context can be potentially accessed in derived classes.")]
         protected async Task WriteResource(DashboardResponse response, Assembly assembly, string resourceName)
         {
+            if (response == null) throw new ArgumentNullException(nameof(response));
+
             using (var inputStream = assembly.GetManifestResourceStream(resourceName))
             {
                 if (inputStream == null)

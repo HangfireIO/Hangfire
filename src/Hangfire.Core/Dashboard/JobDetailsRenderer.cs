@@ -19,6 +19,9 @@ using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Storage.Monitoring;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Dashboard
 {
     public sealed class JobDetailsRendererDto
@@ -29,9 +32,14 @@ namespace Hangfire.Dashboard
             JobId = jobId ?? throw new ArgumentNullException(nameof(jobId));
             JobDetails = jobDetails ?? throw new ArgumentNullException(nameof(jobDetails));
         }
-        
+
+        [NotNull]
         public RazorPage Page { get; }
+
+        [NotNull]
         public string JobId { get; }
+
+        [NotNull]
         public JobDetailsDto JobDetails { get; }
     }
 

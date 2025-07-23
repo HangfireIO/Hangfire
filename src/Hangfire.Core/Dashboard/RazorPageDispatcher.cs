@@ -16,6 +16,10 @@
 using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Hangfire.Annotations;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire.Dashboard
 {
@@ -23,13 +27,15 @@ namespace Hangfire.Dashboard
     {
         private readonly Func<Match, RazorPage> _pageFunc;
 
-        public RazorPageDispatcher(Func<Match, RazorPage> pageFunc)
+        public RazorPageDispatcher([NotNull] Func<Match, RazorPage> pageFunc)
         {
-            _pageFunc = pageFunc;
+            _pageFunc = pageFunc ?? throw new ArgumentNullException(nameof(pageFunc));
         }
 
         public Task Dispatch(DashboardContext context)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
             context.Response.ContentType = "text/html";
 
             var page = _pageFunc(context.UriMatch);

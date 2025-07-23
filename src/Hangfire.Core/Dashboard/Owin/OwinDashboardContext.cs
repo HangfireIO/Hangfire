@@ -17,6 +17,9 @@ using System;
 using System.Collections.Generic;
 using Hangfire.Annotations;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Dashboard
 {
     public sealed class OwinDashboardContext : DashboardContext
@@ -27,9 +30,7 @@ namespace Hangfire.Dashboard
             [NotNull] IDictionary<string, object> environment) 
             : base(storage, options)
         {
-            if (environment == null) throw new ArgumentNullException(nameof(environment));
-
-            Environment = environment;
+            Environment = environment ?? throw new ArgumentNullException(nameof(environment));
             Request = new OwinDashboardRequest(environment);
             Response = new OwinDashboardResponse(environment);
         }

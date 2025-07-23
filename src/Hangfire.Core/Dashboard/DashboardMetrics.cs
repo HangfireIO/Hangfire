@@ -21,6 +21,9 @@ using Hangfire.Annotations;
 using Hangfire.Dashboard.Resources;
 using Hangfire.Storage;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Dashboard
 {
     public static class DashboardMetrics
@@ -53,6 +56,7 @@ namespace Hangfire.Dashboard
             }
         }
 
+        [NotNull]
         public static IEnumerable<DashboardMetric> GetMetrics()
         {
             lock (Metrics)

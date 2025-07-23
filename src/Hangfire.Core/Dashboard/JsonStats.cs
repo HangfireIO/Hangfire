@@ -20,6 +20,8 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 
+#nullable enable
+
 namespace Hangfire.Dashboard
 {
     internal sealed class JsonStats : IDashboardDispatcher
@@ -31,7 +33,7 @@ namespace Hangfire.Dashboard
             page.Assign(context);
 
             var metrics = DashboardMetrics.GetMetrics().Where(x => requestedMetrics.Contains(x.Name));
-            var result = new Dictionary<string, Metric>();
+            var result = new Dictionary<string, Metric?>();
 
             foreach (var metric in metrics)
             {

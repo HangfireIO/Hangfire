@@ -15,6 +15,10 @@
 
 using System;
 using System.Collections.Generic;
+using Hangfire.Annotations;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire.Dashboard
 {
@@ -42,7 +46,8 @@ namespace Hangfire.Dashboard
             PagerItems = GenerateItems();
         }
 
-        public string BasePageUrl { get; set; }
+        [CanBeNull]
+        public string? BasePageUrl { get; set; }
 
         public int FromRecord { get; }
         public int RecordsPerPage { get; }
@@ -150,18 +155,11 @@ namespace Hangfire.Dashboard
             results.Add(item);
         }
 
-        internal sealed class Item
+        internal sealed class Item(int pageIndex, bool disabled, ItemType type)
         {
-            public Item(int pageIndex, bool disabled, ItemType type)
-            {
-                PageIndex = pageIndex;
-                Disabled = disabled;
-                Type = type;
-            }
-
-            public int PageIndex { get; }
-            public bool Disabled { get; }
-            public ItemType Type { get; }
+            public int PageIndex { get; } = pageIndex;
+            public bool Disabled { get; } = disabled;
+            public ItemType Type { get; } = type;
         }
 
         internal enum ItemType

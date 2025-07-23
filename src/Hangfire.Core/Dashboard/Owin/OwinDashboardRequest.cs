@@ -19,6 +19,9 @@ using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Microsoft.Owin;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Dashboard
 {
     internal sealed class OwinDashboardRequest : DashboardRequest

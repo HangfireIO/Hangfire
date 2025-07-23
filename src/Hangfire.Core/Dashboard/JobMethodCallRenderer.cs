@@ -23,9 +23,13 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Dashboard.Resources;
 using Hangfire.Processing;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire.Dashboard
 {
@@ -34,7 +38,7 @@ namespace Hangfire.Dashboard
         // Should not be converted to "readonly" to support https://github.com/HangfireIO/Hangfire/issues/1295
         internal static int MaxArgumentToRenderSize = 4096;
 
-        public static NonEscapedString Render(Job job)
+        public static NonEscapedString Render([CanBeNull] Job? job)
         {
             if (job == null) { return new NonEscapedString($"<em>{Encode(Strings.Common_CannotFindTargetMethod)}</em>"); }
 
@@ -47,7 +51,7 @@ namespace Hangfire.Dashboard
             builder.AppendLine();
             builder.AppendLine();
 
-            string serviceName = null;
+            string? serviceName = null;
 
             if (!job.Method.IsStatic)
             {
@@ -120,7 +124,7 @@ namespace Hangfire.Dashboard
 
                     var enumerableArgument = GetIEnumerableGenericArgument(parameter.ParameterType);
 
-                    object argumentValue;
+                    object? argumentValue;
                     bool isJson = true;
 
                     try
@@ -145,7 +149,7 @@ namespace Hangfire.Dashboard
                         var renderedItems = new List<string>();
 
                         // ReSharper disable once LoopCanBeConvertedToQuery
-                        foreach (var item in argumentValue as IEnumerable)
+                        foreach (var item in (IEnumerable)argumentValue)
                         {
                             var argumentRenderer = ArgumentRenderer.GetRenderer(enumerableArgument);
                             renderedItems.Add(argumentRenderer.Render(isJson, item?.ToString(),
@@ -229,12 +233,13 @@ namespace Hangfire.Dashboard
             return $"<span class=\"{@class}\">{value}</span>";
         }
 
-        private static string Encode(string value)
+        [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull("value")]
+        private static string? Encode(string? value)
         {
             return WebUtility.HtmlEncode(value);
         }
 
-        private static Type GetIEnumerableGenericArgument(Type type)
+        private static Type? GetIEnumerableGenericArgument(Type type)
         {
             if (type == typeof(string)) return null;
 
@@ -255,7 +260,7 @@ namespace Hangfire.Dashboard
         private sealed class ArgumentRenderer
         {
             private string _enclosingString;
-            private Type _deserializationType;
+            private Type? _deserializationType;
             private Func<string, string> _valueRenderer;
 
             private ArgumentRenderer()
@@ -264,7 +269,7 @@ namespace Hangfire.Dashboard
                 _valueRenderer = static value => value == null ? WrapKeyword("null") : WrapString(value);
             }
 
-            public string Render(bool isJson, string deserializedValue, string rawValue)
+            public string Render(bool isJson, string? deserializedValue, string? rawValue)
             {
                 var builder = new StringBuilder();
 
@@ -292,7 +297,7 @@ namespace Hangfire.Dashboard
                         builder.Append(_enclosingString);
                     }
 
-                    builder.Append(_valueRenderer(Encode(deserializedValue)));
+                    builder.Append(_valueRenderer(Encode(deserializedValue)!));
 
                     if (deserializedValue != null)
                     {
@@ -377,7 +382,7 @@ namespace Hangfire.Dashboard
                 };
             }
 
-            private static bool IsNumericType(Type type)
+            private static bool IsNumericType(Type? type)
             {
                 if (type == null) return false;
 
@@ -437,7 +442,7 @@ namespace Hangfire.Dashboard
     
     internal static class TypeExtensionMethods
     {
-        public static TypeCode GetTypeCode(this Type type)
+        public static TypeCode GetTypeCode(this Type? type)
         {
             if (type == null)
             {

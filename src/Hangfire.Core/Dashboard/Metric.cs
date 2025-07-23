@@ -13,15 +13,20 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Globalization;
+using Hangfire.Annotations;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire.Dashboard
 {
     public class Metric
     {
-        public Metric(string value)
+        public Metric([NotNull] string value)
         {
-            Value = value;
+            Value = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         public Metric(long value)
@@ -30,11 +35,14 @@ namespace Hangfire.Dashboard
             IntValue = value;
         }
 
+        [NotNull]
         public string Value { get; }
         public long IntValue { get; set; }
         public MetricStyle Style { get; set; }
         public bool Highlighted { get; set; }
-        public string Title { get; set; }
+
+        [CanBeNull]
+        public string? Title { get; set; }
     }
 
     public enum MetricStyle

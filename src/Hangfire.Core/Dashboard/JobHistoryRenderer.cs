@@ -17,15 +17,19 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.States;
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+
+#nullable enable
 
 namespace Hangfire.Dashboard
 {
     public static class JobHistoryRenderer
     {
-        private static readonly IDictionary<string, Func<HtmlHelper, IDictionary<string, string>, NonEscapedString>>
-            Renderers = new Dictionary<string, Func<HtmlHelper, IDictionary<string, string>, NonEscapedString>>();
+        private static readonly IDictionary<string, Func<HtmlHelper, IDictionary<string, string>?, NonEscapedString?>>
+            Renderers = new Dictionary<string, Func<HtmlHelper, IDictionary<string, string>?, NonEscapedString?>>();
 
         private static readonly IDictionary<string, string> BackgroundStateColors
             = new Dictionary<string, string>();
@@ -71,12 +75,15 @@ namespace Hangfire.Dashboard
         }
 
         [Obsolete("Use `AddStateCssSuffix` method's logic instead. Will be removed in 2.0.0.")]
-        public static void AddBackgroundStateColor(string stateName, string color)
+        public static void AddBackgroundStateColor([NotNull] string stateName, [NotNull] string color)
         {
+            if (stateName == null) throw new ArgumentNullException(nameof(stateName));
+            if (color == null) throw new ArgumentNullException(nameof(color));
+
             BackgroundStateColors.Add(stateName, color);
         }
 
-        public static string GetBackgroundStateColor(string stateName)
+        public static string GetBackgroundStateColor([CanBeNull] string? stateName)
         {
             if (stateName == null || !BackgroundStateColors.TryGetValue(stateName, out var color))
             {
@@ -87,12 +94,15 @@ namespace Hangfire.Dashboard
         }
 
         [Obsolete("Use `AddStateCssSuffix` method's logic instead. Will be removed in 2.0.0.")]
-        public static void AddForegroundStateColor(string stateName, string color)
+        public static void AddForegroundStateColor([NotNull] string stateName, [NotNull] string color)
         {
+            if (stateName == null) throw new ArgumentNullException(nameof(stateName));
+            if (color == null) throw new ArgumentNullException(nameof(color));
+
             ForegroundStateColors.Add(stateName, color);
         }
 
-        public static string GetForegroundStateColor(string stateName)
+        public static string GetForegroundStateColor([CanBeNull] string? stateName)
         {
             if (stateName == null || !ForegroundStateColors.TryGetValue(stateName, out var color))
             {
@@ -102,12 +112,15 @@ namespace Hangfire.Dashboard
             return color;
         }
 
-        public static void AddStateCssSuffix(string stateName, string color)
+        public static void AddStateCssSuffix([NotNull] string stateName, [NotNull] string color)
         {
+            if (stateName == null) throw new ArgumentNullException(nameof(stateName));
+            if (color == null) throw new ArgumentNullException(nameof(color));
+
             StateCssSuffixes.Add(stateName, color);
         }
 
-        public static string GetStateCssSuffix(string stateName)
+        public static string GetStateCssSuffix([CanBeNull] string? stateName)
         {
             if (stateName == null || !StateCssSuffixes.TryGetValue(stateName, out var suffix))
             {
@@ -117,27 +130,26 @@ namespace Hangfire.Dashboard
             return suffix;
         }
 
-        public static void Register(string state, Func<HtmlHelper, IDictionary<string, string>, NonEscapedString> renderer)
+        public static void Register([NotNull] string state, [NotNull] Func<HtmlHelper, IDictionary<string, string>?, NonEscapedString?> renderer)
         {
-            if (!Renderers.ContainsKey(state))
-            {
-                Renderers.Add(state, renderer);
-            }
-            else
-            {
-                Renderers[state] = renderer;
-            }
+            if (state == null) throw new ArgumentNullException(nameof(state));
+            Renderers[state] = renderer ?? throw new ArgumentNullException(nameof(renderer));
         }
 
-        public static bool Exists(string state)
+        public static bool Exists([NotNull] string state)
         {
+            if (state == null) throw new ArgumentNullException(nameof(state));
             return Renderers.ContainsKey(state);
         }
 
-        public static NonEscapedString RenderHistory(
-            this HtmlHelper helper,
-            string state, IDictionary<string, string> properties)
+        public static NonEscapedString? RenderHistory(
+            [NotNull] this HtmlHelper helper,
+            [NotNull] string state,
+            [CanBeNull] IDictionary<string, string>? properties)
         {
+            if (helper == null) throw new ArgumentNullException(nameof(helper));
+            if (state == null) throw new ArgumentNullException(nameof(state));
+
             var renderer = Renderers.TryGetValue(state, out var value)
                 ? value
                 : DefaultRenderer;
@@ -145,13 +157,14 @@ namespace Hangfire.Dashboard
             return renderer?.Invoke(helper, properties);
         }
 
-        public static NonEscapedString NullRenderer(HtmlHelper helper, IDictionary<string, string> properties)
+        public static NonEscapedString? NullRenderer([NotNull] HtmlHelper helper, [CanBeNull] IDictionary<string, string>? properties)
         {
             return null;
         }
 
-        public static NonEscapedString DefaultRenderer(HtmlHelper helper, IDictionary<string, string> stateData)
+        public static NonEscapedString? DefaultRenderer([NotNull] HtmlHelper helper, [CanBeNull] IDictionary<string, string>? stateData)
         {
+            if (helper == null) throw new ArgumentNullException(nameof(helper));
             if (stateData == null || stateData.Count == 0) return null;
 
             var builder = new StringBuilder();
@@ -168,8 +181,11 @@ namespace Hangfire.Dashboard
             return new NonEscapedString(builder.ToString());
         }
 
-        public static NonEscapedString SucceededRenderer(HtmlHelper html, IDictionary<string, string> stateData)
+        public static NonEscapedString? SucceededRenderer([NotNull] HtmlHelper html, [CanBeNull] IDictionary<string, string>? stateData)
         {
+            if (html == null) throw new ArgumentNullException(nameof(html));
+            if (stateData == null || stateData.Count == 0) return null;
+
             var builder = new StringBuilder();
             builder.Append("<dl class=\"dl-horizontal\">");
 
@@ -208,8 +224,10 @@ namespace Hangfire.Dashboard
             return new NonEscapedString(builder.ToString());
         }
 
-        private static NonEscapedString FailedRenderer(HtmlHelper html, IDictionary<string, string> stateData)
+        private static NonEscapedString? FailedRenderer(HtmlHelper html, IDictionary<string, string>? stateData)
         {
+            if (stateData == null || stateData.Count == 0) return null;
+
             var builder = new StringBuilder();
             var serverId = stateData.TryGetValue("ServerId", out var value) ? $" ({html.ServerId(value)})" : null;
 
@@ -225,8 +243,10 @@ namespace Hangfire.Dashboard
             return new NonEscapedString(builder.ToString());
         }
 
-        private static NonEscapedString ProcessingRenderer(HtmlHelper helper, IDictionary<string, string> stateData)
+        private static NonEscapedString? ProcessingRenderer(HtmlHelper helper, IDictionary<string, string>? stateData)
         {
+            if (stateData == null || stateData.Count == 0) return null;
+            
             var builder = new StringBuilder();
             builder.Append("<dl class=\"dl-horizontal\">");
 
@@ -257,8 +277,10 @@ namespace Hangfire.Dashboard
             return new NonEscapedString(builder.ToString());
         }
 
-        private static NonEscapedString EnqueuedRenderer(HtmlHelper helper, IDictionary<string, string> stateData)
+        private static NonEscapedString? EnqueuedRenderer(HtmlHelper helper, IDictionary<string, string>? stateData)
         {
+            if (stateData == null || stateData.Count == 0) return null;
+
             if (stateData.TryGetValue("Queue", out var queue) &&
                 !EnqueuedState.IsDefault(queue))
             {
@@ -269,8 +291,10 @@ namespace Hangfire.Dashboard
             return null;
         }
 
-        private static NonEscapedString ScheduledRenderer(HtmlHelper helper, IDictionary<string, string> stateData)
+        private static NonEscapedString? ScheduledRenderer(HtmlHelper helper, IDictionary<string, string>? stateData)
         {
+            if (stateData == null || stateData.Count == 0) return null;
+
             var enqueueAt = JobHelper.DeserializeDateTime(stateData["EnqueueAt"]);
             stateData.TryGetValue("Queue", out var queue);
 
@@ -288,8 +312,10 @@ namespace Hangfire.Dashboard
             return new NonEscapedString(sb.ToString());
         }
 
-        private static NonEscapedString AwaitingRenderer(HtmlHelper helper, IDictionary<string, string> stateData)
+        private static NonEscapedString? AwaitingRenderer(HtmlHelper helper, IDictionary<string, string>? stateData)
         {
+            if (stateData == null || stateData.Count == 0) return null;
+
             var builder = new StringBuilder();
 
             builder.Append("<dl class=\"dl-horizontal\">");
@@ -299,7 +325,7 @@ namespace Hangfire.Dashboard
                 builder.Append($"<dt>Parent</dt><dd>{helper.JobIdLink(parentId)}</dd>");
             }
 
-            IState nextState = null;
+            IState? nextState = null;
 
             if (stateData.TryGetValue("NextState", out var nextStateString))
             {
@@ -328,8 +354,10 @@ namespace Hangfire.Dashboard
             return new NonEscapedString(builder.ToString());
         }
         
-        private static NonEscapedString DeletedRenderer(HtmlHelper html, IDictionary<string, string> stateData)
+        private static NonEscapedString? DeletedRenderer(HtmlHelper html, IDictionary<string, string>? stateData)
         {
+            if (stateData == null || stateData.Count == 0) return null;
+
             if (stateData.TryGetValue("Exception", out var exception))
             {
                 var exceptionInfo = SerializationHelper.Deserialize<ExceptionInfo>(exception);

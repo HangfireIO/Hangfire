@@ -15,14 +15,18 @@
 
 using System;
 using System.Collections.Generic;
+using Hangfire.Annotations;
 using Hangfire.Dashboard.Resources;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire.Dashboard
 {
     public static class JobsSidebarMenu
     {
-        public static readonly List<Func<RazorPage, MenuItem>> Items
-            = new List<Func<RazorPage, MenuItem>>();
+        [NotNull]
+        public static readonly List<Func<RazorPage, MenuItem>> Items = new List<Func<RazorPage, MenuItem>>();
 
         static JobsSidebarMenu()
         {

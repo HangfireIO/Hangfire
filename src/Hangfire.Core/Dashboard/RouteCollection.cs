@@ -18,6 +18,9 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Hangfire.Annotations;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Dashboard
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "Public API, can not change in minor versions.")]
@@ -45,8 +48,11 @@ namespace Hangfire.Dashboard
             _dispatchers.Add(new Tuple<string, IDashboardDispatcher>(pathTemplate, dispatcher));
         }
 
-        public Tuple<IDashboardDispatcher, Match> FindDispatcher(string path)
+        [CanBeNull]
+        public Tuple<IDashboardDispatcher, Match>? FindDispatcher([NotNull] string path)
         {
+            if (path == null) throw new ArgumentNullException(nameof(path));
+
             if (path.Length == 0) path = "/";
             else if (path.Length > 1) path = path.TrimEnd('/');
 

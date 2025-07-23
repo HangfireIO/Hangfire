@@ -18,6 +18,9 @@ using System.Text.RegularExpressions;
 using Hangfire.Annotations;
 using System.ComponentModel;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Dashboard
 {
     public static class RouteCollectionExtensions
@@ -89,8 +92,8 @@ namespace Hangfire.Dashboard
         }
 
         public static void AddClientBatchCommand(
-            this RouteCollection routes,
-            string pathTemplate, 
+            [NotNull] this RouteCollection routes,
+            [NotNull] string pathTemplate, 
             [NotNull] Action<IBackgroundJobClient, string> command)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
@@ -103,8 +106,8 @@ namespace Hangfire.Dashboard
         }
 
         public static void AddRecurringBatchCommand(
-            this RouteCollection routes,
-            string pathTemplate,
+            [NotNull] this RouteCollection routes,
+            [NotNull] string pathTemplate,
             [NotNull] Action<IRecurringJobManager, string> command)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
@@ -119,8 +122,8 @@ namespace Hangfire.Dashboard
         [EditorBrowsable(EditorBrowsableState.Never)]
         [Obsolete("For binary compatibility only. Use overload with Action<IRecurringJobManager, string> instead.")]
         public static void AddRecurringBatchCommand(
-            this RouteCollection routes,
-            string pathTemplate,
+            [NotNull] this RouteCollection routes,
+            [NotNull] string pathTemplate,
             [NotNull] Action<RecurringJobManager, string> command)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));

@@ -16,6 +16,10 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Hangfire.Annotations;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire.Dashboard
 {
@@ -34,6 +38,7 @@ namespace Hangfire.Dashboard
         /// Gets or sets the content type of the response like <c>"application/json"</c>.
         /// </summary>
         /// <value>The content type of the response.</value>
+        [NotNull]
         public abstract string ContentType { get; set; }
 
         /// <summary>
@@ -47,6 +52,7 @@ namespace Hangfire.Dashboard
         /// <see cref="WriteAsync"/> method instead for text data.
         /// </summary>
         /// <value>The response body stream.</value>
+        [NotNull]
         public abstract Stream Body { get; }
 
         /// <summary>
@@ -60,6 +66,6 @@ namespace Hangfire.Dashboard
         /// </summary>
         /// <param name="text">The text to write to the response body.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
-        public abstract Task WriteAsync(string text);
+        public abstract Task WriteAsync([NotNull] string text);
     }
 }

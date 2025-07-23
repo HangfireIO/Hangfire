@@ -23,6 +23,9 @@ using Hangfire.Annotations;
 using Hangfire.Dashboard.Owin;
 using Microsoft.Owin;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Dashboard
 {
     using MidFunc = Func<
@@ -45,7 +48,7 @@ namespace Hangfire.Dashboard
             [NotNull] DashboardOptions options, 
             [NotNull] JobStorage storage, 
             [NotNull] RouteCollection routes,
-            [CanBeNull] IOwinDashboardAntiforgery antiforgery)
+            [CanBeNull] IOwinDashboardAntiforgery? antiforgery)
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
             if (options == null) throw new ArgumentNullException(nameof(options));
@@ -61,7 +64,7 @@ namespace Hangfire.Dashboard
             [NotNull] DashboardOptions options, 
             [NotNull] JobStorage storage, 
             [NotNull] RouteCollection routes,
-            [CanBeNull] IOwinDashboardAntiforgery antiforgery)
+            [CanBeNull] IOwinDashboardAntiforgery? antiforgery)
         {
             if (options == null) throw new ArgumentNullException(nameof(options));
             if (storage == null) throw new ArgumentNullException(nameof(storage));

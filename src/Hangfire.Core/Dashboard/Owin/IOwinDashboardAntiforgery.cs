@@ -14,13 +14,21 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
+using Hangfire.Annotations;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire.Dashboard.Owin
 {
     public interface IOwinDashboardAntiforgery
     {
-        string HeaderName { get; }
-        string GetToken(IDictionary<string, object> environment);
-        bool ValidateRequest(IDictionary<string, object> environment);
+        [CanBeNull]
+        string? HeaderName { get; }
+
+        [CanBeNull]
+        string? GetToken([NotNull] IDictionary<string, object> environment);
+
+        bool ValidateRequest([NotNull] IDictionary<string, object> environment);
     }
 }

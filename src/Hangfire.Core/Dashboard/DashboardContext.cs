@@ -18,6 +18,9 @@ using System.Text.RegularExpressions;
 using Hangfire.Annotations;
 using Hangfire.Common;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Dashboard
 {
     /// <summary>
@@ -54,30 +57,35 @@ namespace Hangfire.Dashboard
         /// <summary>
         /// Gets the <see cref="JobStorage"/> instance used by the Dashboard UI.
         /// </summary>
+        [NotNull]
         public JobStorage Storage { get; }
 
         /// <summary>
         /// Gets the <see cref="DashboardOptions"/> for configuring the Dashboard UI.
         /// </summary>
+        [NotNull]
         public DashboardOptions Options { get; }
 
         /// <summary>
         /// Gets or sets the URI match information passed from the configured <c>pathTemplate</c>
         /// when defining a route in the <see cref="DashboardRoutes"/> class.
         /// </summary>
-        public Match UriMatch { get; set; }
+        [NotNull]
+        public Match UriMatch { get; set; } = null!;
 
         /// <summary>
         /// Gets the <see cref="DashboardRequest"/> metadata.
         /// Used by request dispatchers (please see <see cref="IDashboardDispatcher"/>) to provide request information.
         /// </summary>
-        public DashboardRequest Request { get; protected set; }
+        [NotNull]
+        public DashboardRequest Request { get; protected set; } = null!;
 
         /// <summary>
         /// Gets the <see cref="DashboardResponse"/> metadata.
         /// Used by request dispatchers (please see <see cref="IDashboardDispatcher"/>) to send response information.
         /// </summary>
-        public DashboardResponse Response { get; protected set; }
+        [NotNull]
+        public DashboardResponse Response { get; protected set; } = null!;
 
         /// <summary>
         /// Gets a value indicating whether the Dashboard UI is in read-only mode to possibly
@@ -88,17 +96,20 @@ namespace Hangfire.Dashboard
         /// <summary>
         /// Gets or sets the anti-forgery header value.
         /// </summary>
-        public string AntiforgeryHeader { get; set; }
+        [CanBeNull]
+        public string? AntiforgeryHeader { get; set; }
 
         /// <summary>
         /// Gets or sets the anti-forgery token value.
         /// </summary>
-        public string AntiforgeryToken { get; set; }
+        [CanBeNull]
+        public string? AntiforgeryToken { get; set; }
 
         /// <summary>
         /// Gets the background job client for the current <see cref="JobStorage"/> instance.
         /// </summary>
         /// <returns>An instance of <see cref="IBackgroundJobClient"/>.</returns>
+        [NotNull]
         public virtual IBackgroundJobClient GetBackgroundJobClient()
         {
             return new BackgroundJobClient(Storage);
@@ -108,6 +119,7 @@ namespace Hangfire.Dashboard
         /// Gets the recurring job manager for the current <see cref="JobStorage"/> instance.
         /// </summary>
         /// <returns>An instance of <see cref="IRecurringJobManager"/>.</returns>
+        [NotNull]
         public virtual IRecurringJobManager GetRecurringJobManager()
         {
             return new RecurringJobManager(

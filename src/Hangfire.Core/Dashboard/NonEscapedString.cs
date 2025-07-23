@@ -13,18 +13,25 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using Hangfire.Annotations;
+
+#nullable enable
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+
 namespace Hangfire.Dashboard
 {
+    // TODO: Replace with readonly struct in 2.0.0.
     public class NonEscapedString
     {
-        private readonly string _value;
+        private readonly string? _value;
 
-        public NonEscapedString(string value)
+        public NonEscapedString([CanBeNull] string? value)
         {
             _value = value;
         }
 
-        public override string ToString()
+        [CanBeNull]
+        public override string? ToString()
         {
             return _value;
         }

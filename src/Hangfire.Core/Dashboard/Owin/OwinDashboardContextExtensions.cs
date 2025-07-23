@@ -17,10 +17,14 @@ using System;
 using System.Collections.Generic;
 using Hangfire.Annotations;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Dashboard
 {
     public static class OwinDashboardContextExtensions
     {
+        [NotNull]
         public static IDictionary<string, object> GetOwinEnvironment([NotNull] this DashboardContext context)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));

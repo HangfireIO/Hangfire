@@ -13,30 +13,50 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Hangfire.Annotations;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire.Dashboard
 {
     public class MenuItem
     {
-        public MenuItem(string text, string url)
+        public MenuItem([NotNull] string text, [NotNull] string url)
         {
-            Text = text;
-            Url = url;
+            Text = text ?? throw new ArgumentNullException(nameof(text));
+            Url = url ?? throw new ArgumentNullException(nameof(url));
         }
 
+        [NotNull]
         public string Text { get; }
+
+        [NotNull]
         public string Url { get; }
 
         public bool Active { get; set; }
-        public DashboardMetric Metric { get; set; }
-        public DashboardMetric[] Metrics { get; set; }
 
+        [CanBeNull]
+        public DashboardMetric? Metric { get; set; }
+
+        [CanBeNull]
+        public DashboardMetric[]? Metrics { get; set; }
+
+        [NotNull]
         public IEnumerable<DashboardMetric> GetAllMetrics()
         {
-            var metrics = new List<DashboardMetric> { Metric };
-            
+            if (Metric == null && Metrics == null) return [];
+
+            var metrics = new List<DashboardMetric>();
+
+            if (Metric != null)
+            {
+                metrics.Add(Metric);
+            }
+
             if (Metrics != null)
             {
                 metrics.AddRange(Metrics);

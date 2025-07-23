@@ -17,12 +17,15 @@ using System;
 using System.Collections.Generic;
 using Hangfire.Annotations;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Dashboard
 {
     public class UrlHelper
     {
 #if FEATURE_OWIN
-        private readonly Microsoft.Owin.OwinContext _owinContext;
+        private readonly Microsoft.Owin.OwinContext? _owinContext;
 
         [Obsolete("Please use UrlHelper(DashboardContext) instead. Will be removed in 2.0.0.")]
         public UrlHelper([NotNull] IDictionary<string, object> owinEnvironment)
@@ -32,42 +35,50 @@ namespace Hangfire.Dashboard
         }
 #endif
 
-        private readonly DashboardContext _context;
+        private readonly DashboardContext? _context;
 
         public UrlHelper([NotNull] DashboardContext context)
         {
-            if (context == null) throw new ArgumentNullException(nameof(context));
-            _context = context;
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public string To(string relativePath)
+        [NotNull]
+        public string To([NotNull] string relativePath)
         {
-            return _context.Options.PrefixPath +
-                   (
+            if (relativePath == null) throw new ArgumentNullException(nameof(relativePath));
+            
 #if FEATURE_OWIN
-                       _owinContext?.Request.PathBase.Value ??
+            if (_owinContext != null)
+            {
+                return _owinContext.Request.PathBase.Value + relativePath;
+            }
 #endif
-                       _context.Request.PathBase
-                   ) + relativePath;
+            return _context!.Options.PrefixPath + _context.Request.PathBase + relativePath;
         }
 
+        [NotNull]
         public string Home()
         {
             return To("/");
         }
 
-        public string JobDetails(string jobId)
+        [NotNull]
+        public string JobDetails([NotNull] string jobId)
         {
+            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
             return To("/jobs/details/" + jobId);
         }
 
+        [NotNull]
         public string LinkToQueues()
         {
             return To("/jobs/enqueued");
         }
 
-        public string Queue(string queue)
+        [NotNull]
+        public string Queue([NotNull] string queue)
         {
+            if (queue == null) throw new ArgumentNullException(nameof(queue));
             return To("/jobs/enqueued/" + queue);
         }
     }

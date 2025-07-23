@@ -20,6 +20,9 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Dashboard
 {
     internal sealed class CombinedResourceDispatcher : EmbeddedResourceDispatcher
@@ -31,8 +34,7 @@ namespace Hangfire.Dashboard
             [NotNull] IEnumerable<Tuple<Assembly, string>> resources)
             : base(contentType, null, null)
         {
-            if (resources == null) throw new ArgumentNullException(nameof(resources));
-            _resources = resources;
+            _resources = resources ?? throw new ArgumentNullException(nameof(resources));
         }
 
         protected override async Task WriteResponse(DashboardResponse response)

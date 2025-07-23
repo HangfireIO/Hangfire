@@ -17,18 +17,22 @@ using System;
 using System.Diagnostics;
 using System.Net;
 using System.Text;
+using Hangfire.Annotations;
 using Hangfire.Storage;
 using Hangfire.Storage.Monitoring;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire.Dashboard
 {
     public abstract class RazorPage
     {
-        private Lazy<StatisticsDto> _statisticsLazy;
-        private Lazy<Tuple<DateTime?, DateTime, TimeSpan?>> _dateTimeLazy;
+        private Lazy<StatisticsDto>? _statisticsLazy;
+        private Lazy<Tuple<DateTime?, DateTime, TimeSpan?>>? _dateTimeLazy;
 
         private readonly StringBuilder _content = new StringBuilder();
-        private string _body;
+        private string? _body;
 
         protected RazorPage()
         {
@@ -36,13 +40,25 @@ namespace Hangfire.Dashboard
             Html = new HtmlHelper(this);
         }
 
-        public RazorPage Layout { get; protected set; }
-        public HtmlHelper Html { get; private set; }
-        public UrlHelper Url { get; private set; }
+        [CanBeNull]
+        public RazorPage? Layout { get; protected set; }
 
+        [NotNull]
+        public HtmlHelper Html { get; private set; }
+
+        [NotNull]
+        public UrlHelper Url { get; private set; } = null!;
+
+        [NotNull]
         public JobStorage Storage => Context.Storage;
-        public string AppPath => Context.Options.AppPath;
+
+        [CanBeNull]
+        public string? AppPath => Context.Options.AppPath;
+
+        [NotNull]
         public DashboardOptions DashboardOptions => Context.Options;
+
+        [NotNull]
         public Stopwatch GenerationTime { get; private set; }
 
         public DateTime? StorageUtcNow
@@ -72,6 +88,7 @@ namespace Hangfire.Dashboard
             }
         }
 
+        [NotNull]
         public StatisticsDto Statistics
         {
             get
@@ -81,11 +98,13 @@ namespace Hangfire.Dashboard
             }
         }
 
-        public DashboardContext Context { get; private set; }
+        [NotNull]
+        public DashboardContext Context { get; private set; } = null!;
 
         internal DashboardRequest Request => Context.Request;
         internal DashboardResponse Response => Context.Response;
 
+        [NotNull]
         public string RequestPath => Request.Path;
 
         public bool IsReadOnly => Context.IsReadOnly;
@@ -93,7 +112,8 @@ namespace Hangfire.Dashboard
         /// <exclude />
         public abstract void Execute();
 
-        public string Query(string key)
+        [CanBeNull]
+        public string? Query([NotNull] string key)
         {
             return Request.GetQuery(key);
         }
@@ -104,8 +124,10 @@ namespace Hangfire.Dashboard
         }
 
         /// <exclude />
-        public void Assign(RazorPage parentPage)
+        public void Assign([NotNull] RazorPage parentPage)
         {
+            if (parentPage == null) throw new ArgumentNullException(nameof(parentPage));
+
             Context = parentPage.Context;
             Url = parentPage.Url;
 
@@ -151,18 +173,16 @@ namespace Hangfire.Dashboard
         }
 
         /// <exclude />
-        protected void WriteLiteral(string textToAppend)
+        protected void WriteLiteral([CanBeNull] string? textToAppend)
         {
-            if (string.IsNullOrEmpty(textToAppend))
-                return;
+            if (string.IsNullOrEmpty(textToAppend)) return;
             _content.Append(textToAppend);
         }
 
         /// <exclude />
-        protected virtual void Write(object value)
+        protected virtual void Write([CanBeNull] object? value)
         {
-            if (value == null)
-                return;
+            if (value == null) return;
             var html = value as NonEscapedString;
             WriteLiteral(html?.ToString() ?? Encode(value.ToString()));
         }
@@ -172,7 +192,7 @@ namespace Hangfire.Dashboard
             return new NonEscapedString(_body);
         }
 
-        private string TransformText(string body)
+        private string TransformText(string? body)
         {
             _body = body;
             
@@ -187,7 +207,7 @@ namespace Hangfire.Dashboard
             return _content.ToString();
         }
 
-        private static string Encode(string text)
+        private static string Encode(string? text)
         {
             return string.IsNullOrEmpty(text)
                        ? string.Empty

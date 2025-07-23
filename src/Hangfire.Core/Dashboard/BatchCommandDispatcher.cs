@@ -16,6 +16,10 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
+using Hangfire.Annotations;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire.Dashboard
 {
@@ -23,9 +27,9 @@ namespace Hangfire.Dashboard
     {
         private readonly Action<DashboardContext, string> _command;
 
-        public BatchCommandDispatcher(Action<DashboardContext, string> command)
+        public BatchCommandDispatcher([NotNull] Action<DashboardContext, string> command)
         {
-            _command = command;
+            _command = command ?? throw new ArgumentNullException(nameof(command));
         }
 
 #if FEATURE_OWIN

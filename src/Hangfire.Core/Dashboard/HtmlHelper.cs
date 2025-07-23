@@ -28,13 +28,16 @@ using Hangfire.Annotations;
 using Hangfire.Dashboard.Pages;
 using Hangfire.Dashboard.Resources;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Dashboard
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "We use instance methods in this class for better observability.")]
     public class HtmlHelper
     {
-        private static readonly Type DisplayNameType;
-        private static readonly Func<object, string> GetDisplayName;
+        private static readonly Type? DisplayNameType;
+        private static readonly Func<object, string>? GetDisplayName;
 
         private readonly RazorPage _page;
 
@@ -46,9 +49,8 @@ namespace Hangfire.Dashboard
                 DisplayNameType = typeof(DisplayNameAttribute);
 #else
                 DisplayNameType = Type.GetType("System.ComponentModel.DisplayNameAttribute, System.ComponentModel.Primitives");
-#endif
                 if (DisplayNameType == null) return;
-
+#endif
                 var p = Expression.Parameter(typeof(object));
                 var converted = Expression.Convert(p, DisplayNameType);
 
@@ -62,14 +64,15 @@ namespace Hangfire.Dashboard
 
         public HtmlHelper([NotNull] RazorPage page)
         {
-            if (page == null) throw new ArgumentNullException(nameof(page));
-            _page = page;
+            _page = page ?? throw new ArgumentNullException(nameof(page));
         }
 
+        [NotNull]
         public RazorPage Page => _page;
 
-        public NonEscapedString Breadcrumbs(string title, [NotNull] IDictionary<string, string> items)
+        public NonEscapedString Breadcrumbs([NotNull] string title, [NotNull] IDictionary<string, string> items)
         {
+            if (title == null) throw new ArgumentNullException(nameof(title));
             if (items == null) throw new ArgumentNullException(nameof(items));
             return RenderPartial(new Breadcrumbs(title, items));
         }
@@ -109,31 +112,34 @@ namespace Hangfire.Dashboard
             return RenderPartial(new PerPageSelector(pager));
         }
 
-        public NonEscapedString RenderPartial(RazorPage partialPage)
+        public NonEscapedString RenderPartial([NotNull] RazorPage partialPage)
         {
+            if (partialPage == null) throw new ArgumentNullException(nameof(partialPage));
             partialPage.Assign(_page);
             return new NonEscapedString(partialPage.ToString());
         }
 
-        public NonEscapedString Raw(string value)
+        public NonEscapedString Raw([CanBeNull] string? value)
         {
             return new NonEscapedString(value);
         }
 
-        public NonEscapedString JobId(string jobId, bool shorten = true)
+        public NonEscapedString JobId([NotNull] string jobId, bool shorten = true)
         {
-            Guid guid;
-            return new NonEscapedString(HtmlEncode(Guid.TryParse(jobId, out guid)
+            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
+            return new NonEscapedString(HtmlEncode(Guid.TryParse(jobId, out _)
                 ? (shorten ? jobId.Substring(0, 8) + "…" : jobId)
                 : $"#{jobId}"));
         }
 
-        public string JobName(Job job)
+        [NotNull]
+        public string JobName([CanBeNull] Job? job)
         {
             return JobName(job, includeQueue: true);
         }
 
-        public string JobName(Job job, bool includeQueue)
+        [NotNull]
+        public string JobName([CanBeNull] Job? job, bool includeQueue)
         {
             if (job == null)
             {
@@ -188,12 +194,12 @@ namespace Hangfire.Dashboard
             return job.ToString(includeQueue);
         }
 
-        public NonEscapedString StateLabel(string stateName)
+        public NonEscapedString StateLabel([CanBeNull] string? stateName)
         {
             return StateLabel(stateName, stateName);
         }
 
-        public NonEscapedString StateLabel(string stateName, string text, bool hover = false)
+        public NonEscapedString StateLabel([CanBeNull] string? stateName, [CanBeNull] string? text, bool hover = false)
         {
             if (String.IsNullOrWhiteSpace(stateName))
             {
@@ -212,18 +218,20 @@ namespace Hangfire.Dashboard
             return Raw($"<span class=\"label label-default {cssHover}\" style=\"{HtmlEncode(style)}\">{HtmlEncode(text)}</span>");
         }
 
-        public NonEscapedString JobIdLink(string jobId)
+        public NonEscapedString JobIdLink([NotNull] string jobId)
         {
+            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
             return Raw($"<a href=\"{HtmlEncode(_page.Url.JobDetails(jobId))}\">{JobId(jobId)}</a>");
         }
 
-        public NonEscapedString JobNameLink(string jobId, Job job)
+        public NonEscapedString JobNameLink([NotNull] string jobId, [CanBeNull] Job? job)
         {
             return JobNameLink(jobId, job, includeQueue: true);
         }
 
-        public NonEscapedString JobNameLink(string jobId, Job job, bool includeQueue)
+        public NonEscapedString JobNameLink([NotNull] string jobId, [CanBeNull] Job? job, bool includeQueue)
         {
+            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
             return Raw($"<a class=\"job-method\" href=\"{HtmlEncode(_page.Url.JobDetails(jobId))}\">{HtmlEncode(JobName(job, includeQueue))}</a>");
         }
 
@@ -242,7 +250,9 @@ namespace Hangfire.Dashboard
             return Raw($"<span data-moment-local=\"{HtmlEncode(JobHelper.ToTimestamp(value).ToString(CultureInfo.InvariantCulture))}\">{HtmlEncode(value.ToString(CultureInfo.CurrentCulture))}</span>");
         }
 
-        public string ToHumanDuration(TimeSpan? duration, bool displaySign = true)
+        [CanBeNull]
+        [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(duration))]
+        public string? ToHumanDuration(TimeSpan? duration, bool displaySign = true)
         {
             if (duration == null) return null;
 
@@ -301,12 +311,14 @@ namespace Hangfire.Dashboard
         }
 
         [Obsolete("This method is unused and will be removed in 2.0.0.")]
-        public string FormatProperties(IDictionary<string, string> properties)
+        [NotNull]
+        public string FormatProperties([NotNull] IDictionary<string, string> properties)
         {
+            if (properties == null) throw new ArgumentNullException(nameof(properties));
             return String.Join(", ", properties.Select(static x => $"{x.Key}: \"{x.Value}\""));
         }
 
-        public NonEscapedString QueueLabel(string queue)
+        public NonEscapedString QueueLabel([CanBeNull] string? queue)
         {
             var label = queue != null 
                 ? $"<a href=\"{HtmlEncode(_page.Url.Queue(queue))}\">{HtmlEncode(queue)}</a>" 
@@ -315,8 +327,10 @@ namespace Hangfire.Dashboard
             return new NonEscapedString(label);
         }
 
-        public NonEscapedString ServerId(string serverId)
+        public NonEscapedString ServerId([NotNull] string serverId)
         {
+            if (serverId == null) throw new ArgumentNullException(nameof(serverId));
+
             var parts = serverId.Split(':');
             var shortenedId = parts.Length > 1
                 ? String.Join(":", parts.Take(parts.Length - 1))
@@ -338,8 +352,9 @@ namespace Hangfire.Dashboard
             BeforeLine          = "<span class='st-line'>"                             , AfterLine          = "</span>",
         };
 
-        public NonEscapedString StackTrace(string stackTrace)
+        public NonEscapedString StackTrace([NotNull] string stackTrace)
         {
+            if (stackTrace == null) throw new ArgumentNullException(nameof(stackTrace));
             try
             {
                 return new NonEscapedString(StackTraceFormatter.FormatHtml(stackTrace, StackTraceHtmlFragments));
@@ -350,7 +365,9 @@ namespace Hangfire.Dashboard
             }
         }
 
-        public string HtmlEncode(string text)
+        [CanBeNull]
+        [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(text))]
+        public string? HtmlEncode([CanBeNull] string? text)
         {
             return WebUtility.HtmlEncode(text);
         }

@@ -20,6 +20,9 @@ using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Microsoft.Owin;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Dashboard
 {
     internal sealed class OwinDashboardResponse : DashboardResponse
@@ -34,14 +37,14 @@ namespace Hangfire.Dashboard
 
         public override string ContentType
         {
-            get { return _context.Response.ContentType; }
-            set { _context.Response.ContentType = value; }
+            get => _context.Response.ContentType;
+            set => _context.Response.ContentType = value;
         }
 
         public override int StatusCode
         {
-            get { return _context.Response.StatusCode; }
-            set { _context.Response.StatusCode = value; }
+            get => _context.Response.StatusCode;
+            set => _context.Response.StatusCode = value;
         }
 
         public override Stream Body => _context.Response.Body;
