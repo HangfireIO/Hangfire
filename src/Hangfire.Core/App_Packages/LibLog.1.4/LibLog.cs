@@ -133,7 +133,7 @@ namespace Hangfire.Logging
             }
         }
 
-        public static void DebugException(this ILog logger, string message, Exception exception)
+        public static void DebugException(this ILog logger, string message, Exception? exception)
         {
             if (logger.IsDebugEnabled())
             {
@@ -162,7 +162,7 @@ namespace Hangfire.Logging
             }
         }
 
-        public static void ErrorException(this ILog logger, string message, Exception exception)
+        public static void ErrorException(this ILog logger, string message, Exception? exception)
         {
             if (logger.IsErrorEnabled())
             {
@@ -191,7 +191,7 @@ namespace Hangfire.Logging
             }
         }
 
-        public static void FatalException(this ILog logger, string message, Exception exception)
+        public static void FatalException(this ILog logger, string message, Exception? exception)
         {
             if (logger.IsFatalEnabled())
             {
@@ -221,7 +221,7 @@ namespace Hangfire.Logging
             }
         }
 
-        public static void InfoException(this ILog logger, string message, Exception exception)
+        public static void InfoException(this ILog logger, string message, Exception? exception)
         {
             if (logger.IsInfoEnabled())
             {
@@ -251,7 +251,7 @@ namespace Hangfire.Logging
             }
         }
 
-        public static void TraceException(this ILog logger, string message, Exception exception)
+        public static void TraceException(this ILog logger, string message, Exception? exception)
         {
             if (logger.IsTraceEnabled())
             {
@@ -281,7 +281,7 @@ namespace Hangfire.Logging
             }
         }
 
-        public static void WarnException(this ILog logger, string message, Exception exception)
+        public static void WarnException(this ILog logger, string message, Exception? exception)
         {
             if (logger.IsWarnEnabled())
             {
