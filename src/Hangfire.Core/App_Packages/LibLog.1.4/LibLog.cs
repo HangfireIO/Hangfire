@@ -30,6 +30,7 @@ using System.Threading;
 using Hangfire.Logging.LogProviders;
 
 // ReSharper disable All
+#nullable enable
 
 namespace Hangfire.Logging
 {
@@ -56,7 +57,7 @@ namespace Hangfire.Logging
         /// 
         /// To check IsEnabled call Log with only LogLevel and check the return value, no event will be written
         /// </remarks>
-        bool Log(LogLevel logLevel, Func<string> messageFunc, Exception exception = null);
+        bool Log(LogLevel logLevel, Func<string?>? messageFunc, Exception? exception = null);
     }
 
     /// <summary>
@@ -328,7 +329,7 @@ namespace Hangfire.Logging
     /// </summary>
     public static class LogProvider
     {
-        private static ILogProvider _currentLogProvider;
+        private static ILogProvider? _currentLogProvider;
 
         /// <summary>
         /// Gets a logger for the specified type.
@@ -348,7 +349,7 @@ namespace Hangfire.Logging
         public static ILog GetCurrentClassLogger()
         {
             var stackFrame = new StackFrame(1, false);
-            return GetLogger(stackFrame.GetMethod().DeclaringType);
+            return GetLogger(stackFrame.GetMethod()!.DeclaringType!);
         }
 #endif
 
@@ -359,7 +360,7 @@ namespace Hangfire.Logging
         /// <returns>An instance of <see cref="ILog"/></returns>
         public static ILog GetLogger(Type type)
         {
-            return GetLogger(type.FullName);
+            return GetLogger(type.FullName!);
         }
 
         /// <summary>
@@ -369,7 +370,7 @@ namespace Hangfire.Logging
         /// <returns>An instance of <see cref="ILog"/></returns>
         public static ILog GetLogger(string name)
         {
-            ILogProvider logProvider = Volatile.Read(ref _currentLogProvider) ?? ResolveLogProvider();
+            ILogProvider? logProvider = Volatile.Read(ref _currentLogProvider) ?? ResolveLogProvider();
             return logProvider == null ? new NoOpLogger() : (ILog)new LoggerExecutionWrapper(logProvider.GetLogger(name));
         }
 
@@ -399,7 +400,7 @@ namespace Hangfire.Logging
 #endif
         };
 
-        private static ILogProvider ResolveLogProvider()
+        private static ILogProvider? ResolveLogProvider()
         {
             try
             {
@@ -423,7 +424,7 @@ namespace Hangfire.Logging
 
         internal sealed class NoOpLogger : ILog
         {
-            public bool Log(LogLevel logLevel, Func<string> messageFunc, Exception exception)
+            public bool Log(LogLevel logLevel, Func<string?>? messageFunc, Exception? exception)
             {
                 return false;
             }
@@ -445,14 +446,14 @@ namespace Hangfire.Logging
             _logger = logger;
         }
 
-        public bool Log(LogLevel logLevel, Func<string> messageFunc, Exception exception = null)
+        public bool Log(LogLevel logLevel, Func<string?>? messageFunc, Exception? exception = null)
         {
             if (messageFunc == null)
             {
                 return _logger.Log(logLevel, null);
             }
 
-            Func<string> wrappedMessageFunc = () =>
+            Func<string?> wrappedMessageFunc = () =>
             {
                 try
                 {
@@ -511,13 +512,13 @@ namespace Hangfire.Logging.LogProviders
 
         private static Type GetLogManagerType()
         {
-            return Type.GetType("NLog.LogManager, NLog");
+            return Type.GetType("NLog.LogManager, NLog")!;
         }
 
         private static Func<string, object> GetGetLoggerMethodCall()
         {
             Type logManagerType = GetLogManagerType();
-            MethodInfo method = logManagerType.GetRuntimeMethod("GetLogger", new[] { typeof(string) });
+            MethodInfo method = logManagerType.GetRuntimeMethod("GetLogger", new[] { typeof(string) })!;
             ParameterExpression nameParam = Expression.Parameter(typeof(string), "name");
             MethodCallExpression methodCall = Expression.Call(null, method, new Expression[] { nameParam });
             return Expression.Lambda<Func<string, object>>(methodCall, new[] { nameParam }).Compile();
@@ -532,7 +533,7 @@ namespace Hangfire.Logging.LogProviders
                 _logger = logger;
             }
 
-            public bool Log(LogLevel logLevel, Func<string> messageFunc, Exception exception)
+            public bool Log(LogLevel logLevel, Func<string?>? messageFunc, Exception? exception)
             {
                 if (messageFunc == null)
                 {
@@ -590,7 +591,7 @@ namespace Hangfire.Logging.LogProviders
                 return false;
             }
 
-            private bool LogException(LogLevel logLevel, Func<string> messageFunc, Exception exception)
+            private bool LogException(LogLevel logLevel, Func<string?> messageFunc, Exception exception)
             {
                 switch (logLevel)
                 {
@@ -693,13 +694,13 @@ namespace Hangfire.Logging.LogProviders
 
         private static Type GetLogManagerType()
         {
-            return Type.GetType("log4net.LogManager, log4net");
+            return Type.GetType("log4net.LogManager, log4net")!;
         }
 
         private static Func<string, object> GetGetLoggerMethodCall()
         {
             Type logManagerType = GetLogManagerType();
-            MethodInfo method = logManagerType.GetRuntimeMethod("GetLogger", new[] { typeof(Assembly), typeof(string) });
+            MethodInfo method = logManagerType.GetRuntimeMethod("GetLogger", new[] { typeof(Assembly), typeof(string) })!;
             ParameterExpression nameParam = Expression.Parameter(typeof(string), "name");
             MethodCallExpression methodCall = Expression.Call(null, method, new Expression[] { Expression.Constant(typeof(Log4NetLogProvider).GetTypeInfo().Assembly), nameParam });
             return Expression.Lambda<Func<string, object>>(methodCall, new[] { nameParam }).Compile();
@@ -714,7 +715,7 @@ namespace Hangfire.Logging.LogProviders
                 _logger = logger;
             }
 
-            public bool Log(LogLevel logLevel, Func<string> messageFunc, Exception exception)
+            public bool Log(LogLevel logLevel, Func<string?>? messageFunc, Exception? exception)
             {
                 if (messageFunc == null)
                 {
@@ -765,7 +766,7 @@ namespace Hangfire.Logging.LogProviders
                 return false;
             }
 
-            private bool LogException(LogLevel logLevel, Func<string> messageFunc, Exception exception)
+            private bool LogException(LogLevel logLevel, Func<string?> messageFunc, Exception exception)
             {
                 switch (logLevel)
                 {
@@ -836,13 +837,13 @@ namespace Hangfire.Logging.LogProviders
         private static bool _providerIsAvailableOverride = true;
         private static readonly Type LogEntryType;
         private static readonly Type LoggerType;
-        private readonly Action<string, string, TraceEventType> WriteLogEntry;
+        private readonly Action<string, string?, TraceEventType> WriteLogEntry;
         private Func<string, TraceEventType, bool> ShouldLogEntry;
 
         static EntLibLogProvider()
         {
-            LogEntryType = Type.GetType(string.Format(CultureInfo.InvariantCulture, TypeTemplate, "LogEntry"));
-            LoggerType = Type.GetType(string.Format(CultureInfo.InvariantCulture, TypeTemplate, "Logger"));
+            LogEntryType = Type.GetType(string.Format(CultureInfo.InvariantCulture, TypeTemplate, "LogEntry"))!;
+            LoggerType = Type.GetType(string.Format(CultureInfo.InvariantCulture, TypeTemplate, "Logger"))!;
         }
 
         public EntLibLogProvider()
@@ -872,7 +873,7 @@ namespace Hangfire.Logging.LogProviders
             return ProviderIsAvailableOverride && LogEntryType != null;
         }
 
-        private static Action<string, string, TraceEventType> GetWriteLogEntry()
+        private static Action<string, string?, TraceEventType> GetWriteLogEntry()
         {
             // new LogEntry(...)
             var logNameParameter = Expression.Parameter(typeof(string), "logName");
@@ -882,10 +883,10 @@ namespace Hangfire.Logging.LogProviders
             MemberInitExpression memberInit = GetWriteLogExpression(messageParameter, severityParameter, logNameParameter);
 
             //Logger.Write(new LogEntry(....));
-            MethodInfo writeLogEntryMethod = LoggerType.GetMethod("Write", new[] { LogEntryType });
+            MethodInfo writeLogEntryMethod = LoggerType.GetMethod("Write", new[] { LogEntryType })!;
             var writeLogEntryExpression = Expression.Call(writeLogEntryMethod, memberInit);
 
-            return Expression.Lambda<Action<string, string, TraceEventType>>(
+            return Expression.Lambda<Action<string, string?, TraceEventType>>(
                 writeLogEntryExpression,
                 logNameParameter,
                 messageParameter,
@@ -901,7 +902,7 @@ namespace Hangfire.Logging.LogProviders
             MemberInitExpression memberInit = GetWriteLogExpression(Expression.Constant("***dummy***"), severityParameter, logNameParameter);
 
             //Logger.Write(new LogEntry(....));
-            MethodInfo writeLogEntryMethod = LoggerType.GetMethod("ShouldLog", new[] { LogEntryType });
+            MethodInfo writeLogEntryMethod = LoggerType.GetMethod("ShouldLog", new[] { LogEntryType })!;
             var writeLogEntryExpression = Expression.Call(writeLogEntryMethod, memberInit);
 
             return Expression.Lambda<Func<string, TraceEventType, bool>>(
@@ -916,11 +917,11 @@ namespace Hangfire.Logging.LogProviders
             var entryType = LogEntryType;
             MemberInitExpression memberInit = Expression.MemberInit(Expression.New(entryType), new MemberBinding[]
             {
-                Expression.Bind(entryType.GetProperty("Message"), message),
-                Expression.Bind(entryType.GetProperty("Severity"), severityParameter),
-                Expression.Bind(entryType.GetProperty("TimeStamp"),
-                    Expression.Property(null, typeof (DateTime).GetProperty("UtcNow"))),
-                Expression.Bind(entryType.GetProperty("Categories"),
+                Expression.Bind(entryType.GetProperty("Message")!, message),
+                Expression.Bind(entryType.GetProperty("Severity")!, severityParameter),
+                Expression.Bind(entryType.GetProperty("TimeStamp")!,
+                    Expression.Property(null, typeof (DateTime).GetProperty("UtcNow")!)),
+                Expression.Bind(entryType.GetProperty("Categories")!,
                     Expression.ListInit(
                         Expression.New(typeof (List<string>)),
                         typeof (List<string>).GetMethod("Add", new[] {typeof (string)}),
@@ -932,17 +933,17 @@ namespace Hangfire.Logging.LogProviders
         internal sealed class EntLibLogger : ILog
         {
             private readonly string _loggerName;
-            private readonly Action<string, string, TraceEventType> _writeLog;
+            private readonly Action<string, string?, TraceEventType> _writeLog;
             private readonly Func<string, TraceEventType, bool> _shouldLog;
 
-            internal EntLibLogger(string loggerName, Action<string, string, TraceEventType> writeLog, Func<string, TraceEventType, bool> shouldLog)
+            internal EntLibLogger(string loggerName, Action<string, string?, TraceEventType> writeLog, Func<string, TraceEventType, bool> shouldLog)
             {
                 _loggerName = loggerName;
                 _writeLog = writeLog;
                 _shouldLog = shouldLog;
             }
 
-            public bool Log(LogLevel logLevel, Func<string> messageFunc, Exception exception)
+            public bool Log(LogLevel logLevel, Func<string?>? messageFunc, Exception? exception)
             {
                 var severity = MapSeverity(logLevel);
                 if (messageFunc == null)
@@ -957,7 +958,7 @@ namespace Hangfire.Logging.LogProviders
                 return true;
             }
 
-            public bool LogException(LogLevel logLevel, Func<string> messageFunc, Exception exception)
+            public bool LogException(LogLevel logLevel, Func<string?> messageFunc, Exception exception)
             {
                 var severity = MapSeverity(logLevel);
                 var message = messageFunc() + Environment.NewLine + exception;
@@ -1019,13 +1020,13 @@ namespace Hangfire.Logging.LogProviders
 
         private static Type GetLogManagerType()
         {
-            return Type.GetType("Serilog.Log, Serilog");
+            return Type.GetType("Serilog.Log, Serilog")!;
         }
 
         private static Func<string, object> GetForContextMethodCall()
         {
             Type logManagerType = GetLogManagerType();
-            MethodInfo method = logManagerType.GetRuntimeMethod("ForContext", new[] { typeof(string), typeof(object), typeof(bool) });
+            MethodInfo method = logManagerType.GetRuntimeMethod("ForContext", new[] { typeof(string), typeof(object), typeof(bool) })!;
             ParameterExpression propertyNameParam = Expression.Parameter(typeof(string), "propertyName");
             ParameterExpression valueParam = Expression.Parameter(typeof(object), "value");
             ParameterExpression destructureObjectsParam = Expression.Parameter(typeof(bool), "destructureObjects");
@@ -1054,12 +1055,12 @@ namespace Hangfire.Logging.LogProviders
             public readonly object VerboseLevel;
             public readonly object WarningLevel;
             public readonly Func<object, object, bool> IsEnabled;
-            public readonly Action<object, object, string> Write;
-            public readonly Action<object, object, Exception, string> WriteException;
+            public readonly Action<object, object, string?> Write;
+            public readonly Action<object, object, Exception, string?> WriteException;
 
             public SerilogCallbacks()
             {
-                var logEventTypeType = Type.GetType("Serilog.Events.LogEventLevel, Serilog");
+                var logEventTypeType = Type.GetType("Serilog.Events.LogEventLevel, Serilog")!;
                 DebugLevel = Enum.Parse(logEventTypeType, "Debug");
                 ErrorLevel = Enum.Parse(logEventTypeType, "Error");
                 FatalLevel = Enum.Parse(logEventTypeType, "Fatal");
@@ -1068,8 +1069,8 @@ namespace Hangfire.Logging.LogProviders
                 WarningLevel = Enum.Parse(logEventTypeType, "Warning");
 
                 // Func<object, object, bool> isEnabled = (logger, level) => { return ((SeriLog.ILogger)logger).IsEnabled(level); }
-                var loggerType = Type.GetType("Serilog.ILogger, Serilog");
-                MethodInfo isEnabledMethodInfo = loggerType.GetRuntimeMethod("IsEnabled", new Type[] { logEventTypeType });
+                var loggerType = Type.GetType("Serilog.ILogger, Serilog")!;
+                MethodInfo isEnabledMethodInfo = loggerType.GetRuntimeMethod("IsEnabled", new Type[] { logEventTypeType })!;
                 ParameterExpression instanceParam = Expression.Parameter(typeof(object));
                 UnaryExpression instanceCast = Expression.Convert(instanceParam, loggerType);
                 ParameterExpression levelParam = Expression.Parameter(typeof(object));
@@ -1083,11 +1084,11 @@ namespace Hangfire.Logging.LogProviders
 
                 // Action<object, object, string> Write =
                 // (logger, level, message) => { ((SeriLog.ILoggerILogger)logger).Write(level, message, new object[]); }
-                MethodInfo writeMethodInfo = loggerType.GetRuntimeMethod("Write", new[] { logEventTypeType, typeof(string), typeof(object[]) });
+                MethodInfo writeMethodInfo = loggerType.GetRuntimeMethod("Write", new[] { logEventTypeType, typeof(string), typeof(object[]) })!;
                 ParameterExpression messageParam = Expression.Parameter(typeof(string));
                 ConstantExpression propertyValuesParam = Expression.Constant(EmptyArray);
                 MethodCallExpression writeMethodExp = Expression.Call(instanceCast, writeMethodInfo, levelCast, messageParam, propertyValuesParam);
-                Write = Expression.Lambda<Action<object, object, string>>(writeMethodExp, new[]
+                Write = Expression.Lambda<Action<object, object, string?>>(writeMethodExp, new[]
                 {
                     instanceParam,
                     levelParam,
@@ -1102,7 +1103,7 @@ namespace Hangfire.Logging.LogProviders
                     typeof(Exception), 
                     typeof(string),
                     typeof(object[])
-                });
+                })!;
                 ParameterExpression exceptionParam = Expression.Parameter(typeof(Exception));
                 writeMethodExp = Expression.Call(
                     instanceCast,
@@ -1111,7 +1112,7 @@ namespace Hangfire.Logging.LogProviders
                     exceptionParam,
                     messageParam,
                     propertyValuesParam);
-                WriteException = Expression.Lambda<Action<object, object, Exception, string>>(writeMethodExp, new[]
+                WriteException = Expression.Lambda<Action<object, object, Exception, string?>>(writeMethodExp, new[]
                 {
                     instanceParam,
                     levelParam,
@@ -1132,7 +1133,7 @@ namespace Hangfire.Logging.LogProviders
                 _logger = logger;
             }
 
-            public bool Log(LogLevel logLevel, Func<string> messageFunc, Exception exception)
+            public bool Log(LogLevel logLevel, Func<string?>? messageFunc, Exception? exception)
             {
                 if (messageFunc == null)
                 {
@@ -1191,7 +1192,7 @@ namespace Hangfire.Logging.LogProviders
                 return false;
             }
 
-            private bool LogException(LogLevel logLevel, Func<string> messageFunc, Exception exception)
+            private bool LogException(LogLevel logLevel, Func<string?> messageFunc, Exception exception)
             {
                 switch (logLevel)
                 {
@@ -1283,20 +1284,20 @@ namespace Hangfire.Logging.LogProviders
 
         private static Type GetLogManagerType()
         {
-            return Type.GetType("Gibraltar.Agent.Log, Gibraltar.Agent");
+            return Type.GetType("Gibraltar.Agent.Log, Gibraltar.Agent")!;
         }
 
         private static WriteDelegate GetLogWriteDelegate()
         {
             Type logManagerType = GetLogManagerType();
-            Type logMessageSeverityType = Type.GetType("Gibraltar.Agent.LogMessageSeverity, Gibraltar.Agent");
-            Type logWriteModeType = Type.GetType("Gibraltar.Agent.LogWriteMode, Gibraltar.Agent");
+            Type logMessageSeverityType = Type.GetType("Gibraltar.Agent.LogMessageSeverity, Gibraltar.Agent")!;
+            Type logWriteModeType = Type.GetType("Gibraltar.Agent.LogWriteMode, Gibraltar.Agent")!;
 
             MethodInfo method = logManagerType.GetMethod("Write", new[]
                                                                   {
                                                                       logMessageSeverityType, typeof(string), typeof(int), typeof(Exception), typeof(bool), 
                                                                       logWriteModeType, typeof(string), typeof(string), typeof(string), typeof(string), typeof(object[])
-                                                                  });
+                                                                  })!;
 
             return (WriteDelegate) method.CreateDelegate(typeof (WriteDelegate));
         }
@@ -1316,7 +1317,7 @@ namespace Hangfire.Logging.LogProviders
                 _skipLevel = 1;
             }
 
-            public bool Log(LogLevel logLevel, Func<string> messageFunc, Exception exception)
+            public bool Log(LogLevel logLevel, Func<string?>? messageFunc, Exception? exception)
             {
                 if (messageFunc == null)
                 {
@@ -1359,13 +1360,13 @@ namespace Hangfire.Logging.LogProviders
             int severity,
             string logSystem,
             int skipFrames,
-            Exception exception,
+            Exception? exception,
             bool attributeToException,
             int writeMode,
-            string detailsXml,
+            string? detailsXml,
             string category,
-            string caption,
-            string description,
+            string? caption,
+            string? description,
             params object[] args
             );
     }
@@ -1415,14 +1416,14 @@ namespace Hangfire.Logging.LogProviders
         public delegate string MessageFormatterDelegate(
             string loggerName,
             LogLevel level,
-            object message,
-            Exception e);
+            object? message,
+            Exception? e);
 
         public static Dictionary<LogLevel, ConsoleColor> Colors { get; set; }
 
         public static MessageFormatterDelegate MessageFormatter { get; set; }
 
-        protected static string DefaultMessageFormatter(string loggerName, LogLevel level, object message, Exception e)
+        protected static string DefaultMessageFormatter(string loggerName, LogLevel level, object? message, Exception? e)
         {
             var stringBuilder = new StringBuilder();
 
@@ -1465,7 +1466,7 @@ namespace Hangfire.Logging.LogProviders
                 _minLevel = minLevel;
             }
 
-            public bool Log(LogLevel logLevel, Func<string> messageFunc, Exception exception)
+            public bool Log(LogLevel logLevel, Func<string?>? messageFunc, Exception? exception)
             {
                 if (logLevel < _minLevel)
                 {
@@ -1481,7 +1482,7 @@ namespace Hangfire.Logging.LogProviders
                 return true;
             }
 
-            private void Write(LogLevel logLevel, string message, Exception e = null)
+            private void Write(LogLevel logLevel, string? message, Exception? e = null)
             {
                 var formattedMessage = MessageFormatter(_name, logLevel, message, e);
                 ConsoleColor color;
@@ -1557,25 +1558,25 @@ namespace Hangfire.Logging.LogProviders
 
         private static Type GetLogManagerType()
         {
-            return Type.GetType("Elmah.ErrorLog, Elmah");
+            return Type.GetType("Elmah.ErrorLog, Elmah")!;
         }
 
         private static Type GetHttpContextType()
         {
             return Type.GetType(
-                $"System.Web.HttpContext, System.Web, Version={Environment.Version}, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
+                $"System.Web.HttpContext, System.Web, Version={Environment.Version}, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")!;
         }
 
         private static Type GetErrorType()
         {
-            return Type.GetType("Elmah.Error, Elmah");
+            return Type.GetType("Elmah.Error, Elmah")!;
         }
 
         private static Func<object> GetGetErrorLogMethodCall()
         {
             Type logManagerType = GetLogManagerType();
             Type httpContextType = GetHttpContextType();
-            MethodInfo method = logManagerType.GetMethod("GetDefault", new[] { httpContextType });
+            MethodInfo method = logManagerType.GetMethod("GetDefault", new[] { httpContextType })!;
             ConstantExpression contextValue = Expression.Constant(null, httpContextType);
             MethodCallExpression methodCall = Expression.Call(null, method, new Expression[] { contextValue });
             return Expression.Lambda<Func<object>>(methodCall).Compile();
@@ -1594,15 +1595,15 @@ namespace Hangfire.Logging.LogProviders
                 _errorLog = errorLog;
             }
 
-            public bool Log(LogLevel logLevel, Func<string> messageFunc, Exception exception)
+            public bool Log(LogLevel logLevel, Func<string?>? messageFunc, Exception? exception)
             {
                 if (messageFunc == null) return logLevel >= _minLevel;
 
                 var message = messageFunc();
 
                 dynamic error = exception == null
-                    ? Activator.CreateInstance(_errorType)
-                    : Activator.CreateInstance(_errorType, exception);
+                    ? Activator.CreateInstance(_errorType)!
+                    : Activator.CreateInstance(_errorType, exception)!;
 
                 error.Message = message;
                 error.Type = logLevel.ToString();

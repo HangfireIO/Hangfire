@@ -15,6 +15,9 @@
 #endregion
 
 // ReSharper disable All
+#nullable enable
+
+using System;
 
 namespace Hangfire
 {
@@ -26,22 +29,22 @@ namespace Hangfire
 
     partial class StackTraceHtmlFragments : IStackTraceFormatter<string>
     {
-        public string BeforeType          { get; set; }
-        public string AfterType           { get; set; }
-        public string BeforeMethod        { get; set; }
-        public string AfterMethod         { get; set; }
-        public string BeforeParameterType { get; set; }
-        public string AfterParameterType  { get; set; }
-        public string BeforeParameterName { get; set; }
-        public string AfterParameterName  { get; set; }
-        public string BeforeFile          { get; set; }
-        public string AfterFile           { get; set; }
-        public string BeforeLine          { get; set; }
-        public string AfterLine           { get; set; }
-        public string BeforeFrame         { get; set; }
-        public string AfterFrame          { get; set; }
-        public string BeforeParameters    { get; set; }
-        public string AfterParameters     { get; set; }
+        public string? BeforeType          { get; set; }
+        public string? AfterType           { get; set; }
+        public string? BeforeMethod        { get; set; }
+        public string? AfterMethod         { get; set; }
+        public string? BeforeParameterType { get; set; }
+        public string? AfterParameterType  { get; set; }
+        public string? BeforeParameterName { get; set; }
+        public string? AfterParameterName  { get; set; }
+        public string? BeforeFile          { get; set; }
+        public string? AfterFile           { get; set; }
+        public string? BeforeLine          { get; set; }
+        public string? AfterLine           { get; set; }
+        public string? BeforeFrame         { get; set; }
+        public string? AfterFrame          { get; set; }
+        public string? BeforeParameters    { get; set; }
+        public string? AfterParameters     { get; set; }
 
         string IStackTraceFormatter<string>.Text(string text)            => string.IsNullOrEmpty(text) ? string.Empty : WebUtility.HtmlEncode(text);
         string IStackTraceFormatter<string>.Type(string markup)          => BeforeType          + markup + AfterType;
@@ -82,7 +85,8 @@ namespace Hangfire
 
         public static IEnumerable<T> Format<T>(string text, IStackTraceFormatter<T> formatter)
         {
-            Debug.Assert(text != null);
+            if (text == null) throw new ArgumentNullException(nameof(text));
+            if (formatter == null) throw new ArgumentNullException(nameof(formatter));
 
             var frames = StackTraceParser.Parse
                 (
