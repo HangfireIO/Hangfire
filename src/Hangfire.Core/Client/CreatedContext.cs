@@ -69,7 +69,7 @@ namespace Hangfire.Client
         public bool ExceptionHandled { get; set; }
 
         [Obsolete("This method only throws InvalidOperationException, will be removed in 2.0.0.")]
-        public void SetJobParameter([NotNull] string name, object value)
+        public void SetJobParameter([NotNull] string name, object? value)
         {
             if (String.IsNullOrWhiteSpace(name)) throw new ArgumentNullException(nameof(name));
 

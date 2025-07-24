@@ -62,7 +62,7 @@ namespace Hangfire
                 throw new InvalidOperationException("Can not release a distributed lock: it was not acquired.");
             }
 
-            var distributedLock = (IDisposable)value;
+            var distributedLock = (IDisposable)value!;
             distributedLock.Dispose();
         }
 

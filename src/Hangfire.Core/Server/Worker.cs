@@ -199,7 +199,7 @@ namespace Hangfire.Server
             IStorageConnection connection, 
             string jobId,
             IState state,
-            IReadOnlyDictionary<string, object>? customData,
+            IReadOnlyDictionary<string, object?>? customData,
             string[] expectedStates,
             IFetchedJob? completeJob,
             out BackgroundJob? backgroundJob,
@@ -287,7 +287,7 @@ namespace Hangfire.Server
             IStorageConnection connection,
             string jobId,
             BackgroundJob? backgroundJob,
-            out IReadOnlyDictionary<string, object>? customData)
+            out IReadOnlyDictionary<string, object?>? customData)
         {
             customData = null;
 
@@ -319,7 +319,7 @@ namespace Hangfire.Server
                     var result = _performer.Perform(performContext);
                     duration.Stop();
 
-                    customData = new Dictionary<string, object>(performContext.Items);
+                    customData = new Dictionary<string, object?>(performContext.Items);
                     return !performContext.Items.TryGetValue(BackgroundJobPerformer.ContextCanceledKey, out var filter) 
                         ? (IState)new SucceededState(result, (long) latency, duration.ElapsedMilliseconds)
                         : new DeletedState { Reason = $"Canceled by filter '{filter}'" };

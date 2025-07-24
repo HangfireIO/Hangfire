@@ -94,7 +94,7 @@ namespace Hangfire.States
         internal IProfiler Profiler { get; }
 
         [CanBeNull]
-        public IDictionary<string, object>? CustomData { get; }
+        public IDictionary<string, object?>? CustomData { get; }
 
         [CanBeNull]
         public StateMachine? StateMachine { get; }

@@ -62,7 +62,7 @@ namespace Hangfire.Server
             [NotNull] IJobCancellationToken cancellationToken,
             [NotNull] IProfiler profiler,
             [CanBeNull] string? serverId,
-            [CanBeNull] IDictionary<string, object>? items)
+            [CanBeNull] IDictionary<string, object?>? items)
         {
             Storage = storage;
             Connection = connection ?? throw new ArgumentNullException(nameof(connection));
@@ -71,7 +71,7 @@ namespace Hangfire.Server
             Profiler = profiler ?? throw new ArgumentNullException(nameof(profiler));
             ServerId = serverId;
 
-            Items = items ?? new Dictionary<string, object>();
+            Items = items ?? new Dictionary<string, object?>();
         }
 
         [CanBeNull]
@@ -83,7 +83,7 @@ namespace Hangfire.Server
         /// or just between different methods.
         /// </summary>
         [NotNull]
-        public IDictionary<string, object> Items { get; }
+        public IDictionary<string, object?> Items { get; }
 
         [NotNull]
         public BackgroundJob BackgroundJob { get; }

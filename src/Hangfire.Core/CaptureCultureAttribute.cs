@@ -153,11 +153,11 @@ namespace Hangfire
 
             if (context.Items.TryGetValue("PreviousCulture", out var culture))
             {
-                SetCurrentCulture((CultureInfo)culture);
+                SetCurrentCulture((CultureInfo)culture!);
             }
             if (context.Items.TryGetValue("PreviousUICulture", out var uiCulture))
             {
-                SetCurrentUICulture((CultureInfo)uiCulture);
+                SetCurrentUICulture((CultureInfo)uiCulture!);
             }
         }
         

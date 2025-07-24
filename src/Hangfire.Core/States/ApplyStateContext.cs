@@ -32,7 +32,7 @@ namespace Hangfire.States
         public ApplyStateContext(
             [NotNull] IWriteOnlyTransaction transaction, 
             [NotNull] ElectStateContext context)
-            : this(context.Storage, context.Connection, transaction, context.BackgroundJob, context.CandidateState, context.CurrentState, context.Profiler, context.StateMachine, context.CustomData != null ? new Dictionary<string, object>(context.CustomData) : null)
+            : this(context.Storage, context.Connection, transaction, context.BackgroundJob, context.CandidateState, context.CurrentState, context.Profiler, context.StateMachine, context.CustomData != null ? new Dictionary<string, object?>(context.CustomData) : null)
         {
             // TODO: Add explicit JobExpirationTimeout parameter in 2.0, because it's unclear it isn't preserved
         }
@@ -57,7 +57,7 @@ namespace Hangfire.States
             [CanBeNull] string? oldStateName,
             [NotNull] IProfiler profiler,
             [CanBeNull] IStateMachine? stateMachine,
-            [CanBeNull] IReadOnlyDictionary<string, object>? customData = null)
+            [CanBeNull] IReadOnlyDictionary<string, object?>? customData = null)
         {
             BackgroundJob = backgroundJob ?? throw new ArgumentNullException(nameof(backgroundJob));
             Storage = storage ?? throw new ArgumentNullException(nameof(storage));
@@ -94,7 +94,7 @@ namespace Hangfire.States
         internal IProfiler Profiler { get; }
 
         [CanBeNull]
-        public IReadOnlyDictionary<string, object>? CustomData { get; }
+        public IReadOnlyDictionary<string, object?>? CustomData { get; }
 
         [CanBeNull]
         public IStateMachine? StateMachine { get; }

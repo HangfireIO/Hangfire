@@ -48,7 +48,7 @@ namespace Hangfire.Client
         /// <param name="value">The value of the parameter.</param>
         /// 
         /// <exception cref="ArgumentNullException">The <paramref name="name"/> is null or empty.</exception>
-        public void SetJobParameter([NotNull] string name, object value)
+        public void SetJobParameter([NotNull] string name, object? value)
         {
             if (String.IsNullOrWhiteSpace(name)) throw new ArgumentNullException(nameof(name));
             Parameters[name] = value;

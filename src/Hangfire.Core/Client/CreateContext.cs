@@ -63,7 +63,7 @@ namespace Hangfire.Client
             [CanBeNull] IState? initialState,
             [CanBeNull] IDictionary<string, object?>? parameters,
             [NotNull] IProfiler profiler,
-            [CanBeNull] IDictionary<string, object>? items) // TODO: Null object?
+            [CanBeNull] IDictionary<string, object?>? items)
         {
             Storage = storage ?? throw new ArgumentNullException(nameof(storage));
             Connection = connection ?? throw new ArgumentNullException(nameof(connection));
@@ -71,7 +71,7 @@ namespace Hangfire.Client
             InitialState = initialState;
             Profiler = profiler;
 
-            Items = items ?? new Dictionary<string, object>();
+            Items = items ?? new Dictionary<string, object?>();
             Parameters = parameters ?? new Dictionary<string, object?>();
         }
 
@@ -87,7 +87,7 @@ namespace Hangfire.Client
         /// or just between different methods.
         /// </summary>
         [NotNull]
-        public IDictionary<string, object> Items { get; }
+        public IDictionary<string, object?> Items { get; }
 
         [NotNull]
         public virtual IDictionary<string, object?> Parameters { get; }
