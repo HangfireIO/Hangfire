@@ -15,9 +15,6 @@
 
 using Hangfire.Annotations;
 
-#nullable enable
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-
 namespace Hangfire.Client
 {
     /// <summary>

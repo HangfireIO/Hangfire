@@ -16,8 +16,6 @@
 using System;
 using Hangfire.Annotations;
 
-#nullable enable
-
 namespace Hangfire.Profiling
 {
     internal static class ProfilerExtensions

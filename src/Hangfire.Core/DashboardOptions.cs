@@ -19,9 +19,6 @@ using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Dashboard;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire
 {
     public class DashboardOptions

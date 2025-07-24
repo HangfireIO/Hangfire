@@ -17,8 +17,6 @@ using System;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
-#nullable enable
-
 namespace Hangfire.Common
 {
     public sealed class TypeHelperSerializationBinder : SerializationBinder

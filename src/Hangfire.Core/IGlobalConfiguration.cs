@@ -16,9 +16,6 @@
 using System.ComponentModel;
 using Hangfire.Annotations;
 
-// ReSharper disable UseNullableAttributesSupportedByCompiler
-#nullable enable
-
 namespace Hangfire
 {
     [EditorBrowsable(EditorBrowsableState.Never)]

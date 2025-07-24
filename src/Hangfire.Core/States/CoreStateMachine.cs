@@ -18,9 +18,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Hangfire.Annotations;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.States
 {
     internal sealed class CoreStateMachine : IStateMachine

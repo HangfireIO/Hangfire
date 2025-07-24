@@ -18,9 +18,6 @@ using System.IO;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.Dashboard
 {
     /// <summary>

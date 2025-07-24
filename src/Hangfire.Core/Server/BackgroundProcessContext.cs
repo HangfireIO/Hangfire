@@ -19,9 +19,6 @@ using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Common;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.Server
 {
     public class BackgroundProcessContext

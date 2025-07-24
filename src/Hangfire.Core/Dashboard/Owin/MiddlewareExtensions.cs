@@ -23,9 +23,6 @@ using Hangfire.Annotations;
 using Hangfire.Dashboard.Owin;
 using Microsoft.Owin;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.Dashboard
 {
     using MidFunc = Func<

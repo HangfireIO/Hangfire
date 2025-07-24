@@ -20,9 +20,6 @@ using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Server;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.Storage
 {
     public interface IStorageConnection : IDisposable

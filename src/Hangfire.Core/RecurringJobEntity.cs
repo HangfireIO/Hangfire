@@ -22,8 +22,6 @@ using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.States;
 
-#nullable enable
-
 namespace Hangfire
 {
     internal sealed class RecurringJobEntity

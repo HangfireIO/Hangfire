@@ -24,8 +24,6 @@ using Hangfire.Profiling;
 using Hangfire.States;
 using Hangfire.Storage;
 
-#nullable enable
-
 namespace Hangfire
 {
     internal static class RecurringJobExtensions

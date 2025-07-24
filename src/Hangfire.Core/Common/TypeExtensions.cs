@@ -20,9 +20,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.Common
 {
     internal static class TypeExtensions

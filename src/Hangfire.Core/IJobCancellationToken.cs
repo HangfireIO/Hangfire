@@ -15,8 +15,6 @@
 
 using System.Threading;
 
-#nullable enable
-
 namespace Hangfire
 {
     public interface IJobCancellationToken

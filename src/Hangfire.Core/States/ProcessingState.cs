@@ -19,8 +19,6 @@ using Hangfire.Common;
 using Hangfire.Server;
 using Newtonsoft.Json;
 
-#nullable enable
-
 namespace Hangfire.States
 {
     /// <summary>

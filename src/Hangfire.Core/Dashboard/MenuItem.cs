@@ -18,9 +18,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Hangfire.Annotations;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.Dashboard
 {
     public class MenuItem

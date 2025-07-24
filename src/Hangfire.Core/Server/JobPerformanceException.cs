@@ -17,9 +17,6 @@ using System;
 using System.Runtime.Serialization;
 using Hangfire.Annotations;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.Server
 {
 #if !NETSTANDARD1_3

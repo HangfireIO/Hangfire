@@ -21,9 +21,6 @@ using Hangfire.Annotations;
 using Hangfire.Storage;
 using Hangfire.Storage.Monitoring;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.Dashboard
 {
     public abstract class RazorPage

@@ -17,8 +17,6 @@ using System;
 using Hangfire.Annotations;
 using Hangfire.Logging;
 
-#nullable enable
-
 namespace Hangfire.Profiling
 {
     internal sealed class SlowLogProfiler : IProfiler

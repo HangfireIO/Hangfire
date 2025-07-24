@@ -18,8 +18,6 @@ using System.Diagnostics;
 using System.Threading;
 using Hangfire.Logging;
 
-#nullable enable
-
 namespace Hangfire.Common
 {
     public static class CancellationTokenExtentions

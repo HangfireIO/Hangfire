@@ -20,9 +20,6 @@ using Hangfire.Annotations;
 using Hangfire.Common;
 using Newtonsoft.Json;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire
 {
     public sealed class ExceptionInfo

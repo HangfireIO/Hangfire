@@ -18,8 +18,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 
-#nullable enable
-
 namespace Hangfire.Common
 {
     internal static class ShallowExceptionHelper

@@ -19,9 +19,6 @@ using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Profiling;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.States
 {
     // TODO: Merge this class with BackgroundJobStateChanger in 2.0.0

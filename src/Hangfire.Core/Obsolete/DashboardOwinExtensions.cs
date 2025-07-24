@@ -19,8 +19,6 @@ using Hangfire.Annotations;
 using Microsoft.Owin.Infrastructure;
 using Owin;
 
-#nullable enable
-
 // ReSharper disable once CheckNamespace
 namespace Hangfire.Dashboard
 {

@@ -21,7 +21,6 @@ using Hangfire.Annotations;
 using Microsoft.Owin;
 
 #pragma warning disable 618
-#nullable enable
 
 // ReSharper disable once CheckNamespace
 namespace Hangfire.Dashboard

@@ -19,8 +19,6 @@ using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.Storage;
 
-#nullable enable
-
 namespace Hangfire.Server
 {
     internal sealed class ServerHeartbeatProcess : IBackgroundProcess

@@ -19,9 +19,6 @@ using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Processing;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.Server
 {
     internal sealed class BackgroundProcessDispatcherBuilderAsync : IBackgroundProcessDispatcherBuilder

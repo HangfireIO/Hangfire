@@ -17,9 +17,6 @@ using System;
 using Hangfire.Annotations;
 using Hangfire.States;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire
 {
     public class RecurringJobOptions

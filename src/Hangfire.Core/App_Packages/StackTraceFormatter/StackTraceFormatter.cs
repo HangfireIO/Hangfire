@@ -15,7 +15,6 @@
 #endregion
 
 // ReSharper disable All
-#nullable enable
 
 using System;
 

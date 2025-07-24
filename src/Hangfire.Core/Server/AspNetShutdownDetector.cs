@@ -20,8 +20,6 @@ using System.Reflection;
 using System.Threading;
 using Hangfire.Logging;
 
-#nullable enable
-
 namespace Hangfire.Server
 {
     internal static class AspNetShutdownDetector

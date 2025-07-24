@@ -8,7 +8,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 
 // ReSharper disable All
-#nullable enable
 
 namespace Hangfire.Common.ExpressionUtil
 {

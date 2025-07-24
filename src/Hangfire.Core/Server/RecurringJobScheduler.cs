@@ -25,9 +25,6 @@ using Hangfire.Logging;
 using Hangfire.Profiling;
 using Hangfire.Storage;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.Server
 {
     /// <summary>

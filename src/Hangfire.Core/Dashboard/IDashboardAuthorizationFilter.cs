@@ -15,9 +15,6 @@
 
 using Hangfire.Annotations;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.Dashboard
 {
     public interface IDashboardAuthorizationFilter

@@ -30,7 +30,6 @@ using System.Threading;
 using Hangfire.Logging.LogProviders;
 
 // ReSharper disable All
-#nullable enable
 
 namespace Hangfire.Logging
 {

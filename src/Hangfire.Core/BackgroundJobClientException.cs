@@ -18,9 +18,7 @@ using System.Runtime.Serialization;
 using Hangfire.Annotations;
 using Hangfire.Client;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
 #pragma warning disable 618 // Obsolete member
-#nullable enable
 
 namespace Hangfire
 {

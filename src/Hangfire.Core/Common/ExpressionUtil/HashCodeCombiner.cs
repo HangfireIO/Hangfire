@@ -3,8 +3,6 @@
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 
-#nullable enable
-
 namespace Hangfire.Common.ExpressionUtil
 {
     // based on System.Web.Util.HashCodeCombiner

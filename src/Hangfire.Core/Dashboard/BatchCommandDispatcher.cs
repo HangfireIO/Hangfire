@@ -18,9 +18,6 @@ using System.Net;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.Dashboard
 {
     internal sealed class BatchCommandDispatcher : IDashboardDispatcher

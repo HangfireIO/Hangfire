@@ -18,9 +18,6 @@ using System;
 using System.Collections.Concurrent;
 using Hangfire.Annotations;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.Storage
 {
     public static class JobStorageFeatures

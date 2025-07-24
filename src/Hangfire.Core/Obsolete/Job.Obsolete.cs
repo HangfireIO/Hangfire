@@ -20,9 +20,6 @@ using Hangfire.Annotations;
 using Hangfire.Server;
 using Hangfire.Storage;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 // ReSharper disable once CheckNamespace
 namespace Hangfire.Common
 {

@@ -17,9 +17,6 @@ using System;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 // ReSharper disable once CheckNamespace
 namespace Hangfire.Dashboard
 {

@@ -22,8 +22,6 @@ using System.Threading.Tasks;
 using Hangfire.Common;
 using Hangfire.Logging;
 
-#nullable enable
-
 namespace Hangfire.Processing
 {
     internal static class TaskExtensions

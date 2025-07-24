@@ -20,9 +20,6 @@ using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.States;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire
 {
     /// <summary>

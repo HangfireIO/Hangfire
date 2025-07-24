@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 // ReSharper disable All
-#nullable enable
 
 namespace Hangfire.Common.ExpressionUtil
 {

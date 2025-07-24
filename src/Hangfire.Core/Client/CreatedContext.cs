@@ -18,9 +18,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Hangfire.Annotations;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.Client
 {
     /// <summary>

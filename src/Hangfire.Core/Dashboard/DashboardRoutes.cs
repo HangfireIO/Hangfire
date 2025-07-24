@@ -20,9 +20,6 @@ using Hangfire.Annotations;
 using Hangfire.Dashboard.Pages;
 using Hangfire.States;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.Dashboard
 {
     /// <summary>

@@ -16,9 +16,6 @@
 using Hangfire.Annotations;
 using Hangfire.Server;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire
 {
     internal static class JobCancellationTokenExtensions

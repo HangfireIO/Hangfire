@@ -19,8 +19,6 @@ using System.Threading;
 using Microsoft.Owin;
 using Owin;
 
-#nullable enable
-
 // ReSharper disable once CheckNamespace
 namespace Hangfire.Server
 {

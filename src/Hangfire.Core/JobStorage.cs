@@ -22,9 +22,6 @@ using Hangfire.Server;
 using Hangfire.States;
 using Hangfire.Storage;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire
 {
     public abstract class JobStorage

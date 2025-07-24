@@ -28,9 +28,6 @@ using Hangfire.Common;
 using Hangfire.Dashboard.Resources;
 using Hangfire.Processing;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.Dashboard
 {
     internal static class JobMethodCallRenderer

@@ -18,9 +18,6 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Hangfire.Annotations;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 // ReSharper disable once CheckNamespace
 namespace Hangfire.Dashboard
 {

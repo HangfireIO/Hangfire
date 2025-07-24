@@ -20,9 +20,6 @@ using Hangfire.Annotations;
 using Hangfire.Profiling;
 using Hangfire.Storage;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.States
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1068:CancellationToken parameters must come last", Justification = "Cancellation tokens in this class are used only as a part of a general context and don't have usual meaning.")]

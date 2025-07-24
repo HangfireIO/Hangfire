@@ -28,9 +28,6 @@ using Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Infrastructure;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire
 {
     using BuildFunc = Action<

@@ -15,9 +15,6 @@
 
 using Hangfire.Annotations;
 
-#nullable enable
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-
 namespace Hangfire.Dashboard
 {
     // TODO: Replace with readonly struct in 2.0.0.

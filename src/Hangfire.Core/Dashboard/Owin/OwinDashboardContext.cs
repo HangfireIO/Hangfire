@@ -17,9 +17,6 @@ using System;
 using System.Collections.Generic;
 using Hangfire.Annotations;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.Dashboard
 {
     public sealed class OwinDashboardContext : DashboardContext

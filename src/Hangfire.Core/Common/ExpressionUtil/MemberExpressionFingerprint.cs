@@ -6,7 +6,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 
 #pragma warning disable 659 // overrides AddToHashCodeCombiner instead
-#nullable enable
 
 namespace Hangfire.Common.ExpressionUtil
 {

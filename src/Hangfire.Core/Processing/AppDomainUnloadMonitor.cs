@@ -17,8 +17,6 @@
 using System;
 using System.Threading;
 
-#nullable enable
-
 namespace Hangfire.Processing
 {
     internal static class AppDomainUnloadMonitor

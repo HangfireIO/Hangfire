@@ -26,9 +26,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Hangfire.States;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.Common
 {
     /// <summary>

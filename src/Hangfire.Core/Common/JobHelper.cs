@@ -18,9 +18,6 @@ using System.Globalization;
 using Hangfire.Annotations;
 using Newtonsoft.Json;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.Common
 {
     public static class JobHelper

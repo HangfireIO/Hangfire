@@ -16,9 +16,6 @@
 using Hangfire.Annotations;
 using Hangfire.Storage;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.States
 {
     /// <summary>

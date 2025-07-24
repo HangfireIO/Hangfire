@@ -21,8 +21,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 
-#nullable enable
-
 namespace Hangfire.Common
 {
     public class TypeHelper

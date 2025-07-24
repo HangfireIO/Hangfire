@@ -19,8 +19,6 @@ using Hangfire.Common;
 using Hangfire.Server;
 using Hangfire.States;
 
-#nullable enable
-
 namespace Hangfire
 {
     public class JobParameterInjectionFilter : IServerFilter

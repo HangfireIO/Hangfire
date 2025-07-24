@@ -18,9 +18,6 @@ using System.Text.RegularExpressions;
 using Hangfire.Annotations;
 using System.ComponentModel;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.Dashboard
 {
     public static class RouteCollectionExtensions

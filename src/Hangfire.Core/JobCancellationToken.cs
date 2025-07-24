@@ -16,9 +16,6 @@
 using System.Threading;
 using Hangfire.Annotations;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire
 {
     public class JobCancellationToken : IJobCancellationToken

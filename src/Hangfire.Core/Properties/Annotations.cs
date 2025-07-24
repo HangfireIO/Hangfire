@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 
 // ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
 
 #if NETSTANDARD1_3
 namespace System.Diagnostics.CodeAnalysis

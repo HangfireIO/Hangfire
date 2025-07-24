@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
-#nullable enable
-
 namespace Hangfire.Common.ExpressionUtil
 {
     // This is a visitor which produces a fingerprint of an expression. It doesn't

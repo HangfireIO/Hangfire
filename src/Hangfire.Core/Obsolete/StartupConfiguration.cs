@@ -17,8 +17,6 @@ using System;
 using System.Collections.Generic;
 using Hangfire.Dashboard;
 
-#nullable enable
-
 namespace Hangfire
 {
     /// <exclude />

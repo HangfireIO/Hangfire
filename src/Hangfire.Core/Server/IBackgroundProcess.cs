@@ -17,8 +17,6 @@ using System;
 using Hangfire.Annotations;
 
 #pragma warning disable 618 // Obsolete member
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
 
 namespace Hangfire.Server
 {

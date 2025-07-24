@@ -18,8 +18,6 @@ using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
 
-#nullable enable
-
 namespace Hangfire
 {
     /// <summary>

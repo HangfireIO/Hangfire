@@ -24,9 +24,6 @@ using Hangfire.States;
 using Hangfire.Storage;
 using Newtonsoft.Json;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire
 {
     /// <summary>

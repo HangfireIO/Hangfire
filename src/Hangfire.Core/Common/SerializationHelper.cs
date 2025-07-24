@@ -23,9 +23,6 @@ using System.Threading;
 using Hangfire.Annotations;
 using Newtonsoft.Json;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.Common
 {
     public enum SerializationOption

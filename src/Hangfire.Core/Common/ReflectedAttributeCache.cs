@@ -21,8 +21,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
-#nullable enable
-
 namespace Hangfire.Common
 {
     internal static class ReflectedAttributeCache

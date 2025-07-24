@@ -17,8 +17,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading;
 
-#nullable enable
-
 namespace Hangfire.Processing
 {
     internal sealed class InlineSynchronizationContext : SynchronizationContext, IDisposable

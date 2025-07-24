@@ -25,9 +25,6 @@ using Hangfire.Logging;
 using Hangfire.Logging.LogProviders;
 using Newtonsoft.Json;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire
 {
     [EditorBrowsable(EditorBrowsableState.Never)]

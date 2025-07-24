@@ -23,9 +23,6 @@ using System.Threading.Tasks;
 using Hangfire.Annotations;
 using ThreadState = System.Threading.ThreadState;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.Processing
 {
     /// <summary>Represents a custom implementation of the <see cref="TaskScheduler"/> that uses

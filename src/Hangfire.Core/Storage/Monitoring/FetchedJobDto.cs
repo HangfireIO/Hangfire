@@ -17,9 +17,6 @@ using System;
 using Hangfire.Annotations;
 using Hangfire.Common;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.Storage.Monitoring
 {
     public class FetchedJobDto

@@ -20,8 +20,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 
-#nullable enable
-
 namespace Hangfire.Dashboard
 {
     internal sealed class JsonStats : IDashboardDispatcher

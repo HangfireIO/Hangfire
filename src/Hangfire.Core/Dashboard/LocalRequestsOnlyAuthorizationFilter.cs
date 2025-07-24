@@ -17,8 +17,6 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 
-#nullable enable
-
 namespace Hangfire.Dashboard
 {
     public class LocalRequestsOnlyAuthorizationFilter : IDashboardAuthorizationFilter

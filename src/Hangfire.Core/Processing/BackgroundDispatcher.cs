@@ -24,8 +24,6 @@ using System.Threading.Tasks;
 using Hangfire.Logging;
 using ThreadState = System.Threading.ThreadState;
 
-#nullable enable
-
 namespace Hangfire.Processing
 {
     internal sealed class BackgroundDispatcher : IBackgroundDispatcher

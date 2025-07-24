@@ -19,9 +19,7 @@ using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Processing;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
 #pragma warning disable 618
-#nullable enable
 
 namespace Hangfire.Server
 {

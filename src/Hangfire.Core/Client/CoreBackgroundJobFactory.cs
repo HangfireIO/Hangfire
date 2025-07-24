@@ -24,9 +24,6 @@ using Hangfire.Logging;
 using Hangfire.States;
 using Hangfire.Storage;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.Client
 {
     internal sealed class CoreBackgroundJobFactory : IBackgroundJobFactory

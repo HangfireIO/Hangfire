@@ -4,8 +4,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
-#nullable enable
-
 namespace Hangfire.Common.ExpressionUtil
 {
     // Serves as the base class for all expression fingerprints. Provides a default implementation

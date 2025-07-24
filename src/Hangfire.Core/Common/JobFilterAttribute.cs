@@ -20,8 +20,6 @@ using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
 
-#nullable enable
-
 namespace Hangfire.Common
 {
     /// <summary>

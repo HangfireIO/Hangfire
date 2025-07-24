@@ -21,9 +21,6 @@ using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.Server;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire
 {
     public sealed class CaptureCultureAttribute : JobFilterAttribute, IClientFilter, IServerFilter

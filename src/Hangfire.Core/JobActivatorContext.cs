@@ -18,9 +18,6 @@ using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Storage;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire
 {
     public class JobActivatorContext

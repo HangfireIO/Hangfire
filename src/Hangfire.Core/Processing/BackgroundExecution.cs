@@ -22,8 +22,6 @@ using Hangfire.Logging;
 using ThreadState = System.Threading.ThreadState;
 #endif
 
-#nullable enable
-
 namespace Hangfire.Processing
 {
     internal sealed class BackgroundExecution : IBackgroundExecution

@@ -21,9 +21,6 @@ using Hangfire.Common;
 using Hangfire.Server;
 using Newtonsoft.Json;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire
 {
     public class DisableConcurrentExecutionAttribute : JobFilterAttribute, IServerFilter

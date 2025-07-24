@@ -23,9 +23,6 @@ using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Processing;
 
-// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
-#nullable enable
-
 namespace Hangfire.Server
 {
     internal sealed class CoreBackgroundJobPerformer : IBackgroundJobPerformer
