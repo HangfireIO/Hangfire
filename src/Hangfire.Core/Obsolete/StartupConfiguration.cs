@@ -17,6 +17,8 @@ using System;
 using System.Collections.Generic;
 using Hangfire.Dashboard;
 
+#nullable enable
+
 namespace Hangfire
 {
     /// <exclude />
@@ -36,8 +38,8 @@ namespace Hangfire
 
         public string DashboardPath { get; private set; }
         public string AppPath { get; private set; }
-        public JobStorage Storage { get; private set; }
-        public JobActivator Activator { get; private set; }
+        public JobStorage? Storage { get; private set; }
+        public JobActivator? Activator { get; private set; }
         public List<Func<BackgroundJobServer>> Servers { get; }
         public IAuthorizationFilter[] AuthorizationFilters { get; private set; }
         public List<object> Filters { get; } 

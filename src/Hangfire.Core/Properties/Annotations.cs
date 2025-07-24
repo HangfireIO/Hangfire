@@ -2,6 +2,9 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 #if NETSTANDARD1_3
 namespace System.Diagnostics.CodeAnalysis
 {
@@ -151,12 +154,13 @@ namespace Hangfire.Annotations
   public sealed class NotifyPropertyChangedInvocatorAttribute : Attribute
   {
     public NotifyPropertyChangedInvocatorAttribute() { }
-    public NotifyPropertyChangedInvocatorAttribute(string parameterName)
+    public NotifyPropertyChangedInvocatorAttribute([CanBeNull] string? parameterName)
     {
       ParameterName = parameterName;
     }
 
-    public string ParameterName { get; private set; }
+    [CanBeNull]
+    public string? ParameterName { get; private set; }
   }
 
   /// <summary>
