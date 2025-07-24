@@ -14,6 +14,10 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System.ComponentModel;
+using Hangfire.Annotations;
+
+// ReSharper disable UseNullableAttributesSupportedByCompiler
+#nullable enable
 
 namespace Hangfire
 {

@@ -19,6 +19,8 @@ using Hangfire.Common;
 using Hangfire.Server;
 using Hangfire.States;
 
+#nullable enable
+
 namespace Hangfire
 {
     public class JobParameterInjectionFilter : IServerFilter
@@ -29,10 +31,10 @@ namespace Hangfire
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
 
-            var argumentsArray = context.BackgroundJob.Job?.Args as object[];
+            var argumentsArray = context.BackgroundJob.Job?.Args as object?[];
             if (argumentsArray == null) return;
 
-            var parameters = context.BackgroundJob.Job.Method.GetParameters();
+            var parameters = context.BackgroundJob.Job!.Method.GetParameters();
 
             for (var index = 0; index < parameters.Length; index++)
             {
@@ -47,7 +49,7 @@ namespace Hangfire
                 var serialized = context.Connection.GetJobParameter(context.BackgroundJob.Id, parameterName);
                 if (serialized != null)
                 {
-                    object deserialized;
+                    object? deserialized;
 
                     if (parameterType == typeof(ExceptionInfo) && DefaultException.Equals(serialized, StringComparison.Ordinal))
                     {

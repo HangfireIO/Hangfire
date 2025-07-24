@@ -17,6 +17,8 @@ using System;
 using Hangfire.Common;
 using Hangfire.States;
 
+#nullable enable
+
 namespace Hangfire
 {
     public class IdempotentCompletionAttribute : JobFilterAttribute, IElectStateFilter
@@ -36,7 +38,10 @@ namespace Hangfire
             {
                 if (context.CandidateState is ProcessingState || context.CandidateState.IsFinal)
                 {
-                    context.CandidateState = SerializationHelper.Deserialize<IState>(serializedState, SerializationOption.TypedInternal);
+                    var state = SerializationHelper.Deserialize<IState>(serializedState, SerializationOption.TypedInternal);
+                    if (state == null) throw new InvalidOperationException("Deserializer returned null state for a non-null value");
+
+                    context.CandidateState = state;
                 }
             }
             else if (context.CandidateState.IsFinal)

@@ -19,8 +19,12 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Resources;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Dashboard;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire
 {
@@ -33,7 +37,7 @@ namespace Hangfire
         private static readonly ConcurrentDictionary<Type, ResourceManager> _resourceManagerCache
             = new ConcurrentDictionary<Type, ResourceManager>();
 
-        public JobDisplayNameAttribute(string displayName)
+        public JobDisplayNameAttribute([NotNull] string displayName)
         {
             if (string.IsNullOrEmpty(displayName))
                 throw new ArgumentException("Display name is empty", nameof(displayName));
@@ -44,14 +48,16 @@ namespace Hangfire
         /// <summary>
         /// Gets display name for the job.
         /// </summary>
+        [NotNull]
         public string DisplayName { get; }
 
         /// <summary>
         /// Gets or sets resource type to localize <see cref="DisplayName"/> string.
         /// </summary>
-        public Type ResourceType { get; set; }
+        [CanBeNull]
+        public Type? ResourceType { get; set; }
 
-        public virtual string Format(DashboardContext context, Job job)
+        public virtual string Format([NotNull] DashboardContext context, [NotNull] Job job)
         {
             var format = DisplayName;
 
@@ -74,10 +80,11 @@ namespace Hangfire
         private static ResourceManager InitResourceManager(Type type)
         {
             var prop = type.GetTypeInfo().GetDeclaredProperty("ResourceManager");
-            if (prop != null && prop.PropertyType == typeof(ResourceManager) && prop.CanRead && prop.GetMethod.IsStatic)
+            if (prop != null && prop.PropertyType == typeof(ResourceManager) && prop.CanRead && prop.GetMethod != null && prop.GetMethod.IsStatic)
             {
                 // use existing resource manager if possible
-                return (ResourceManager)prop.GetValue(null);
+                var value = (ResourceManager?)prop.GetValue(null);
+                if (value != null) return value;
             }
 
             return new ResourceManager(type);
