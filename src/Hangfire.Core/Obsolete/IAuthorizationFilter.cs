@@ -17,6 +17,8 @@ using System;
 using System.Collections.Generic;
 using Hangfire.Annotations;
 
+#nullable enable
+
 // ReSharper disable once CheckNamespace
 namespace Hangfire.Dashboard
 {

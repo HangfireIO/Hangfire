@@ -19,6 +19,9 @@ using Hangfire.Dashboard;
 using Hangfire.Server;
 using Owin;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire
 {
     /// <exclude />

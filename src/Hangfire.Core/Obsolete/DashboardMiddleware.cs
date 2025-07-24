@@ -21,13 +21,14 @@ using Hangfire.Annotations;
 using Microsoft.Owin;
 
 #pragma warning disable 618
+#nullable enable
 
 // ReSharper disable once CheckNamespace
 namespace Hangfire.Dashboard
 {
     internal sealed class DashboardMiddleware : OwinMiddleware
     {
-        private readonly string _appPath;
+        private readonly string? _appPath;
         private readonly int _statsPollingInterval;
         private readonly JobStorage _storage;
         private readonly RouteCollection _routes;
@@ -35,7 +36,7 @@ namespace Hangfire.Dashboard
 
         public DashboardMiddleware(
             OwinMiddleware next,
-            string appPath,
+            string? appPath,
             int statsPollingInterval,
             [NotNull] JobStorage storage,
             [NotNull] RouteCollection routes, 

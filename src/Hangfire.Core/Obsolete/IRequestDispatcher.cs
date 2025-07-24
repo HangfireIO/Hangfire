@@ -16,6 +16,8 @@
 using System;
 using System.Threading.Tasks;
 
+#nullable enable
+
 // ReSharper disable once CheckNamespace
 namespace Hangfire.Dashboard
 {

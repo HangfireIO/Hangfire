@@ -15,6 +15,8 @@
 
 using System;
 
+#nullable enable
+
 // ReSharper disable once CheckNamespace
 namespace Hangfire.Server
 {

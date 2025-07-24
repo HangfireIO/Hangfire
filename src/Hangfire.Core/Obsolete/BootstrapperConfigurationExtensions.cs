@@ -15,6 +15,8 @@
 
 using System;
 
+#nullable enable
+
 namespace Hangfire
 {
     /// <exclude />

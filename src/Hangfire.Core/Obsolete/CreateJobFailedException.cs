@@ -15,6 +15,10 @@
 
 using System;
 using System.Runtime.Serialization;
+using Hangfire.Annotations;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 // ReSharper disable once CheckNamespace
 namespace Hangfire.Client
@@ -36,7 +40,7 @@ namespace Hangfire.Client
         /// </summary>
         /// <param name="message">The error message that explains the reason for the exception.</param>
         /// <param name="inner">The exception that is the cause of this exception, not null.</param>
-        public CreateJobFailedException(string message, Exception inner) 
+        public CreateJobFailedException([CanBeNull] string? message, [CanBeNull] Exception? inner) 
             : base(message, inner)
         {
         }

@@ -20,13 +20,16 @@ using Hangfire.Annotations;
 using Hangfire.Server;
 using Hangfire.Storage;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 // ReSharper disable once CheckNamespace
 namespace Hangfire.Common
 {
     partial class Job
     {
         [Obsolete("Please use Job(Type, MethodInfo, object[]) ctor overload instead. Will be removed in 2.0.0.")]
-        public Job([NotNull] Type type, [NotNull] MethodInfo method, [NotNull] string[] arguments)
+        public Job([NotNull] Type type, [NotNull] MethodInfo method, [NotNull] string?[] arguments)
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
             if (method == null) throw new ArgumentNullException(nameof(method));
@@ -42,18 +45,18 @@ namespace Hangfire.Common
         /// <exclude />
         [NotNull]
         [Obsolete("Please use `Args` property instead to avoid unnecessary serializations/deserializations. Will be deleted in 2.0.0.")]
-        public string[] Arguments => InvocationData.SerializeArguments(Method, Args);
+        public string?[] Arguments => InvocationData.SerializeArguments(Method, Args);
 
         /// <exclude />
         [Obsolete("This method is deprecated. Please use `CoreBackgroundJobPerformer` or `BackgroundJobPerformer` classes instead. Will be removed in 2.0.0.")]
-        public object Perform(JobActivator activator, IJobCancellationToken cancellationToken)
+        public object? Perform(JobActivator activator, IJobCancellationToken cancellationToken)
         {
             if (activator == null) throw new ArgumentNullException(nameof(activator));
             if (cancellationToken == null) throw new ArgumentNullException(nameof(cancellationToken));
 
-            object instance = null;
+            object? instance = null;
 
-            object result;
+            object? result;
             try
             {
                 if (!Method.IsStatic)
@@ -95,19 +98,19 @@ namespace Hangfire.Common
         }
 
         [Obsolete("Will be removed in 2.0.0")]
-        private object[] GetArguments(IJobCancellationToken cancellationToken)
+        private object?[] GetArguments(IJobCancellationToken cancellationToken)
         {
             try
             {
                 var parameters = Method.GetParameters();
-                var result = new List<object>(Args.Count);
+                var result = new List<object?>(Args.Count);
 
                 for (var i = 0; i < parameters.Length; i++)
                 {
                     var parameter = parameters[i];
                     var argument = Args[i];
 
-                    object value;
+                    object? value;
 
                     if (typeof(IJobCancellationToken).GetTypeInfo().IsAssignableFrom(parameter.ParameterType.GetTypeInfo()))
                     {
@@ -132,7 +135,7 @@ namespace Hangfire.Common
         }
 
         [Obsolete("Will be removed in 2.0.0")]
-        private object InvokeMethod(object instance, object[] deserializedArguments, IJobCancellationToken cancellationToken)
+        private object? InvokeMethod(object? instance, object?[] deserializedArguments, IJobCancellationToken cancellationToken)
         {
             try
             {
@@ -140,13 +143,13 @@ namespace Hangfire.Common
             }
             catch (TargetInvocationException ex)
             {
-                CoreBackgroundJobPerformer.HandleJobPerformanceException(ex.InnerException, cancellationToken, null);
+                CoreBackgroundJobPerformer.HandleJobPerformanceException(ex.InnerException!, cancellationToken, null);
                 throw;
             }
         }
 
         [Obsolete("Will be removed in 2.0.0")]
-        private static void Dispose(object instance)
+        private static void Dispose(object? instance)
         {
             try
             {

@@ -19,6 +19,8 @@ using Hangfire.Annotations;
 using Microsoft.Owin.Infrastructure;
 using Owin;
 
+#nullable enable
+
 // ReSharper disable once CheckNamespace
 namespace Hangfire.Dashboard
 {
@@ -73,7 +75,7 @@ namespace Hangfire.Dashboard
         public static void MapHangfireDashboard(
             this IAppBuilder app,
             string dashboardPath,
-            string appPath)
+            string? appPath)
         {
             MapHangfireDashboard(app, dashboardPath, appPath, DefaultAuthorizationFilters);
         }
@@ -91,7 +93,7 @@ namespace Hangfire.Dashboard
         public static void MapHangfireDashboard(
             this IAppBuilder app, 
             string dashboardPath,
-            string appPath,
+            string? appPath,
             IEnumerable<IAuthorizationFilter> authorizationFilters)
         {
             MapHangfireDashboard(app, dashboardPath, appPath, authorizationFilters, JobStorage.Current);
@@ -111,7 +113,7 @@ namespace Hangfire.Dashboard
         public static void MapHangfireDashboard(
             [NotNull] this IAppBuilder app,
             string dashboardPath,
-            string appPath,
+            string? appPath,
             IEnumerable<IAuthorizationFilter> authorizationFilters,
             JobStorage storage)
         {

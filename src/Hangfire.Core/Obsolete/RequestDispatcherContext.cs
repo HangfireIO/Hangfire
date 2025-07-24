@@ -18,6 +18,9 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Hangfire.Annotations;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 // ReSharper disable once CheckNamespace
 namespace Hangfire.Dashboard
 {
@@ -25,7 +28,7 @@ namespace Hangfire.Dashboard
     public class RequestDispatcherContext
     {
         public RequestDispatcherContext(
-            string appPath,
+            string? appPath,
             int statsPollingInterval,
             [NotNull] JobStorage jobStorage,
             [NotNull] IDictionary<string, object> owinEnvironment,
@@ -42,7 +45,7 @@ namespace Hangfire.Dashboard
             UriMatch = uriMatch;
         }
 
-        public string AppPath { get; }
+        public string? AppPath { get; }
         public int StatsPollingInterval { get; }
         public JobStorage JobStorage { get; }
         public IDictionary<string, object> OwinEnvironment { get; } 

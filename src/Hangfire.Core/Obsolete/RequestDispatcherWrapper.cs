@@ -17,6 +17,9 @@ using System;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 // ReSharper disable once CheckNamespace
 namespace Hangfire.Dashboard
 {
@@ -27,8 +30,7 @@ namespace Hangfire.Dashboard
         
         public RequestDispatcherWrapper([NotNull] IRequestDispatcher dispatcher)
         {
-            if (dispatcher == null) throw new ArgumentNullException(nameof(dispatcher));
-            _dispatcher = dispatcher;
+            _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         }
 
         public Task Dispatch(DashboardContext context)
