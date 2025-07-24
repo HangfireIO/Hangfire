@@ -17,6 +17,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Server;
 using Hangfire.States;
@@ -47,7 +48,7 @@ namespace Hangfire.Common
         /// Adds the specified filter to the global filter collection.
         /// </summary>
         /// <param name="filter">The filter instance.</param>
-        public void Add(object filter)
+        public void Add([NotNull] object filter)
         {
             AddInternal(filter, order: null);
         }
@@ -58,12 +59,12 @@ namespace Hangfire.Common
         /// </summary>
         /// <param name="filter">The filter instance.</param>
         /// <param name="order">The run order.</param>
-        public void Add(object filter, int order)
+        public void Add([NotNull] object filter, int order)
         {
             AddInternal(filter, order);
         }
 
-        private void AddInternal(object filter, int? order)
+        private void AddInternal([NotNull] object filter, int? order)
         {
             ValidateFilterInstance(filter);
             _filters.Add(new JobFilter(filter, JobFilterScope.Global, order));
@@ -82,7 +83,7 @@ namespace Hangfire.Common
         /// </summary>
         /// <param name="filter">The filter instance.</param>
         /// <returns>True if the global filter collection contains the filter, otherwise false.</returns>
-        public bool Contains(object filter)
+        public bool Contains([NotNull] object filter)
         {
             return _filters.Any(x => x.Instance == filter);
         }
@@ -91,7 +92,7 @@ namespace Hangfire.Common
         /// Removes all filters that match the specified filter.
         /// </summary>
         /// <param name="filter">The filter instance.</param>
-        public void Remove(object filter)
+        public void Remove([NotNull] object filter)
         {
             _filters.RemoveAll(x => x.Instance == filter);
         }
@@ -109,7 +110,7 @@ namespace Hangfire.Common
         /// Remove all filters of the specified type with strict type matching.
         /// </summary>
         /// <param name="type">Type of filters to remove.</param>
-        public void Remove(Type type)
+        public void Remove([NotNull] Type type)
         {
             _filters.RemoveAll(x => type == x.Instance.GetType());
         }

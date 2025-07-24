@@ -15,6 +15,7 @@
 
 using System;
 using System.Runtime.Serialization;
+using Hangfire.Annotations;
 
 namespace Hangfire.Common
 {
@@ -32,7 +33,7 @@ namespace Hangfire.Common
         /// Initializes a new instance of the <see cref="JobLoadException"/>
         /// class with a given message and information about inner exception.
         /// </summary>
-        public JobLoadException(string message, Exception inner) : base(message, inner)
+        public JobLoadException([CanBeNull] string? message, [CanBeNull] Exception? inner) : base(message, inner)
         {
         }
 

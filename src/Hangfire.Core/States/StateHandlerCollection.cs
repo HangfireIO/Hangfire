@@ -50,6 +50,7 @@ namespace Hangfire.States
             handlers.Add(handler);
         }
 
+        [NotNull]
         public IEnumerable<IStateHandler> GetHandlers([CanBeNull] string? stateName)
         {
             if (stateName == null || !_handlers.TryGetValue(stateName, out var handlers))

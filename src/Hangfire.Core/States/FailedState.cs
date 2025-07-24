@@ -107,12 +107,14 @@ namespace Hangfire.States
         /// <summary>
         /// Gets the exception that occurred during the background job processing.
         /// </summary>
+        [NotNull]
         public Exception Exception { get; }
 
         /// <summary>
         /// Gets the server identifier on which the exception occurred.
         /// </summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        [CanBeNull]
         public string? ServerId { get; }
 
         /// <inheritdoc />

@@ -19,6 +19,7 @@ namespace Hangfire.Server
 {
     public interface IBackgroundJobPerformer
     {
+        [CanBeNull]
         object? Perform([NotNull] PerformContext context);
     }
 }

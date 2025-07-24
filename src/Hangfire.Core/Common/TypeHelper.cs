@@ -20,6 +20,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using Hangfire.Annotations;
 
 namespace Hangfire.Common
 {
@@ -43,6 +44,7 @@ namespace Hangfire.Common
         private static Func<Type, string>? _currentTypeSerializer;
 
         [System.Diagnostics.CodeAnalysis.AllowNull]
+        [NotNull]
         public static Func<string, Type> CurrentTypeResolver
         {
             get => Volatile.Read(ref _currentTypeResolver) ?? DefaultTypeResolver;
@@ -50,18 +52,21 @@ namespace Hangfire.Common
         }
 
         [System.Diagnostics.CodeAnalysis.AllowNull]
+        [NotNull]
         public static Func<Type, string> CurrentTypeSerializer
         {
             get => Volatile.Read(ref _currentTypeSerializer) ?? DefaultTypeSerializer;
             set => Volatile.Write(ref _currentTypeSerializer, value);
         }
 
-        public static string DefaultTypeSerializer(Type type)
+        [NotNull]
+        public static string DefaultTypeSerializer([NotNull] Type type)
         {
             return DefaultTypeSerializerCache.GetOrAdd(type, static t => t.AssemblyQualifiedName!);
         }
 
-        public static string SimpleAssemblyTypeSerializer(Type type)
+        [NotNull]
+        public static string SimpleAssemblyTypeSerializer([NotNull] Type type)
         {
             return SimpleAssemblyTypeSerializerCache.GetOrAdd(type, static value =>
             {
@@ -72,7 +77,8 @@ namespace Hangfire.Common
             });
         }
 
-        public static Type DefaultTypeResolver(string typeName)
+        [NotNull]
+        public static Type DefaultTypeResolver([NotNull] string typeName)
         {
             return DefaultTypeResolverCache.GetOrAdd(typeName, static name =>
             {
@@ -91,7 +97,8 @@ namespace Hangfire.Common
             });
         }
 
-        public static Type IgnoredAssemblyVersionTypeResolver(string typeName)
+        [NotNull]
+        public static Type IgnoredAssemblyVersionTypeResolver([NotNull] string typeName)
         {
             return IgnoredAssemblyVersionTypeResolverCache.GetOrAdd(typeName, static value =>
             {
@@ -165,7 +172,7 @@ namespace Hangfire.Common
             }
         }
 
-        private static void SerializeTypes(Type[] types, StringBuilder typeNamesBuilder)
+        private static void SerializeTypes(Type[]? types, StringBuilder typeNamesBuilder)
         {
             if (types == null) return;
 

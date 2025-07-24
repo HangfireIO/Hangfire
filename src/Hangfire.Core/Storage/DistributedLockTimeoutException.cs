@@ -15,6 +15,7 @@
 
 using System;
 using System.Runtime.Serialization;
+using Hangfire.Annotations;
 
 namespace Hangfire.Storage
 {
@@ -23,7 +24,7 @@ namespace Hangfire.Storage
 #endif
     public class DistributedLockTimeoutException : TimeoutException
     {
-        public DistributedLockTimeoutException(string resource)
+        public DistributedLockTimeoutException([NotNull] string resource)
             : base(
                 $"Timeout expired. The timeout elapsed prior to obtaining a distributed lock on the '{resource}' resource."
                 )

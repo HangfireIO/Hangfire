@@ -72,6 +72,7 @@ namespace Hangfire.Common
             return Epoch.AddMilliseconds(value);
         }
 
+        [NotNull]
         public static string SerializeDateTime(DateTime value)
         {
             if (value > MillisecondTimestampBoundaryDate && 

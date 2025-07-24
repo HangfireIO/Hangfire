@@ -16,6 +16,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Hangfire.Annotations;
 
 namespace Hangfire.Common
 {
@@ -32,7 +33,7 @@ namespace Hangfire.Common
         {
         }
 
-        public JobFilterProviderCollection(params IJobFilterProvider[] providers)
+        public JobFilterProviderCollection([NotNull] params IJobFilterProvider[] providers)
             : base(providers)
         {
         }

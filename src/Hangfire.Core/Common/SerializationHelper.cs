@@ -60,6 +60,7 @@ namespace Hangfire.Common
         /// Use this method to serialize internal data. Using isolated settings that can't be changed from user code.
         /// </summary>
         [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(value))]
+        [CanBeNull]
         public static string? Serialize<T>([CanBeNull] T? value)
         {
             return Serialize(value, SerializationOption.Internal);
@@ -73,6 +74,7 @@ namespace Hangfire.Common
         /// configurable via <see cref="SetUserSerializerSettings"/>.
         /// </summary>
         [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(value))]
+        [CanBeNull]
         public static string? Serialize<T>([CanBeNull] T? value, SerializationOption option)
         {
             return Serialize(value, typeof(T), option);
@@ -86,6 +88,7 @@ namespace Hangfire.Common
         /// configurable via <see cref="SetUserSerializerSettings"/>.
         /// </summary>
         [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(value))]
+        [CanBeNull]
         public static string? Serialize([CanBeNull] object? value, [CanBeNull] Type? type, SerializationOption option)
         {
             if (value == null) return null;
@@ -132,6 +135,7 @@ namespace Hangfire.Common
         /// Deserializes data with <see cref="SerializationOption.Internal"/> option.
         /// Use this method to deserialize internal data. Using isolated settings that can't be changed from user code.
         /// </summary>
+        [CanBeNull]
         public static T? Deserialize<T>([CanBeNull] string? value)
         {
             if (value == null) return default(T);
@@ -142,6 +146,7 @@ namespace Hangfire.Common
         /// Deserializes data with <see cref="SerializationOption.Internal"/> option.
         /// Use this method to deserialize internal data. Using isolated settings that can't be changed from user code.
         /// </summary>
+        [CanBeNull]
         public static object? Deserialize([CanBeNull] string? value, [NotNull] Type type)
         {
             return Deserialize(value, type, SerializationOption.Internal);
@@ -154,6 +159,7 @@ namespace Hangfire.Common
         /// Use <see cref="SerializationOption.User"/> to deserialize user data like arguments and parameters, 
         /// configurable via <see cref="SetUserSerializerSettings"/>.
         /// </summary>
+        [CanBeNull]
         public static T? Deserialize<T>([CanBeNull] string? value, SerializationOption option)
         {
             if (value == null) return default(T);
@@ -167,6 +173,7 @@ namespace Hangfire.Common
         /// Use <see cref="SerializationOption.User"/> to deserialize user data like arguments and parameters, 
         /// configurable via <see cref="SetUserSerializerSettings"/>.
         /// </summary>
+        [CanBeNull]
         public static object? Deserialize([CanBeNull] string? value, [NotNull] Type type, SerializationOption option)
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
