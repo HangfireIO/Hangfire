@@ -24,6 +24,8 @@ using Hangfire.Profiling;
 using Hangfire.States;
 using Hangfire.Storage;
 
+#nullable enable
+
 namespace Hangfire
 {
     internal static class RecurringJobExtensions
@@ -39,7 +41,7 @@ namespace Hangfire
             return connection.AcquireDistributedLock($"lock:recurring-job:{recurringJobId}", timeout);
         }
 
-        public static RecurringJobEntity GetRecurringJob(
+        public static RecurringJobEntity? GetRecurringJob(
             [NotNull] this IStorageConnection connection,
             [NotNull] string recurringJobId)
         {
@@ -68,8 +70,8 @@ namespace Hangfire
         public static void UpdateRecurringJob(
             [NotNull] this IWriteOnlyTransaction transaction,
             [NotNull] RecurringJobEntity recurringJob,
-            [NotNull] IReadOnlyDictionary<string, string> changedFields,
-            [CanBeNull] ILog logger)
+            [NotNull] IReadOnlyDictionary<string, string?> changedFields,
+            [CanBeNull] ILog? logger)
         {
             if (transaction == null) throw new ArgumentNullException(nameof(transaction));
             if (recurringJob == null) throw new ArgumentNullException(nameof(recurringJob));
@@ -93,7 +95,7 @@ namespace Hangfire
                 score);
         }
 
-        public static BackgroundJob TriggerRecurringJob(
+        public static BackgroundJob? TriggerRecurringJob(
             [NotNull] this IBackgroundJobFactory factory,
             [NotNull] JobStorage storage,
             [NotNull] IStorageConnection connection,
@@ -133,7 +135,7 @@ namespace Hangfire
             [NotNull] IWriteOnlyTransaction transaction,
             [NotNull] RecurringJobEntity recurringJob,
             [NotNull] BackgroundJob backgroundJob,
-            [CanBeNull] string reason,
+            [CanBeNull] string? reason,
             [NotNull] IProfiler profiler)
         {
             if (stateMachine == null) throw new ArgumentNullException(nameof(stateMachine));

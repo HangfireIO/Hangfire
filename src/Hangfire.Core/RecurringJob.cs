@@ -21,6 +21,9 @@ using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.States;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire
 {
     public static class RecurringJob
@@ -32,7 +35,7 @@ namespace Hangfire
         public static void AddOrUpdate(
             [NotNull, InstantHandle] Expression<Action> methodCall,
             [NotNull] Func<string> cronExpression,
-            [CanBeNull] TimeZoneInfo timeZone = null,
+            [CanBeNull] TimeZoneInfo? timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
@@ -53,7 +56,7 @@ namespace Hangfire
         public static void AddOrUpdate<T>(
             [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             [NotNull] Func<string> cronExpression,
-            [CanBeNull] TimeZoneInfo timeZone = null,
+            [CanBeNull] TimeZoneInfo? timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
@@ -74,7 +77,7 @@ namespace Hangfire
         public static void AddOrUpdate(
             [NotNull, InstantHandle] Expression<Action> methodCall,
             [NotNull] string cronExpression,
-            [CanBeNull] TimeZoneInfo timeZone = null,
+            [CanBeNull] TimeZoneInfo? timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.Create(methodCall);
@@ -99,7 +102,7 @@ namespace Hangfire
         public static void AddOrUpdate<T>(
             [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             [NotNull] string cronExpression,
-            [CanBeNull] TimeZoneInfo timeZone = null,
+            [CanBeNull] TimeZoneInfo? timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.Create(methodCall);
@@ -125,7 +128,7 @@ namespace Hangfire
             [NotNull] string recurringJobId,
             [NotNull, InstantHandle] Expression<Action> methodCall,
             [NotNull] Func<string> cronExpression,
-            [CanBeNull] TimeZoneInfo timeZone = null,
+            [CanBeNull] TimeZoneInfo? timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
@@ -175,7 +178,7 @@ namespace Hangfire
             [NotNull] string recurringJobId,
             [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             [NotNull] Func<string> cronExpression,
-            [CanBeNull] TimeZoneInfo timeZone = null,
+            [CanBeNull] TimeZoneInfo? timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
@@ -225,7 +228,7 @@ namespace Hangfire
             [NotNull] string recurringJobId,
             [NotNull, InstantHandle] Expression<Action> methodCall,
             [NotNull] string cronExpression,
-            [CanBeNull] TimeZoneInfo timeZone = null,
+            [CanBeNull] TimeZoneInfo? timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.Create(methodCall);
@@ -277,7 +280,7 @@ namespace Hangfire
             [NotNull] string recurringJobId,
             [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             [NotNull] string cronExpression,
-            [CanBeNull] TimeZoneInfo timeZone = null,
+            [CanBeNull] TimeZoneInfo? timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.Create(methodCall);
@@ -328,7 +331,7 @@ namespace Hangfire
         public static void AddOrUpdate(
             [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             [NotNull] Func<string> cronExpression,
-            [CanBeNull] TimeZoneInfo timeZone = null,
+            [CanBeNull] TimeZoneInfo? timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
@@ -349,7 +352,7 @@ namespace Hangfire
         public static void AddOrUpdate<T>(
             [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             [NotNull] Func<string> cronExpression,
-            [CanBeNull] TimeZoneInfo timeZone = null,
+            [CanBeNull] TimeZoneInfo? timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
@@ -370,7 +373,7 @@ namespace Hangfire
         public static void AddOrUpdate(
             [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             [NotNull] string cronExpression,
-            [CanBeNull] TimeZoneInfo timeZone = null,
+            [CanBeNull] TimeZoneInfo? timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.Create(methodCall);
@@ -395,7 +398,7 @@ namespace Hangfire
         public static void AddOrUpdate<T>(
             [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             [NotNull] string cronExpression,
-            [CanBeNull] TimeZoneInfo timeZone = null,
+            [CanBeNull] TimeZoneInfo? timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
@@ -421,7 +424,7 @@ namespace Hangfire
             [NotNull] string recurringJobId,
             [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             [NotNull] Func<string> cronExpression,
-            [CanBeNull] TimeZoneInfo timeZone = null,
+            [CanBeNull] TimeZoneInfo? timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
@@ -471,7 +474,7 @@ namespace Hangfire
             [NotNull] string recurringJobId,
             [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             [NotNull] Func<string> cronExpression,
-            [CanBeNull] TimeZoneInfo timeZone = null,
+            [CanBeNull] TimeZoneInfo? timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
@@ -521,7 +524,7 @@ namespace Hangfire
             [NotNull] string recurringJobId,
             [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             [NotNull] string cronExpression,
-            [CanBeNull] TimeZoneInfo timeZone = null,
+            [CanBeNull] TimeZoneInfo? timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.Create(methodCall);
@@ -573,7 +576,7 @@ namespace Hangfire
             [NotNull] string recurringJobId,
             [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             [NotNull] string cronExpression,
-            [CanBeNull] TimeZoneInfo timeZone = null,
+            [CanBeNull] TimeZoneInfo? timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
@@ -631,7 +634,8 @@ namespace Hangfire
             Instance.Value.Trigger(recurringJobId);
         }
 
-        public static string TriggerJob([NotNull] string recurringJobId)
+        [CanBeNull]
+        public static string? TriggerJob([NotNull] string recurringJobId)
         {
             return Instance.Value.TriggerJob(recurringJobId);
         }

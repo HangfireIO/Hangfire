@@ -22,6 +22,8 @@ using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.States;
 
+#nullable enable
+
 namespace Hangfire
 {
     internal sealed class RecurringJobEntity
@@ -31,8 +33,8 @@ namespace Hangfire
         private readonly IDictionary<string, string> _recurringJob;
 
         public RecurringJobEntity(
-            [NotNull] string recurringJobId,
-            [NotNull] IDictionary<string, string> recurringJob)
+            string recurringJobId,
+            Dictionary<string, string> recurringJob)
         {
             _recurringJob = recurringJob ?? throw new ArgumentNullException(nameof(recurringJob));
 
@@ -114,20 +116,20 @@ namespace Hangfire
 
         public string RecurringJobId { get; }
 
-        public string Queue { get; set; }
-        public string Cron { get; set; }
+        public string? Queue { get; set; }
+        public string? Cron { get; set; }
         public string TimeZoneId { get; set; }
-        public string Job { get; set; }
+        public string? Job { get; set; }
         public MisfireHandlingMode MisfireHandling { get; set; }
 
         public DateTime? CreatedAt { get; }
         public DateTime? NextExecution { get; private set; }
 
         public DateTime? LastExecution { get; set; }
-        public string LastJobId { get; set; }
+        public string? LastJobId { get; set; }
         public int? Version { get; private set; }
         public int RetryAttempt { get; set; }
-        public string Error { get; set; }
+        public string? Error { get; set; }
 
         public void ScheduleNext(ITimeZoneResolver timeZoneResolver, DateTime from)
         {
@@ -141,6 +143,9 @@ namespace Hangfire
             TimeSpan precision)
         {
             if (timeZoneResolver == null) throw new ArgumentNullException(nameof(timeZoneResolver));
+
+            if (Cron == null)
+                throw new InvalidOperationException("Can not schedule a next execution without cron expression set.");
 
             var result = new List<DateTime>();
             var cron = ParseCronExpression(Cron);
@@ -181,7 +186,7 @@ namespace Hangfire
             return result;
         }
 
-        public bool IsChanged(DateTime now, out IReadOnlyDictionary<string, string> changedFields)
+        public bool IsChanged(DateTime now, out IReadOnlyDictionary<string, string?> changedFields)
         {
             changedFields = GetChangedFields(now);
             return changedFields.Count > 0;
@@ -200,9 +205,9 @@ namespace Hangfire
             Error = error;
         }
 
-        private IReadOnlyDictionary<string, string> GetChangedFields(DateTime now)
+        private IReadOnlyDictionary<string, string?> GetChangedFields(DateTime now)
         {
-            var result = new Dictionary<string, string>();
+            var result = new Dictionary<string, string?>();
 
             var queueToStore = Queue;
             if (GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_190) &&
