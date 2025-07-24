@@ -142,7 +142,7 @@ namespace Hangfire
         public string? Create(Job job, IState state) => Create(job, state, null);
 
         /// <inheritdoc />
-        public string? Create(Job job, IState state, IDictionary<string, object>? parameters)
+        public string? Create(Job job, IState state, IDictionary<string, object?>? parameters)
         {
             if (job == null) throw new ArgumentNullException(nameof(job));
             if (state == null) throw new ArgumentNullException(nameof(state));

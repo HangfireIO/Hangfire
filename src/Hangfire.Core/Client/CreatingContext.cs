@@ -73,7 +73,7 @@ namespace Hangfire.Client
             try
             {
                 return Parameters.TryGetValue(name, out var parameter)
-                    ? (T)parameter
+                    ? (T?)parameter
                     : default(T);
             }
             catch (Exception ex) when (ex.IsCatchableExceptionType())

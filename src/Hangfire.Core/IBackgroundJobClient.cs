@@ -51,7 +51,7 @@ namespace Hangfire
         /// <exception cref="ArgumentNullException"><paramref name="state"/> is null.</exception>
         /// <exception cref="BackgroundJobClientException">Creation failed due to an exception.</exception>
         [CanBeNull]
-        string? Create([NotNull] Job job, [NotNull] IState state, [CanBeNull] IDictionary<string, object>? parameters);
+        string? Create([NotNull] Job job, [NotNull] IState state, [CanBeNull] IDictionary<string, object?>? parameters);
     }
 
     /// <summary>

@@ -48,7 +48,7 @@ namespace Hangfire.Client
         [CanBeNull]
         public BackgroundJob? BackgroundJob { get; }
 
-        public override IDictionary<string, object> Parameters => new ReadOnlyDictionary<string, object>(base.Parameters);
+        public override IDictionary<string, object?> Parameters => new ReadOnlyDictionary<string, object?>(base.Parameters);
 
         /// <summary>
         /// Gets an exception that occurred during the creation of the job.

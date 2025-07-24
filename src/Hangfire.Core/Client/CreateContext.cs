@@ -51,7 +51,7 @@ namespace Hangfire.Client
             [NotNull] IStorageConnection connection,
             [NotNull] Job job,
             [CanBeNull] IState? initialState,
-            [CanBeNull] IDictionary<string, object>? parameters)
+            [CanBeNull] IDictionary<string, object?>? parameters)
             : this(storage, connection, job, initialState, parameters, EmptyProfiler.Instance, null)
         {
         }
@@ -61,9 +61,9 @@ namespace Hangfire.Client
             [NotNull] IStorageConnection connection, 
             [NotNull] Job job, 
             [CanBeNull] IState? initialState,
-            [CanBeNull] IDictionary<string, object>? parameters,
+            [CanBeNull] IDictionary<string, object?>? parameters,
             [NotNull] IProfiler profiler,
-            [CanBeNull] IDictionary<string, object>? items)
+            [CanBeNull] IDictionary<string, object>? items) // TODO: Null object?
         {
             Storage = storage ?? throw new ArgumentNullException(nameof(storage));
             Connection = connection ?? throw new ArgumentNullException(nameof(connection));
@@ -72,7 +72,7 @@ namespace Hangfire.Client
             Profiler = profiler;
 
             Items = items ?? new Dictionary<string, object>();
-            Parameters = parameters ?? new Dictionary<string, object>();
+            Parameters = parameters ?? new Dictionary<string, object?>();
         }
 
         [NotNull]
@@ -90,7 +90,7 @@ namespace Hangfire.Client
         public IDictionary<string, object> Items { get; }
 
         [NotNull]
-        public virtual IDictionary<string, object> Parameters { get; }
+        public virtual IDictionary<string, object?> Parameters { get; }
             
         [NotNull]
         public Job Job { get; }
