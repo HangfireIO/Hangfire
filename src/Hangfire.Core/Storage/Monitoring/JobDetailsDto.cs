@@ -34,7 +34,7 @@ namespace Hangfire.Storage.Monitoring
         public DateTime? CreatedAt { get; set; }
 
         [NotNull]
-        public IDictionary<string, string> Properties { get; set; } = null!;
+        public IDictionary<string, string?> Properties { get; set; } = null!;
 
         [NotNull]
         public IList<StateHistoryDto> History { get; set; } = null!;
