@@ -14,14 +14,12 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 #if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
-using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Dashboard;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Linq;
 
 namespace Hangfire
 {
@@ -29,8 +27,8 @@ namespace Hangfire
     {
         public static IEndpointConventionBuilder MapHangfireDashboard(
             [NotNull] this IEndpointRouteBuilder endpoints,
-            [CanBeNull] DashboardOptions options = null,
-            [CanBeNull] JobStorage storage = null)
+            [CanBeNull] DashboardOptions? options = null,
+            [CanBeNull] JobStorage? storage = null)
         {
             return MapHangfireDashboard(endpoints, "/hangfire", options, storage);
         }
@@ -38,8 +36,8 @@ namespace Hangfire
         public static IEndpointConventionBuilder MapHangfireDashboard(
             [NotNull] this IEndpointRouteBuilder endpoints,
             [NotNull] string pattern,
-            [CanBeNull] DashboardOptions options = null,
-            [CanBeNull] JobStorage storage = null)
+            [CanBeNull] DashboardOptions? options = null,
+            [CanBeNull] JobStorage? storage = null)
         {
             if (endpoints == null) throw new ArgumentNullException(nameof(endpoints));
             if (pattern == null) throw new ArgumentNullException(nameof(pattern));
@@ -68,8 +66,8 @@ namespace Hangfire
             [NotNull] this IEndpointRouteBuilder endpoints,
             [NotNull] string authorizationPolicyName,
             [NotNull] string pattern = "/hangfire",
-            [CanBeNull] DashboardOptions options = null,
-            [CanBeNull] JobStorage storage = null)
+            [CanBeNull] DashboardOptions? options = null,
+            [CanBeNull] JobStorage? storage = null)
         {
             if (endpoints == null) throw new ArgumentNullException(nameof(endpoints));
             if (authorizationPolicyName == null) throw new ArgumentNullException(nameof(authorizationPolicyName));
@@ -77,8 +75,8 @@ namespace Hangfire
             options = options ?? new DashboardOptions();
 
             // We don't require the default LocalRequestsOnlyAuthorizationFilter since we provide our own policy
-            options.Authorization = Enumerable.Empty<IDashboardAuthorizationFilter>();
-            options.AsyncAuthorization = Enumerable.Empty<IDashboardAsyncAuthorizationFilter>();
+            options.Authorization = [];
+            options.AsyncAuthorization = [];
 
             return endpoints
                 .MapHangfireDashboard(pattern, options, storage)

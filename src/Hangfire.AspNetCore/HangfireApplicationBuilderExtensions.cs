@@ -35,8 +35,8 @@ namespace Hangfire
         public static IApplicationBuilder UseHangfireDashboard(
             [NotNull] this IApplicationBuilder app,
             [NotNull] string pathMatch = "/hangfire",
-            [CanBeNull] DashboardOptions options = null,
-            [CanBeNull] JobStorage storage = null)
+            [CanBeNull] DashboardOptions? options = null,
+            [CanBeNull] JobStorage? storage = null)
         {
             if (app == null) throw new ArgumentNullException(nameof(app));
             if (pathMatch == null) throw new ArgumentNullException(nameof(pathMatch));
@@ -61,9 +61,9 @@ namespace Hangfire
 #endif
         public static IApplicationBuilder UseHangfireServer(
             [NotNull] this IApplicationBuilder app,
-            [CanBeNull] BackgroundJobServerOptions options = null,
-            [CanBeNull] IEnumerable<IBackgroundProcess> additionalProcesses = null,
-            [CanBeNull] JobStorage storage = null)
+            [CanBeNull] BackgroundJobServerOptions? options = null,
+            [CanBeNull] IEnumerable<IBackgroundProcess>? additionalProcesses = null,
+            [CanBeNull] JobStorage? storage = null)
         {
             if (app == null) throw new ArgumentNullException(nameof(app));
             
@@ -71,13 +71,13 @@ namespace Hangfire
 
             var services = app.ApplicationServices;
 
-            storage = storage ?? services.GetRequiredService<JobStorage>();
-            options = options ?? services.GetService<BackgroundJobServerOptions>() ?? new BackgroundJobServerOptions();
-            additionalProcesses = additionalProcesses ?? services.GetServices<IBackgroundProcess>();
+            storage ??= services.GetRequiredService<JobStorage>();
+            options ??= services.GetService<BackgroundJobServerOptions>() ?? new BackgroundJobServerOptions();
+            additionalProcesses ??= services.GetServices<IBackgroundProcess>();
 
-            options.Activator = options.Activator ?? services.GetService<JobActivator>();
-            options.FilterProvider = options.FilterProvider ?? services.GetService<IJobFilterProvider>();
-            options.TimeZoneResolver = options.TimeZoneResolver ?? services.GetService<ITimeZoneResolver>();
+            options.Activator ??= services.GetService<JobActivator>();
+            options.FilterProvider ??= services.GetService<IJobFilterProvider>();
+            options.TimeZoneResolver ??= services.GetService<ITimeZoneResolver>();
 
             services.RegisterHangfireServer(HangfireServiceCollectionExtensions.GetInternalServices(services, out var factory, out var stateChanger, out var performer)
 #pragma warning disable 618

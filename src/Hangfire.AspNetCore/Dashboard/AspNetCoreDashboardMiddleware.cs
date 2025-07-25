@@ -36,15 +36,10 @@ namespace Hangfire.Dashboard
             [NotNull] DashboardOptions options,
             [NotNull] RouteCollection routes)
         {
-            if (next == null) throw new ArgumentNullException(nameof(next));
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
-            if (options == null) throw new ArgumentNullException(nameof(options));
-            if (routes == null) throw new ArgumentNullException(nameof(routes));
-
-            _next = next;
-            _storage = storage;
-            _options = options;
-            _routes = routes;
+            _next = next ?? throw new ArgumentNullException(nameof(next));
+            _storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
+            _routes = routes ?? throw new ArgumentNullException(nameof(routes));
         }
 
         public async Task Invoke(HttpContext httpContext)

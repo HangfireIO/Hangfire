@@ -28,13 +28,12 @@ namespace Hangfire.Dashboard
 
         public AspNetCoreDashboardResponse([NotNull] HttpContext context)
         {
-            if (context == null) throw new ArgumentNullException(nameof(context));
-            _context = context;
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         public override string ContentType
         {
-            get { return _context.Response.ContentType; }
+            get => _context.Response.ContentType;
             set
             {
                 if (!_context.Response.HasStarted)
@@ -46,7 +45,7 @@ namespace Hangfire.Dashboard
 
         public override int StatusCode
         {
-            get { return _context.Response.StatusCode; }
+            get => _context.Response.StatusCode;
             set
             {
                 if (!_context.Response.HasStarted)
