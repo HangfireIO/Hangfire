@@ -56,7 +56,7 @@ namespace Hangfire.Logging
         /// 
         /// To check IsEnabled call Log with only LogLevel and check the return value, no event will be written
         /// </remarks>
-        bool Log(LogLevel logLevel, Func<string?>? messageFunc, Exception? exception = null);
+        bool Log(LogLevel logLevel, Func<string>? messageFunc, Exception? exception = null);
     }
 
     /// <summary>
@@ -423,7 +423,7 @@ namespace Hangfire.Logging
 
         internal sealed class NoOpLogger : ILog
         {
-            public bool Log(LogLevel logLevel, Func<string?>? messageFunc, Exception? exception)
+            public bool Log(LogLevel logLevel, Func<string>? messageFunc, Exception? exception)
             {
                 return false;
             }
@@ -445,14 +445,14 @@ namespace Hangfire.Logging
             _logger = logger;
         }
 
-        public bool Log(LogLevel logLevel, Func<string?>? messageFunc, Exception? exception = null)
+        public bool Log(LogLevel logLevel, Func<string>? messageFunc, Exception? exception = null)
         {
             if (messageFunc == null)
             {
                 return _logger.Log(logLevel, null);
             }
 
-            Func<string?> wrappedMessageFunc = () =>
+            Func<string> wrappedMessageFunc = () =>
             {
                 try
                 {
@@ -462,7 +462,7 @@ namespace Hangfire.Logging
                 {
                     Log(LogLevel.Error, static () => FailedToGenerateLogMessage, ex);
                 }
-                return null;
+                return String.Empty;
             };
             return _logger.Log(logLevel, wrappedMessageFunc, exception);
         }
@@ -532,7 +532,7 @@ namespace Hangfire.Logging.LogProviders
                 _logger = logger;
             }
 
-            public bool Log(LogLevel logLevel, Func<string?>? messageFunc, Exception? exception)
+            public bool Log(LogLevel logLevel, Func<string>? messageFunc, Exception? exception)
             {
                 if (messageFunc == null)
                 {
@@ -714,7 +714,7 @@ namespace Hangfire.Logging.LogProviders
                 _logger = logger;
             }
 
-            public bool Log(LogLevel logLevel, Func<string?>? messageFunc, Exception? exception)
+            public bool Log(LogLevel logLevel, Func<string>? messageFunc, Exception? exception)
             {
                 if (messageFunc == null)
                 {
@@ -942,7 +942,7 @@ namespace Hangfire.Logging.LogProviders
                 _shouldLog = shouldLog;
             }
 
-            public bool Log(LogLevel logLevel, Func<string?>? messageFunc, Exception? exception)
+            public bool Log(LogLevel logLevel, Func<string>? messageFunc, Exception? exception)
             {
                 var severity = MapSeverity(logLevel);
                 if (messageFunc == null)
@@ -1132,7 +1132,7 @@ namespace Hangfire.Logging.LogProviders
                 _logger = logger;
             }
 
-            public bool Log(LogLevel logLevel, Func<string?>? messageFunc, Exception? exception)
+            public bool Log(LogLevel logLevel, Func<string>? messageFunc, Exception? exception)
             {
                 if (messageFunc == null)
                 {
@@ -1316,7 +1316,7 @@ namespace Hangfire.Logging.LogProviders
                 _skipLevel = 1;
             }
 
-            public bool Log(LogLevel logLevel, Func<string?>? messageFunc, Exception? exception)
+            public bool Log(LogLevel logLevel, Func<string>? messageFunc, Exception? exception)
             {
                 if (messageFunc == null)
                 {
@@ -1465,7 +1465,7 @@ namespace Hangfire.Logging.LogProviders
                 _minLevel = minLevel;
             }
 
-            public bool Log(LogLevel logLevel, Func<string?>? messageFunc, Exception? exception)
+            public bool Log(LogLevel logLevel, Func<string>? messageFunc, Exception? exception)
             {
                 if (logLevel < _minLevel)
                 {
@@ -1594,7 +1594,7 @@ namespace Hangfire.Logging.LogProviders
                 _errorLog = errorLog;
             }
 
-            public bool Log(LogLevel logLevel, Func<string?>? messageFunc, Exception? exception)
+            public bool Log(LogLevel logLevel, Func<string>? messageFunc, Exception? exception)
             {
                 if (messageFunc == null) return logLevel >= _minLevel;
 
