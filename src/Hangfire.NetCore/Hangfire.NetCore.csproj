@@ -4,6 +4,7 @@
     <Description>.NET Core support for Hangfire</Description>
     <TargetFrameworks>net451;net461;netstandard1.3;netstandard2.0;netstandard2.1</TargetFrameworks>
     <RootNamespace>Hangfire</RootNamespace>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +15,7 @@
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)'=='net451' or '$(TargetFramework)'=='netstandard1.3'">    
+  <ItemGroup Condition="'$(TargetFramework)'=='net451' or '$(TargetFramework)'=='netstandard1.3'">
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="1.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.0.0" />
   </ItemGroup>

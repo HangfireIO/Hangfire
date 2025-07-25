@@ -25,8 +25,7 @@ namespace Hangfire.AspNetCore
 
         public AspNetCoreJobActivator([NotNull] IServiceScopeFactory serviceScopeFactory)
         {
-            if (serviceScopeFactory == null) throw new ArgumentNullException(nameof(serviceScopeFactory));
-            _serviceScopeFactory = serviceScopeFactory;
+            _serviceScopeFactory = serviceScopeFactory ?? throw new ArgumentNullException(nameof(serviceScopeFactory));
         }
 
         public override JobActivatorScope BeginScope(JobActivatorContext context)

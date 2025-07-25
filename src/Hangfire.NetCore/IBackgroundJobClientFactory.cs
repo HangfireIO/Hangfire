@@ -13,15 +13,19 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using Hangfire.Annotations;
+
 namespace Hangfire
 {
     public interface IBackgroundJobClientFactoryV2 : IBackgroundJobClientFactory
     {
-        IBackgroundJobClientV2 GetClientV2(JobStorage storage);
+        [NotNull]
+        IBackgroundJobClientV2 GetClientV2([NotNull]JobStorage storage);
     }
 
     public interface IBackgroundJobClientFactory
     {
-        IBackgroundJobClient GetClient(JobStorage storage);
+        [NotNull]
+        IBackgroundJobClient GetClient([NotNull] JobStorage storage);
     }
 }

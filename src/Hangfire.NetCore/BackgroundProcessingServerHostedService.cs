@@ -27,7 +27,7 @@ namespace Hangfire
 {
     public sealed class BackgroundProcessingServerHostedService : IHostedService, IDisposable
     {
-        private IBackgroundProcessingServer _server;
+        private IBackgroundProcessingServer? _server;
 
 #if NETSTANDARD2_1
         public BackgroundProcessingServerHostedService([NotNull] IBackgroundProcessingServer server)
@@ -37,7 +37,7 @@ namespace Hangfire
 
         public BackgroundProcessingServerHostedService(
             [NotNull] IBackgroundProcessingServer server,
-            [CanBeNull] IHostApplicationLifetime lifetime)
+            [CanBeNull] IHostApplicationLifetime? lifetime)
         {
             _server = server ?? throw new ArgumentNullException(nameof(server));
             lifetime?.ApplicationStopping.Register(server.SendStop);

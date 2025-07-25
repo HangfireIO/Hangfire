@@ -13,15 +13,19 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using Hangfire.Annotations;
+
 namespace Hangfire
 {
     public interface IRecurringJobManagerFactoryV2 : IRecurringJobManagerFactory
     {
-        IRecurringJobManagerV2 GetManagerV2(JobStorage storage);
+        [NotNull]
+        IRecurringJobManagerV2 GetManagerV2([NotNull] JobStorage storage);
     }
 
     public interface IRecurringJobManagerFactory
     {
-        IRecurringJobManager GetManager(JobStorage storage);
+        [NotNull]
+        IRecurringJobManager GetManager([NotNull] JobStorage storage);
     }
 }

@@ -37,7 +37,7 @@ namespace Hangfire
             [NotNull] this IServiceCollection services,
             [NotNull] Action<IGlobalConfiguration> configuration)
         {
-            return AddHangfire(services, (provider, config) => configuration(config));
+            return AddHangfire(services, (_, config) => configuration(config));
         }
 
         public static IServiceCollection AddHangfire(
@@ -116,7 +116,7 @@ namespace Hangfire
             if (services == null) throw new ArgumentNullException(nameof(services));
             if (optionsAction == null) throw new ArgumentNullException(nameof(optionsAction));
 
-            return AddHangfireServerInner(services, null, null, (provider, options) => optionsAction(options));
+            return AddHangfireServerInner(services, null, null, (_, options) => optionsAction(options));
         }
 
         public static IServiceCollection AddHangfireServer(
@@ -185,8 +185,8 @@ namespace Hangfire
 
         private static IServiceCollection AddHangfireServerInner(
             [NotNull] IServiceCollection services,
-            [CanBeNull] JobStorage storage,
-            [CanBeNull] IEnumerable<IBackgroundProcess> additionalProcesses)
+            [CanBeNull] JobStorage? storage,
+            [CanBeNull] IEnumerable<IBackgroundProcess>? additionalProcesses)
         {
             services.AddTransient<IHostedService, BackgroundJobServerHostedService>(provider =>
             {
@@ -199,8 +199,8 @@ namespace Hangfire
 
         private static IServiceCollection AddHangfireServerInner(
             [NotNull] IServiceCollection services,
-            [CanBeNull] JobStorage storage,
-            [CanBeNull] IEnumerable<IBackgroundProcess> additionalProcesses,
+            [CanBeNull] JobStorage? storage,
+            [CanBeNull] IEnumerable<IBackgroundProcess>? additionalProcesses,
             [NotNull] Action<IServiceProvider, BackgroundJobServerOptions> optionsAction)
         {
             services.AddTransient<IHostedService, BackgroundJobServerHostedService>(provider =>
@@ -234,8 +234,8 @@ namespace Hangfire
 
         private static BackgroundJobServerHostedService CreateBackgroundJobServerHostedService(
             IServiceProvider provider,
-            JobStorage storage,
-            IEnumerable<IBackgroundProcess> additionalProcesses,
+            JobStorage? storage,
+            IEnumerable<IBackgroundProcess>? additionalProcesses,
             BackgroundJobServerOptions options)
         {
             ThrowIfNotConfigured(provider);
@@ -266,9 +266,9 @@ namespace Hangfire
 
         public static bool GetInternalServices(
             IServiceProvider provider,
-            out IBackgroundJobFactory factory,
-            out IBackgroundJobStateChanger stateChanger,
-            out IBackgroundJobPerformer performer)
+            [System.Diagnostics.CodeAnalysis.NotNullWhen(returnValue: true)] out IBackgroundJobFactory? factory,
+            [System.Diagnostics.CodeAnalysis.NotNullWhen(returnValue: true)] out IBackgroundJobStateChanger? stateChanger,
+            [System.Diagnostics.CodeAnalysis.NotNullWhen(returnValue: true)] out IBackgroundJobPerformer? performer)
         {
             factory = provider.GetService<IBackgroundJobFactory>();
             performer = provider.GetService<IBackgroundJobPerformer>();

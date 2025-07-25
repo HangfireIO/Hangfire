@@ -29,11 +29,10 @@ namespace Hangfire.AspNetCore
 
         public AspNetCoreLog([NotNull] ILogger targetLogger)
         {
-            if (targetLogger == null) throw new ArgumentNullException(nameof(targetLogger));
-            _targetLogger = targetLogger;
+            _targetLogger = targetLogger ?? throw new ArgumentNullException(nameof(targetLogger));
         }
 
-        public bool Log(Logging.LogLevel logLevel, Func<string> messageFunc, Exception exception = null)
+        public bool Log(Logging.LogLevel logLevel, Func<string>? messageFunc, Exception? exception = null)
         {
             var targetLogLevel = ToTargetLogLevel(logLevel);
 

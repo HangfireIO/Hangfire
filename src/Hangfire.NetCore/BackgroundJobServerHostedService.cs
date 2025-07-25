@@ -32,13 +32,13 @@ namespace Hangfire
         private readonly JobStorage _storage;
         private readonly IEnumerable<IBackgroundProcess> _additionalProcesses;
 #if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
-        private readonly IHostApplicationLifetime _hostApplicationLifetime;
+        private readonly IHostApplicationLifetime? _hostApplicationLifetime;
 #endif
-        private readonly IBackgroundJobFactory _factory;
-        private readonly IBackgroundJobPerformer _performer;
-        private readonly IBackgroundJobStateChanger _stateChanger;
+        private readonly IBackgroundJobFactory? _factory;
+        private readonly IBackgroundJobPerformer? _performer;
+        private readonly IBackgroundJobStateChanger? _stateChanger;
 
-        private IBackgroundProcessingServer _processingServer;
+        private IBackgroundProcessingServer? _processingServer;
 
         public BackgroundJobServerHostedService(
             [NotNull] JobStorage storage,
@@ -55,7 +55,7 @@ namespace Hangfire
             [NotNull] JobStorage storage,
             [NotNull] BackgroundJobServerOptions options,
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses,
-            [CanBeNull] IHostApplicationLifetime hostApplicationLifetime)
+            [CanBeNull] IHostApplicationLifetime? hostApplicationLifetime)
 #pragma warning disable 618
             : this(storage, options, additionalProcesses, null, null, null, hostApplicationLifetime)
 #pragma warning restore 618
@@ -69,9 +69,9 @@ namespace Hangfire
             [NotNull] JobStorage storage,
             [NotNull] BackgroundJobServerOptions options,
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses,
-            [CanBeNull] IBackgroundJobFactory factory,
-            [CanBeNull] IBackgroundJobPerformer performer,
-            [CanBeNull] IBackgroundJobStateChanger stateChanger)
+            [CanBeNull] IBackgroundJobFactory? factory,
+            [CanBeNull] IBackgroundJobPerformer? performer,
+            [CanBeNull] IBackgroundJobStateChanger? stateChanger)
             : this(storage, options, additionalProcesses, factory, performer, stateChanger, null)
         {
         }
@@ -82,12 +82,12 @@ namespace Hangfire
             [NotNull] JobStorage storage,
             [NotNull] BackgroundJobServerOptions options,
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses,
-            [CanBeNull] IBackgroundJobFactory factory,
-            [CanBeNull] IBackgroundJobPerformer performer,
-            [CanBeNull] IBackgroundJobStateChanger stateChanger
+            [CanBeNull] IBackgroundJobFactory? factory,
+            [CanBeNull] IBackgroundJobPerformer? performer,
+            [CanBeNull] IBackgroundJobStateChanger? stateChanger
 #if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
             ,
-            [CanBeNull] IHostApplicationLifetime hostApplicationLifetime
+            [CanBeNull] IHostApplicationLifetime? hostApplicationLifetime
 #endif
             )
         {
