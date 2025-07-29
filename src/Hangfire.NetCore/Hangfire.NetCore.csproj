@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Title>Hangfire.NetCore</Title>
     <Description>.NET Core support for Hangfire</Description>
-    <TargetFrameworks>net451;net461;netstandard1.3;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net451;net461;netstandard1.3;netstandard2.0;netstandard2.1;net6.0</TargetFrameworks>
     <RootNamespace>Hangfire</RootNamespace>
   </PropertyGroup>
 
@@ -29,5 +29,11 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="3.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.0.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='net6.0'">
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
   </ItemGroup>
 </Project>

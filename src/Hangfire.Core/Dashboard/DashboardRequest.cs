@@ -41,8 +41,8 @@ namespace Hangfire.Dashboard
         /// Gets the request path for the current request that doesn't include the <see cref="DashboardOptions.PrefixPath"/>,
         /// like <c>"/jobs/enqueued"</c>.
         /// </summary>
-        [NotNull]
-        public abstract string Path { get; }
+        [CanBeNull]
+        public abstract string? Path { get; }
 
         /// <summary>
         /// Gets the base path for the request configured in the request middleware, usually useful

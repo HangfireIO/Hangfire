@@ -29,43 +29,43 @@ namespace Hangfire.Dashboard
         {
             Items.Add(static page => new MenuItem(Strings.JobsSidebarMenu_Enqueued, page.Url.LinkToQueues())
             {
-                Active = page.RequestPath.StartsWith("/jobs/enqueued", StringComparison.OrdinalIgnoreCase),
+                Active = page.RequestPath?.StartsWith("/jobs/enqueued", StringComparison.OrdinalIgnoreCase) ?? false,
                 Metric = DashboardMetrics.EnqueuedAndQueueCount
             });
 
             Items.Add(static page => new MenuItem(Strings.JobsSidebarMenu_Scheduled, page.Url.To("/jobs/scheduled"))
             {
-                Active = page.RequestPath.StartsWith("/jobs/scheduled", StringComparison.OrdinalIgnoreCase),
+                Active = page.RequestPath?.StartsWith("/jobs/scheduled", StringComparison.OrdinalIgnoreCase) ?? false,
                 Metric = DashboardMetrics.ScheduledCount
             });
 
             Items.Add(static page => new MenuItem(Strings.JobsSidebarMenu_Processing, page.Url.To("/jobs/processing"))
             {
-                Active = page.RequestPath.StartsWith("/jobs/processing", StringComparison.OrdinalIgnoreCase),
+                Active = page.RequestPath?.StartsWith("/jobs/processing", StringComparison.OrdinalIgnoreCase) ?? false,
                 Metric = DashboardMetrics.ProcessingCount
             });
 
             Items.Add(static page => new MenuItem(Strings.JobsSidebarMenu_Succeeded, page.Url.To("/jobs/succeeded"))
             {
-                Active = page.RequestPath.StartsWith("/jobs/succeeded", StringComparison.OrdinalIgnoreCase),
+                Active = page.RequestPath?.StartsWith("/jobs/succeeded", StringComparison.OrdinalIgnoreCase) ?? false,
                 Metric = DashboardMetrics.SucceededCount
             });
 
             Items.Add(static page => new MenuItem(Strings.JobsSidebarMenu_Failed, page.Url.To("/jobs/failed"))
             {
-                Active = page.RequestPath.StartsWith("/jobs/failed", StringComparison.OrdinalIgnoreCase),
+                Active = page.RequestPath?.StartsWith("/jobs/failed", StringComparison.OrdinalIgnoreCase) ?? false,
                 Metric = DashboardMetrics.FailedCount
             });
 
             Items.Add(static page => new MenuItem(Strings.JobsSidebarMenu_Deleted, page.Url.To("/jobs/deleted"))
             {
-                Active = page.RequestPath.StartsWith("/jobs/deleted", StringComparison.OrdinalIgnoreCase),
+                Active = page.RequestPath?.StartsWith("/jobs/deleted", StringComparison.OrdinalIgnoreCase) ?? false,
                 Metric = DashboardMetrics.DeletedCount
             });
 
             Items.Add(static page => new MenuItem(Strings.JobsSidebarMenu_Awaiting, page.Url.To("/jobs/awaiting"))
             {
-                Active = page.RequestPath.StartsWith("/jobs/awaiting", StringComparison.OrdinalIgnoreCase),
+                Active = page.RequestPath?.StartsWith("/jobs/awaiting", StringComparison.OrdinalIgnoreCase) ?? false,
                 Metric = DashboardMetrics.AwaitingCount
             });
         }

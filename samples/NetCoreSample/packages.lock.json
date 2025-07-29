@@ -354,9 +354,9 @@
         "type": "Project",
         "dependencies": {
           "Hangfire.Core": "[1.0.0, )",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "[3.0.0, )",
-          "Microsoft.Extensions.Hosting.Abstractions": "[3.0.0, )",
-          "Microsoft.Extensions.Logging.Abstractions": "[3.0.0, )"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[6.0.0, )",
+          "Microsoft.Extensions.Hosting.Abstractions": "[6.0.0, )",
+          "Microsoft.Extensions.Logging.Abstractions": "[6.0.0, )"
         }
       },
       "hangfire.sqlserver": {

@@ -55,20 +55,20 @@ namespace Hangfire
             services.TryAddSingleton<ITimeZoneResolver>(static _ => new DefaultTimeZoneResolver());
             
             services.TryAddSingleton(static x => new DefaultClientManagerFactory(x));
-            services.TryAddSingletonChecked<IBackgroundJobClientFactory>(static x => x.GetService<DefaultClientManagerFactory>());
-            services.TryAddSingletonChecked<IBackgroundJobClientFactoryV2>(static x => x.GetService<DefaultClientManagerFactory>());
-            services.TryAddSingletonChecked<IRecurringJobManagerFactory>(static x => x.GetService<DefaultClientManagerFactory>());
-            services.TryAddSingletonChecked<IRecurringJobManagerFactoryV2>(static x => x.GetService<DefaultClientManagerFactory>());
+            services.TryAddSingletonChecked<IBackgroundJobClientFactory>(static x => x.GetRequiredService<DefaultClientManagerFactory>());
+            services.TryAddSingletonChecked<IBackgroundJobClientFactoryV2>(static x => x.GetRequiredService<DefaultClientManagerFactory>());
+            services.TryAddSingletonChecked<IRecurringJobManagerFactory>(static x => x.GetRequiredService<DefaultClientManagerFactory>());
+            services.TryAddSingletonChecked<IRecurringJobManagerFactoryV2>(static x => x.GetRequiredService<DefaultClientManagerFactory>());
 
             services.TryAddSingletonChecked(static x => x
-                .GetService<IBackgroundJobClientFactory>().GetClient(x.GetService<JobStorage>()));
+                .GetRequiredService<IBackgroundJobClientFactory>().GetClient(x.GetRequiredService<JobStorage>()));
             services.TryAddSingletonChecked(static x => x
-                .GetService<IBackgroundJobClientFactoryV2>().GetClientV2(x.GetService<JobStorage>()));
+                .GetRequiredService<IBackgroundJobClientFactoryV2>().GetClientV2(x.GetRequiredService<JobStorage>()));
 
             services.TryAddSingletonChecked(static x => x
-                .GetService<IRecurringJobManagerFactory>().GetManager(x.GetService<JobStorage>()));
+                .GetRequiredService<IRecurringJobManagerFactory>().GetManager(x.GetRequiredService<JobStorage>()));
             services.TryAddSingletonChecked(static x => x
-                .GetService<IRecurringJobManagerFactoryV2>().GetManagerV2(x.GetService<JobStorage>()));
+                .GetRequiredService<IRecurringJobManagerFactoryV2>().GetManagerV2(x.GetRequiredService<JobStorage>()));
 
             // IGlobalConfiguration serves as a marker indicating that Hangfire's services 
             // were added to the service container (checked by IApplicationBuilder extensions).
@@ -287,14 +287,12 @@ namespace Hangfire
         }
 
         private static void TryAddSingletonChecked<T>(
-            [NotNull] this IServiceCollection serviceCollection, 
-            [NotNull] Func<IServiceProvider, T> implementationFactory)
+            this IServiceCollection serviceCollection, 
+            Func<IServiceProvider, T> implementationFactory)
             where T : class
         {
             serviceCollection.TryAddSingleton<T>(serviceProvider =>
             {
-                if (serviceProvider == null) throw new ArgumentNullException(nameof(serviceProvider));
-
                 // ensure the configuration was performed
                 serviceProvider.GetRequiredService<IGlobalConfiguration>();
 

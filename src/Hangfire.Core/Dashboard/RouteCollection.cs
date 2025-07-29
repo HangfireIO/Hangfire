@@ -46,11 +46,9 @@ namespace Hangfire.Dashboard
         }
 
         [CanBeNull]
-        public Tuple<IDashboardDispatcher, Match>? FindDispatcher([NotNull] string path)
+        public Tuple<IDashboardDispatcher, Match>? FindDispatcher([CanBeNull] string? path)
         {
-            if (path == null) throw new ArgumentNullException(nameof(path));
-
-            if (path.Length == 0) path = "/";
+            if (path == null || path.Length == 0) path = "/";
             else if (path.Length > 1) path = path.TrimEnd('/');
 
             foreach (var dispatcher in _dispatchers)

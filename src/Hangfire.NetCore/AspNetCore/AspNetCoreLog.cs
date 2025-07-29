@@ -23,7 +23,7 @@ namespace Hangfire.AspNetCore
 {
     internal sealed class AspNetCoreLog : ILog
     {
-        private static readonly Func<object, Exception, string> MessageFormatterFunc = MessageFormatter;
+        private static readonly Func<object, Exception?, string> MessageFormatterFunc = MessageFormatter;
 
         private readonly ILogger _targetLogger;
 
@@ -68,9 +68,9 @@ namespace Hangfire.AspNetCore
             return LogLevel.None;
         }
 
-        private static string MessageFormatter(object state, Exception exception)
+        private static string MessageFormatter(object state, Exception? exception)
         {
-            return state.ToString();
+            return state.ToString()!;
         }
     }
 }

@@ -101,8 +101,8 @@ namespace Hangfire.Dashboard
         internal DashboardRequest Request => Context.Request;
         internal DashboardResponse Response => Context.Response;
 
-        [NotNull]
-        public string RequestPath => Request.Path;
+        [CanBeNull]
+        public string? RequestPath => Request.Path;
 
         public bool IsReadOnly => Context.IsReadOnly;
         

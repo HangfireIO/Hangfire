@@ -52,6 +52,8 @@ Task Collect -Depends Test -Description "Copy all artifacts to the build folder.
 
     Collect-Assembly "Hangfire.Core" "net6.0"
     Collect-Assembly "Hangfire.SqlServer" "net6.0"
+    Collect-Assembly "Hangfire.AspNetCore" "net6.0"
+    Collect-Assembly "Hangfire.NetCore" "net6.0"
 
     Collect-Tool "src\Hangfire.SqlServer\DefaultInstall.sql"
 
