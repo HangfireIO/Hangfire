@@ -42,7 +42,7 @@ namespace MQTools
 
         [DllImport("mqrt.dll")]
         private static extern int MQMgmtGetInfo(
-            [MarshalAs(UnmanagedType.BStr)]string computerName,
+            [MarshalAs(UnmanagedType.BStr)]string? computerName,
             [MarshalAs(UnmanagedType.BStr)]string objectName,
             ref MQMGMTPROPS mgmtProps);
 
@@ -111,7 +111,7 @@ namespace MQTools
             return matches[0];
         }
 
-        private static long GetQueueCount(string computerName, string queueType, string queue)
+        private static long GetQueueCount(string? computerName, string queueType, string queue)
         {
             if (string.IsNullOrEmpty(computerName)) computerName = null;
             string queuePath = $"queue=Direct=OS:{computerName ?? "."}";
@@ -126,7 +126,7 @@ namespace MQTools
             return GetCount(computerName, queuePath);
         }
 
-        private static long GetCount(string computerName, string queuePath)
+        private static long GetCount(string? computerName, string queuePath)
         {
             var props = new MQMGMTPROPS
             {

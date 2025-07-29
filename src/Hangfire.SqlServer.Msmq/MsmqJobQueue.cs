@@ -31,15 +31,13 @@ namespace Hangfire.SqlServer.Msmq
 
         public MsmqJobQueue(string pathPattern, MsmqTransactionType transactionType)
         {
-            if (pathPattern == null) throw new ArgumentNullException(nameof(pathPattern));
-
-            _pathPattern = pathPattern;
+            _pathPattern = pathPattern ?? throw new ArgumentNullException(nameof(pathPattern));
             _transactionType = transactionType;
         }
 
         public IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken)
         {
-            string jobId = null;
+            string? jobId = null;
             var queueIndex = 0;
 
             while (!cancellationToken.IsCancellationRequested)
@@ -75,7 +73,7 @@ namespace Hangfire.SqlServer.Msmq
             }
 
             cancellationToken.ThrowIfCancellationRequested();
-            return null;
+            throw new OperationCanceledException();
         }
 
         public void Enqueue(IDbConnection connection, string queue, string jobId)

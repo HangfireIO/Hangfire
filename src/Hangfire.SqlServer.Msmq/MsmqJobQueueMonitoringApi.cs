@@ -29,11 +29,8 @@ namespace Hangfire.SqlServer.Msmq
 
         public MsmqJobQueueMonitoringApi(string pathPattern, IEnumerable<string> queues)
         {
-            if (pathPattern == null) throw new ArgumentNullException(nameof(pathPattern));
-            if (queues == null) throw new ArgumentNullException(nameof(queues));
-
-            _pathPattern = pathPattern;
-            _queues = queues;
+            _pathPattern = pathPattern ?? throw new ArgumentNullException(nameof(pathPattern));
+            _queues = queues ?? throw new ArgumentNullException(nameof(queues));
         }
 
         public IEnumerable<string> GetQueues()
@@ -41,7 +38,7 @@ namespace Hangfire.SqlServer.Msmq
             return _queues;
         }
 
-        public IEnumerable<long> GetEnqueuedJobIds(string queue, int @from, int perPage)
+        public IEnumerable<long> GetEnqueuedJobIds(string queue, int from, int perPage)
         {
             var result = new List<long>();
 

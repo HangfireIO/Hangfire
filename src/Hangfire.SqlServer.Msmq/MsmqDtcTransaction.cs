@@ -22,7 +22,7 @@ namespace Hangfire.SqlServer.Msmq
     internal sealed class MsmqDtcTransaction : IMsmqTransaction
     {
         private readonly TransactionScope _scope;
-        private TransactionScope _suppressedScope;
+        private TransactionScope? _suppressedScope;
 
         public MsmqDtcTransaction()
         {
