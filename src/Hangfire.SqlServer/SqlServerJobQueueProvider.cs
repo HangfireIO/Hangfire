@@ -14,7 +14,6 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using Hangfire.Annotations;
 
 namespace Hangfire.SqlServer
 {
@@ -23,7 +22,7 @@ namespace Hangfire.SqlServer
         private readonly IPersistentJobQueue _jobQueue;
         private readonly IPersistentJobQueueMonitoringApi _monitoringApi;
 
-        public SqlServerJobQueueProvider([NotNull] SqlServerStorage storage, [NotNull] SqlServerStorageOptions options)
+        public SqlServerJobQueueProvider(SqlServerStorage storage, SqlServerStorageOptions options)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
             if (options == null) throw new ArgumentNullException(nameof(options));

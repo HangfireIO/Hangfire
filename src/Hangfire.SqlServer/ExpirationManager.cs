@@ -121,7 +121,7 @@ namespace Hangfire.SqlServer
             return GetType().ToString();
         }
 
-        private void CleanupTable(SqlServerStorage storage, string query, string table, int numberOfRecordsInSinglePass, CancellationToken cancellationToken, Action<DbCommand> additionalActions = null)
+        private void CleanupTable(SqlServerStorage storage, string query, string table, int numberOfRecordsInSinglePass, CancellationToken cancellationToken, Action<DbCommand>? additionalActions = null)
         {
             _logger.Debug($"Removing outdated records from the '{table}' table...");
 
@@ -145,7 +145,7 @@ namespace Hangfire.SqlServer
             _logger.Trace($"Outdated records removed from the '{table}' table.");
         }
 
-        private T UseConnectionDistributedLock<T>(SqlServerStorage storage, Func<DbConnection, T> action)
+        private T? UseConnectionDistributedLock<T>(SqlServerStorage storage, Func<DbConnection, T> action)
         {
             try
             {
@@ -225,7 +225,7 @@ delete top(@count) from cte option (maxdop 1);");
             DbConnection connection,
             string commandText,
             int numberOfRecordsInSinglePass,
-            Action<DbCommand> additionalActions,
+            Action<DbCommand>? additionalActions,
             CancellationToken cancellationToken)
         {
             using var command = connection.CreateCommand(commandText, timeout: 0)

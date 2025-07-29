@@ -16,13 +16,12 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
-using Hangfire.Annotations;
 
 namespace Hangfire.SqlServer
 {
     internal static class DbDataReaderExtensions
     {
-        public static T ReadSingleOrDefaultAndProceed<T>([NotNull] this DbDataReader reader, [NotNull] Func<DbDataReader, T> mapper)
+        public static T? ReadSingleOrDefaultAndProceed<T>(this DbDataReader reader, Func<DbDataReader, T> mapper)
         {
             if (reader == null) throw new ArgumentNullException(nameof(reader));
             if (mapper == null) throw new ArgumentNullException(nameof(mapper));
@@ -37,7 +36,7 @@ namespace Hangfire.SqlServer
             return result;
         }
 
-        public static T ReadSingleAndProceed<T>([NotNull] this DbDataReader reader, [NotNull] Func<DbDataReader, T> mapper)
+        public static T ReadSingleAndProceed<T>(this DbDataReader reader, Func<DbDataReader, T> mapper)
         {
             if (reader == null) throw new ArgumentNullException(nameof(reader));
             if (mapper == null) throw new ArgumentNullException(nameof(mapper));
@@ -52,7 +51,7 @@ namespace Hangfire.SqlServer
             return result;
         }
 
-        public static List<T> ReadListAndProceed<T>([NotNull] this DbDataReader reader, [NotNull] Func<DbDataReader, T> mapper)
+        public static List<T> ReadListAndProceed<T>(this DbDataReader reader, Func<DbDataReader, T> mapper)
         {
             if (reader == null) throw new ArgumentNullException(nameof(reader));
             if (mapper == null) throw new ArgumentNullException(nameof(mapper));
@@ -69,7 +68,7 @@ namespace Hangfire.SqlServer
             return result;
         }
 
-        public static T ReadSingleOrDefaultAndFinish<T>([NotNull] this DbDataReader reader, [NotNull] Func<DbDataReader, T> mapper)
+        public static T? ReadSingleOrDefaultAndFinish<T>(this DbDataReader reader, Func<DbDataReader, T> mapper)
         {
             if (reader == null) throw new ArgumentNullException(nameof(reader));
             if (mapper == null) throw new ArgumentNullException(nameof(mapper));
@@ -84,7 +83,7 @@ namespace Hangfire.SqlServer
             return result;
         }
 
-        public static T ReadSingleAndFinish<T>([NotNull] this DbDataReader reader, [NotNull] Func<DbDataReader, T> mapper)
+        public static T ReadSingleAndFinish<T>(this DbDataReader reader, Func<DbDataReader, T> mapper)
         {
             if (reader == null) throw new ArgumentNullException(nameof(reader));
             if (mapper == null) throw new ArgumentNullException(nameof(mapper));
@@ -99,7 +98,7 @@ namespace Hangfire.SqlServer
             return result;
         }
 
-        public static List<T> ReadListAndFinish<T>([NotNull] this DbDataReader reader, [NotNull] Func<DbDataReader, T> mapper)
+        public static List<T> ReadListAndFinish<T>(this DbDataReader reader, Func<DbDataReader, T> mapper)
         {
             if (reader == null) throw new ArgumentNullException(nameof(reader));
             if (mapper == null) throw new ArgumentNullException(nameof(mapper));
@@ -116,7 +115,7 @@ namespace Hangfire.SqlServer
             return result;
         }
 
-        public static string GetRequiredString([NotNull] this DbDataReader reader, [CanBeNull] string name = null)
+        public static string GetRequiredString(this DbDataReader reader, string? name = null)
         {
             if (reader == null) throw new ArgumentNullException(nameof(reader));
 
@@ -124,7 +123,7 @@ namespace Hangfire.SqlServer
             return reader.GetString(ordinal);
         }
 
-        public static string GetOptionalString([NotNull] this DbDataReader reader, [CanBeNull] string name = null)
+        public static string? GetOptionalString(this DbDataReader reader, string? name = null)
         {
             if (reader == null) throw new ArgumentNullException(nameof(reader));
 
@@ -132,7 +131,7 @@ namespace Hangfire.SqlServer
             return !reader.IsDBNull(ordinal) ? reader.GetString(ordinal) : null;
         }
 
-        public static DateTime GetRequiredDateTime([NotNull] this DbDataReader reader, [CanBeNull] string name = null)
+        public static DateTime GetRequiredDateTime(this DbDataReader reader, string? name = null)
         {
             if (reader == null) throw new ArgumentNullException(nameof(reader));
 
@@ -140,7 +139,7 @@ namespace Hangfire.SqlServer
             return reader.GetDateTime(ordinal);
         }
 
-        public static DateTime? GetOptionalDateTime([NotNull] this DbDataReader reader, [CanBeNull] string name = null)
+        public static DateTime? GetOptionalDateTime(this DbDataReader reader, string? name = null)
         {
             if (reader == null) throw new ArgumentNullException(nameof(reader));
 
@@ -148,7 +147,7 @@ namespace Hangfire.SqlServer
             return !reader.IsDBNull(ordinal) ? reader.GetDateTime(ordinal) : null;
         }
 
-        public static T GetRequiredValue<T>([NotNull] this DbDataReader reader, [CanBeNull] string name = null)
+        public static T GetRequiredValue<T>(this DbDataReader reader, string? name = null)
         {
             if (reader == null) throw new ArgumentNullException(nameof(reader));
 
@@ -156,7 +155,7 @@ namespace Hangfire.SqlServer
             return DbCommandExtensions.ConvertValue<T>(reader.GetValue(ordinal));
         }
 
-        public static T GetOptionalValue<T>([NotNull] this DbDataReader reader, [CanBeNull] string name = null)
+        public static T? GetOptionalValue<T>(this DbDataReader reader, string? name = null)
         {
             if (reader == null) throw new ArgumentNullException(nameof(reader));
 

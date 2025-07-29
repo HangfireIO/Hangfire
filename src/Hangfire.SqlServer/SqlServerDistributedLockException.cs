@@ -15,6 +15,7 @@
 
 using System;
 using System.Runtime.Serialization;
+using Hangfire.Annotations;
 
 namespace Hangfire.SqlServer
 {
@@ -23,7 +24,7 @@ namespace Hangfire.SqlServer
 #endif
     public class SqlServerDistributedLockException : Exception
     {
-        public SqlServerDistributedLockException(string message)
+        public SqlServerDistributedLockException([CanBeNull] string? message)
             : base(message)
         {
         }

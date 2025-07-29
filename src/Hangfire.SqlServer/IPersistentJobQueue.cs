@@ -15,6 +15,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
+using Hangfire.Annotations;
 using Hangfire.Storage;
 
 namespace Hangfire.SqlServer
@@ -22,16 +23,17 @@ namespace Hangfire.SqlServer
     [SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "This interface represents a persistent queue by design.")]
     public interface IPersistentJobQueue
     {
-        IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken);
+        [NotNull]
+        IFetchedJob Dequeue([NotNull] string[] queues, CancellationToken cancellationToken);
 
 #if FEATURE_TRANSACTIONSCOPE
-        void Enqueue(System.Data.IDbConnection connection, string queue, string jobId);
+        void Enqueue([NotNull] System.Data.IDbConnection connection, [NotNull] string queue, [NotNull] string jobId);
 #else
         void Enqueue(
-            System.Data.Common.DbConnection connection, 
-            System.Data.Common.DbTransaction transaction, 
-            string queue, 
-            string jobId);
+            [NotNull] System.Data.Common.DbConnection connection, 
+            [CanBeNull] System.Data.Common.DbTransaction? transaction, 
+            [NotNull] string queue, 
+            [NotNull] string jobId);
 #endif
     }
 }

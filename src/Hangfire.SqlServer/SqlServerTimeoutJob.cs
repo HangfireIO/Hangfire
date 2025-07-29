@@ -16,7 +16,6 @@
 using System;
 using System.Data;
 using System.Threading;
-using Hangfire.Annotations;
 using Hangfire.Logging;
 using Hangfire.Storage;
 
@@ -31,29 +30,24 @@ namespace Hangfire.SqlServer
         private bool _disposed;
         private bool _removedFromQueue;
         private bool _requeued;
-        private SqlServerWriteOnlyTransaction _transaction;
+        private SqlServerWriteOnlyTransaction? _transaction;
 
         private long _lastHeartbeat;
         private TimeSpan _interval;
 
         public SqlServerTimeoutJob(
-            [NotNull] SqlServerStorage storage,
+            SqlServerStorage storage,
             long id,
-            [NotNull] string jobId,
-            [NotNull] string queue,
-            [NotNull] DateTime? fetchedAt)
+            string jobId,
+            string queue,
+            DateTime fetchedAt)
         {
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
-            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
-            if (queue == null) throw new ArgumentNullException(nameof(queue));
-            if (fetchedAt == null) throw new ArgumentNullException(nameof(fetchedAt));
-
-            _storage = storage;
+            _storage = storage ?? throw new ArgumentNullException(nameof(storage));
 
             Id = id;
-            JobId = jobId;
-            Queue = queue;
-            FetchedAt = fetchedAt.Value;
+            JobId = jobId ?? throw new ArgumentNullException(nameof(jobId));
+            Queue = queue ?? throw new ArgumentNullException(nameof(queue));
+            FetchedAt = fetchedAt;
 
             if (storage.SlidingInvisibilityTimeout.HasValue)
             {

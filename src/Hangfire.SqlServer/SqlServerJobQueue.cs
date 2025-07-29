@@ -21,7 +21,6 @@ using System.Data.Common;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
-using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Storage;
 
@@ -47,16 +46,12 @@ namespace Hangfire.SqlServer
         private readonly SqlServerStorage _storage;
         private readonly SqlServerStorageOptions _options;
 
-        public SqlServerJobQueue([NotNull] SqlServerStorage storage, SqlServerStorageOptions options)
+        public SqlServerJobQueue(SqlServerStorage storage, SqlServerStorageOptions options)
         {
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
-            if (options == null) throw new ArgumentNullException(nameof(options));
-
-            _storage = storage;
-            _options = options;
+            _storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
-        [NotNull]
         public IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken)
         {
             if (queues == null) throw new ArgumentNullException(nameof(queues));
@@ -73,7 +68,7 @@ namespace Hangfire.SqlServer
 #if FEATURE_TRANSACTIONSCOPE
         public void Enqueue(IDbConnection connection, string queue, string jobId)
 #else
-        public void Enqueue(DbConnection connection, DbTransaction transaction, string queue, string jobId)
+        public void Enqueue(DbConnection connection, DbTransaction? transaction, string queue, string jobId)
 #endif
         {
             var query = _storage.GetQueryFromTemplate(static schemaName =>
@@ -128,7 +123,7 @@ $@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
             using var cancellationEvent = cancellationToken.GetCancellationEvent();
             var waitArray = GetWaitArrayForQueueSignals(_storage, queues, cancellationEvent);
 
-            SemaphoreSlim semaphore = null;
+            SemaphoreSlim? semaphore = null;
 
             try
             {
@@ -156,7 +151,7 @@ $@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
             }
 
             cancellationToken.ThrowIfCancellationRequested();
-            return null;
+            throw new OperationCanceledException();
         }
 
         private static SemaphoreSlim CreateSemaphore(Tuple<SqlServerStorage, string> _)
@@ -164,7 +159,7 @@ $@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
             return new SemaphoreSlim(initialCount: 1);
         }
 
-        private SqlServerTimeoutJob FetchJob(string[] queues)
+        private SqlServerTimeoutJob? FetchJob(string[] queues)
         {
             return _storage.UseConnection(static (storage, connection, queues) =>
             {
@@ -186,7 +181,7 @@ $@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
                 });
 
                 return fetchedJob != null
-                    ? new SqlServerTimeoutJob(storage, fetchedJob.Id, fetchedJob.JobId.ToString(CultureInfo.InvariantCulture), fetchedJob.Queue, fetchedJob.FetchedAt)  
+                    ? new SqlServerTimeoutJob(storage, fetchedJob.Id, fetchedJob.JobId.ToString(CultureInfo.InvariantCulture), fetchedJob.Queue, fetchedJob.FetchedAt!.Value)  
                     : null;
             }, queues);
         }
@@ -214,7 +209,7 @@ where Queue in @queues and
 
         private SqlServerTransactionJob DequeueUsingTransaction(string[] queues, CancellationToken cancellationToken)
         {
-            DbTransaction transaction = null;
+            DbTransaction? transaction = null;
 
             var pollInterval = _options.QueuePollInterval > TimeSpan.Zero
                 ? _options.QueuePollInterval
@@ -279,7 +274,7 @@ where Queue in @queues and
             }
 
             cancellationToken.ThrowIfCancellationRequested();
-            return null;
+            throw new OperationCanceledException();
         }
 
         private static DbCommand CreateTransactionalFetchCommand(
@@ -317,10 +312,10 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
 
         private sealed class FetchedJob
         {
-            public long Id { get; set; }
-            public long JobId { get; set; }
-            public string Queue { get; set; }
-            public DateTime FetchedAt { get; set; }
+            public required long Id { get; set; }
+            public required long JobId { get; set; }
+            public required string Queue { get; set; }
+            public DateTime? FetchedAt { get; set; }
         }
     }
 }

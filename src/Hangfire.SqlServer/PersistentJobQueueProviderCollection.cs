@@ -16,6 +16,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Hangfire.Annotations;
 
 namespace Hangfire.SqlServer
 {
@@ -28,16 +29,13 @@ namespace Hangfire.SqlServer
 
         private readonly IPersistentJobQueueProvider _defaultProvider;
 
-        public PersistentJobQueueProviderCollection(IPersistentJobQueueProvider defaultProvider)
+        public PersistentJobQueueProviderCollection([NotNull] IPersistentJobQueueProvider defaultProvider)
         {
-            if (defaultProvider == null) throw new ArgumentNullException(nameof(defaultProvider));
-
-            _defaultProvider = defaultProvider;
-
+            _defaultProvider = defaultProvider ?? throw new ArgumentNullException(nameof(defaultProvider));
             _providers.Add(_defaultProvider);
         }
 
-        public void Add(IPersistentJobQueueProvider provider, IEnumerable<string> queues)
+        public void Add([NotNull] IPersistentJobQueueProvider provider, [NotNull] IEnumerable<string> queues)
         {
             if (provider == null) throw new ArgumentNullException(nameof(provider));
             if (queues == null) throw new ArgumentNullException(nameof(queues));
@@ -50,7 +48,8 @@ namespace Hangfire.SqlServer
             }
         }
 
-        public IPersistentJobQueueProvider GetProvider(string queue)
+        [NotNull]
+        public IPersistentJobQueueProvider GetProvider([NotNull] string queue)
         {
             return _providersByQueue.TryGetValue(queue, out var provider) 
                 ? provider

@@ -19,7 +19,6 @@ using System.Data;
 using System.Data.Common;
 using System.Globalization;
 using System.Linq;
-using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.SqlServer.Entities;
 using Hangfire.States;
@@ -35,7 +34,7 @@ namespace Hangfire.SqlServer
         private readonly SqlServerStorage _storage;
         private readonly int? _jobListLimit;
 
-        public SqlServerMonitoringApi([NotNull] SqlServerStorage storage, int? jobListLimit)
+        public SqlServerMonitoringApi(SqlServerStorage storage, int? jobListLimit)
         {
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
             _jobListLimit = jobListLimit;
@@ -163,7 +162,7 @@ namespace Hangfire.SqlServer
                 {
                     var data = SerializationHelper.Deserialize<ServerData>(server.Data);
 
-                    if (data.Queues == null && data.StartedAt == null && data.WorkerCount == 0)
+                    if (data?.Queues == null && data?.StartedAt == null && data?.WorkerCount == 0)
                     {
                         data = SerializationHelper.Deserialize<ServerData>(server.Data, SerializationOption.User);
                     }
@@ -172,9 +171,9 @@ namespace Hangfire.SqlServer
                     {
                         Name = server.Id,
                         Heartbeat = server.LastHeartbeat,
-                        Queues = data.Queues,
-                        StartedAt = data.StartedAt ?? DateTime.MinValue,
-                        WorkersCount = data.WorkerCount
+                        Queues = data?.Queues ?? [],
+                        StartedAt = data?.StartedAt ?? DateTime.MinValue,
+                        WorkersCount = data?.WorkerCount ?? 0
                     });
                 }
 
@@ -270,8 +269,8 @@ namespace Hangfire.SqlServer
                 }), new KeyValuePair<int, int>(from, count));
 
             var parentIds = awaitingJobs
-                .Where(static x => x.Value != null && x.Value.InAwaitingState && x.Value.StateData.ContainsKey("ParentId"))
-                .Select(static x => long.Parse(x.Value.StateData["ParentId"], CultureInfo.InvariantCulture))
+                .Where(static x => x.Value != null && x.Value.InAwaitingState && x.Value.StateData!.ContainsKey("ParentId"))
+                .Select(static x => long.Parse(x.Value!.StateData!["ParentId"], CultureInfo.InvariantCulture))
                 .ToArray();
 
             var parentStates = parentIds.Length > 0 
@@ -289,11 +288,11 @@ namespace Hangfire.SqlServer
                         StateName = reader.GetOptionalString("StateName")
                     }).ToDictionary(static x => x.Id, static x => x.StateName);
                 }, parentIds)
-                : new Dictionary<long, string>();
+                : new Dictionary<long, string?>();
 
             foreach (var awaitingJob in awaitingJobs)
             {
-                if (awaitingJob.Value != null && awaitingJob.Value.InAwaitingState && awaitingJob.Value.StateData.TryGetValue("ParentId", out var parentIdString))
+                if (awaitingJob.Value != null && awaitingJob.Value.InAwaitingState && awaitingJob.Value!.StateData!.TryGetValue("ParentId", out var parentIdString))
                 {
                     var parentId = long.Parse(parentIdString, CultureInfo.InvariantCulture);
                     if (parentStates.TryGetValue(parentId, out var parentStateName))
@@ -387,7 +386,7 @@ namespace Hangfire.SqlServer
                 GetHourlyTimelineStats(storage, connection, "deleted"));
         }
 
-        public override JobDetailsDto JobDetails(string jobId)
+        public override JobDetailsDto? JobDetails(string jobId)
         {
             if (jobId == null) throw new ArgumentNullException(nameof(jobId));
 
@@ -416,13 +415,13 @@ select Name, Reason, Data, CreatedAt from [{schemaName}].State with (nolock, for
                 });
                 if (job == null) return null;
 
-                var parameters = multi.ReadListAndProceed(static reader => new KeyValuePair<string, string>(
+                var parameters = multi.ReadListAndProceed(static reader => new KeyValuePair<string, string?>(
                         reader.GetRequiredString("Name"), reader.GetOptionalString("Value")))
                     .GroupBy(static x => x.Key)
                     .Select(static grp => grp.First())
                     .ToDictionary(static x => x.Key, static x => x.Value);
 
-                var deserializedJob = DeserializeJob(job.InvocationData, job.Arguments, out var payload, out var exception);
+                var deserializedJob = DeserializeJob(job.InvocationData!, job.Arguments, out var payload, out var exception);
 
                 if (deserializedJob == null)
                 {
@@ -449,7 +448,7 @@ select Name, Reason, Data, CreatedAt from [{schemaName}].State with (nolock, for
                         StateName = reader.GetRequiredString("Name"),
                         Reason = reader.GetOptionalString("Reason"),
                         Data = new SafeDictionary<string, string>(
-                            SerializationHelper.Deserialize<Dictionary<string, string>>(reader.GetOptionalString("Data")),
+                            SerializationHelper.Deserialize<Dictionary<string, string>>(reader.GetOptionalString("Data")) ?? [],
                             StringComparer.OrdinalIgnoreCase),
                         CreatedAt = reader.GetRequiredDateTime("CreatedAt")
                     });
@@ -459,7 +458,7 @@ select Name, Reason, Data, CreatedAt from [{schemaName}].State with (nolock, for
                     CreatedAt = job.CreatedAt,
                     ExpireAt = job.ExpireAt,
                     Job = deserializedJob,
-                    InvocationData = payload,
+                    InvocationData = payload!,
                     LoadException = exception,
                     History = history,
                     Properties = parameters
@@ -662,7 +661,7 @@ where j.Id in @jobIds");
             return command.ExecuteScalar<int>();
         }
 
-        private static Job DeserializeJob(string invocationData, string arguments, out InvocationData data, out JobLoadException exception)
+        private static Job? DeserializeJob(string invocationData, string? arguments, out InvocationData data, out JobLoadException? exception)
         {
             data = InvocationData.DeserializePayload(invocationData);
 
@@ -690,7 +689,7 @@ where j.Id in @jobIds");
             int count,
             string stateName,
             bool descending,
-            Func<SqlJob, Job, InvocationData, JobLoadException, SafeDictionary<string, string>, TDto> selector)
+            Func<SqlJob, Job?, InvocationData, JobLoadException?, SafeDictionary<string, string>, TDto> selector)
         {
             var order = descending ? "desc" : "asc";
 
@@ -737,9 +736,9 @@ where cte.row_num between @start and @end", order);
 
         private static JobList<TDto> DeserializeJobs<TDto>(
             ICollection<SqlJob> jobs,
-            Func<SqlJob, Job, InvocationData, JobLoadException, SafeDictionary<string, string>, TDto> selector)
+            Func<SqlJob, Job?, InvocationData, JobLoadException?, SafeDictionary<string, string>, TDto> selector)
         {
-            var result = new List<KeyValuePair<string, TDto>>(jobs.Count);
+            var result = new List<KeyValuePair<string, TDto?>>(jobs.Count);
             
             // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (var job in jobs)
@@ -751,12 +750,12 @@ where cte.row_num between @start and @end", order);
                     var deserializedData = SerializationHelper.Deserialize<Dictionary<string, string>>(job.StateData);
                     var stateData = deserializedData != null
                         ? new SafeDictionary<string, string>(deserializedData, StringComparer.OrdinalIgnoreCase)
-                        : null;
+                        : new SafeDictionary<string, string>();
 
                     dto = selector(job, DeserializeJob(job.InvocationData, job.Arguments, out var invocationData, out var loadException), invocationData, loadException, stateData);
                 }
 
-                result.Add(new KeyValuePair<string, TDto>(
+                result.Add(new KeyValuePair<string, TDto?>(
                     job.Id.ToString(CultureInfo.InvariantCulture), dto));
             }
 
@@ -789,16 +788,16 @@ where j.Id in @jobIds");
                 StateChanged = reader.GetOptionalDateTime("StateChanged")
             });
 
-            var result = new List<KeyValuePair<string, FetchedJobDto>>(jobs.Count);
+            var result = new List<KeyValuePair<string, FetchedJobDto?>>(jobs.Count);
 
             // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (var job in jobs)
             {
-                result.Add(new KeyValuePair<string, FetchedJobDto>(
+                result.Add(new KeyValuePair<string, FetchedJobDto?>(
                     job.Id.ToString(CultureInfo.InvariantCulture),
                     new FetchedJobDto
                     {
-                        Job = DeserializeJob(job.InvocationData, job.Arguments, out _, out _),
+                        Job = DeserializeJob(job.InvocationData!, job.Arguments, out _, out _),
                         State = job.StateName,
                     }));
             }
@@ -812,22 +811,22 @@ where j.Id in @jobIds");
         /// </summary>
         private sealed class SafeDictionary<TKey, TValue> : Dictionary<TKey, TValue>
         {
+            public SafeDictionary()
+            {
+            }
+
             public SafeDictionary(IDictionary<TKey, TValue> dictionary, IEqualityComparer<TKey> comparer) 
                 : base(dictionary, comparer)
             {
             }
 
-            public new TValue this[TKey i]
-            {
-                get => TryGetValue(i, out var value) ? value : default(TValue);
-                set => base[i] = value;
-            }
+            public new TValue? this[TKey i] => TryGetValue(i, out var value) ? value : default(TValue);
         }
 
         private sealed class ParentStateDto
         {
             public long Id { get; set; }
-            public string StateName { get; set; }
+            public string? StateName { get; set; }
         }
     }
 }

@@ -20,7 +20,6 @@ using System.Data.Common;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
-using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Server;
 using Hangfire.SqlServer.Entities;
@@ -35,14 +34,13 @@ namespace Hangfire.SqlServer
         private readonly SqlServerStorage _storage;
         private readonly Dictionary<string, HashSet<Guid>> _lockedResources = new Dictionary<string, HashSet<Guid>>();
 
-        public SqlServerConnection([NotNull] SqlServerStorage storage)
+        public SqlServerConnection(SqlServerStorage storage)
         {
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
-            _storage = storage;
+            _storage = storage ?? throw new ArgumentNullException(nameof(storage));
         }
 
         public SqlServerStorage Storage => _storage;
-        public DbConnection DedicatedConnection => _dedicatedConnection;
+        public DbConnection? DedicatedConnection => _dedicatedConnection;
 
         public override void Dispose()
         {
@@ -60,10 +58,10 @@ namespace Hangfire.SqlServer
             return new SqlServerWriteOnlyTransaction(this);
         }
 
-        public override IDisposable AcquireDistributedLock([NotNull] string resource, TimeSpan timeout)
+        public override IDisposable AcquireDistributedLock(string resource, TimeSpan timeout)
         {
             if (String.IsNullOrWhiteSpace(resource)) throw new ArgumentNullException(nameof(resource));
-            return AcquireLock($"{_storage.SchemaName}:{resource}", timeout);
+            return AcquireLock($"{_storage.SchemaName}:{resource}", timeout, out _);
         }
 
         public override IFetchedJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
@@ -87,7 +85,7 @@ namespace Hangfire.SqlServer
 
         public override string CreateExpiredJob(
             Job job,
-            IDictionary<string, string> parameters, 
+            IDictionary<string, string?> parameters, 
             DateTime createdAt,
             TimeSpan expireIn)
         {
@@ -108,7 +106,7 @@ values (@invocationData, @arguments, @createdAt, @expireAt)");
                 .AddParameter("@createdAt", createdAt, DbType.DateTime)
                 .AddParameter("@expireAt", createdAt.Add(expireIn), DbType.DateTime);
 
-            Action<DbCommand> additionalParameters = null;
+            Action<DbCommand>? additionalParameters = null;
 
             var parametersArray = parameters.ToArray();
 
@@ -187,9 +185,9 @@ commit tran;");
 
                         return command.ExecuteScalar<long>().ToString(CultureInfo.InvariantCulture);
                     },
-                    new KeyValuePair<string, KeyValuePair<Action<DbCommand>, Action<DbCommand>>>(
+                    new KeyValuePair<string, KeyValuePair<Action<DbCommand>, Action<DbCommand>?>>(
                         queryString,
-                        new KeyValuePair<Action<DbCommand>, Action<DbCommand>>(queryParameters, additionalParameters)));
+                        new KeyValuePair<Action<DbCommand>, Action<DbCommand>?>(queryParameters, additionalParameters)));
             }
 
             return _storage.UseTransaction(_dedicatedConnection, static (storage, connection, transaction, triple) =>
@@ -224,7 +222,7 @@ $@"insert into [{schemaName}].JobParameter (JobId, Name, Value) values (@jobId, 
             }, CreateTriple(queryString, queryParameters, parametersArray), null);
         }
 
-        public override JobData GetJobData(string id)
+        public override JobData? GetJobData(string id)
         {
             if (id == null) throw new ArgumentNullException(nameof(id));
 
@@ -253,10 +251,10 @@ select Name, Value from [{schemaName}].JobParameter with (forceseek) where JobId
                     });
                     if (jobData == null) return null;
 
-                    var jobParameters = reader.ReadListAndFinish(static reader => new KeyValuePair<string, string>(
+                    var jobParameters = reader.ReadListAndFinish(static reader => new KeyValuePair<string, string?>(
                         reader.GetRequiredString("Name"), reader.GetOptionalString("Value")));
 
-                    var parameters = new Dictionary<string, string>();
+                    var parameters = new Dictionary<string, string?>();
 
                     foreach (var jobParameter in jobParameters)
                     {
@@ -264,15 +262,15 @@ select Name, Value from [{schemaName}].JobParameter with (forceseek) where JobId
                     }
 
                     // TODO: conversion exception could be thrown.
-                    var invocationData = InvocationData.DeserializePayload(jobData.InvocationData);
+                    var invocationData = InvocationData.DeserializePayload(jobData.InvocationData!);
 
                     if (!String.IsNullOrEmpty(jobData.Arguments))
                     {
                         invocationData.Arguments = jobData.Arguments;
                     }
 
-                    Job job = null;
-                    JobLoadException loadException = null;
+                    Job? job = null;
+                    JobLoadException? loadException = null;
 
                     try
                     {
@@ -296,7 +294,7 @@ select Name, Value from [{schemaName}].JobParameter with (forceseek) where JobId
             }, parsedId);
         }
 
-        public override StateData GetStateData(string jobId)
+        public override StateData? GetStateData(string jobId)
         {
             if (jobId == null) throw new ArgumentNullException(nameof(jobId));
 
@@ -341,7 +339,7 @@ where j.Id = @jobId");
             }, parsedId);
         }
 
-        public override void SetJobParameter(string id, string name, string value)
+        public override void SetJobParameter(string id, string name, string? value)
         {
             if (id == null) throw new ArgumentNullException(nameof(id));
             if (name == null) throw new ArgumentNullException(nameof(name));
@@ -378,7 +376,7 @@ end catch");
             }, CreateTriple(long.Parse(id, CultureInfo.InvariantCulture), name, value));
         }
 
-        public override string GetJobParameter(string id, string name)
+        public override string? GetJobParameter(string id, string name)
         {
             if (id == null) throw new ArgumentNullException(nameof(id));
             if (name == null) throw new ArgumentNullException(nameof(name));
@@ -421,7 +419,7 @@ $@"select Value from [{schemaName}].[Set] with (forceseek) where [Key] = @key");
             }, key);
         }
 
-        public override string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)
+        public override string? GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)
         {
             return GetFirstByLowestScoreFromSet(key, fromScore, toScore, 1).FirstOrDefault();
         }
@@ -447,7 +445,7 @@ $@"select top (@count) Value from [{schemaName}].[Set] with (forceseek) where [K
             }, new KeyValuePair<string, ValueTriple<double, double, int>>(key, CreateTriple(fromScore, toScore, count)));
         }
 
-        public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
+        public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string?>> keyValuePairs)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
@@ -498,10 +496,10 @@ end catch");
 
                     commandBatch.ExecuteNonQuery();
                 }
-            }, new KeyValuePair<string, IEnumerable<KeyValuePair<string, string>>>(key, keyValuePairs));
+            }, new KeyValuePair<string, IEnumerable<KeyValuePair<string, string?>>>(key, keyValuePairs));
         }
 
-        public override Dictionary<string, string> GetAllEntriesFromHash(string key)
+        public override Dictionary<string, string>? GetAllEntriesFromHash(string key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
@@ -513,12 +511,14 @@ $@"select Field, Value from [{schemaName}].Hash with (forceseek) where [Key] = @
                 using var command = connection.CreateCommand(query, timeout: storage.CommandTimeout)
                     .AddParameter("@key", key, DbType.String);
 
-                var result = command.ExecuteList(static reader => new KeyValuePair<string, string>(
+                var result = command.ExecuteList(static reader => new KeyValuePair<string, string?>(
                     reader.GetRequiredString("Field"),
                     reader.GetOptionalString("Value")));
 
-                return result.Count != 0 
-                    ? result.ToDictionary(static x => x.Key, static x => x.Value)
+                return result.Count != 0
+                    ? result
+                        .Where(static x => x.Value != null)
+                        .ToDictionary<KeyValuePair<string, string?>, string, string>(static x => x.Key, static x => x.Value!)
                     : null;
             }, key);
         }
@@ -837,7 +837,7 @@ $@"select [Value] from (
                     .AddParameter("@startingFrom", triple.Item2 + 1, DbType.Int32)
                     .AddParameter("@endingAt", triple.Item3 + 1, DbType.Int32);
 
-                return command.ExecuteList(static reader => reader.GetOptionalString("Value"));
+                return command.ExecuteList(static reader => reader.GetRequiredString("Value"));
             }, CreateTriple(key, startingFrom, endingAt));
         }
 
@@ -855,7 +855,7 @@ order by [Id] desc");
                 using var command = connection.CreateCommand(query, timeout: storage.CommandTimeout)
                     .AddParameter("@key", key, DbType.String);
 
-                return command.ExecuteList(static reader => reader.GetOptionalString("Value"));
+                return command.ExecuteList(static reader => reader.GetRequiredString("Value"));
             }, key);
         }
 
@@ -868,14 +868,12 @@ order by [Id] desc");
             });
         }
 
-        private DbConnection _dedicatedConnection;
+        private DbConnection? _dedicatedConnection;
 
-        internal DisposableLock AcquireLock(string resource, TimeSpan timeout)
+        internal DisposableLock AcquireLock(string resource, TimeSpan timeout, out DbConnection dedicatedConnection)
         {
-            if (_dedicatedConnection == null)
-            {
-                _dedicatedConnection = _storage.CreateAndOpenConnection();
-            }
+            _dedicatedConnection ??= _storage.CreateAndOpenConnection();
+            dedicatedConnection = _dedicatedConnection;
 
             var lockId = Guid.NewGuid();
             var ownLock = false;
@@ -911,7 +909,7 @@ order by [Id] desc");
                         if (lockIds.Remove(lockId) &&
                             lockIds.Count == 0 &&
                             _lockedResources.Remove(resource) &&
-                            _dedicatedConnection.State == ConnectionState.Open)
+                            _dedicatedConnection?.State == ConnectionState.Open)
                         {
                             // Session-scoped application locks are held only when connection
                             // is open. When connection is closed or broken, for example, when

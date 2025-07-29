@@ -16,6 +16,7 @@
 using System;
 using System.Data.Common;
 using System.Reflection;
+using Hangfire.Annotations;
 #if FEATURE_TRANSACTIONSCOPE
 using System.Transactions;
 #else
@@ -30,7 +31,7 @@ namespace Hangfire.SqlServer
         private string _schemaName;
         private TimeSpan _jobExpirationCheckInterval;
         private TimeSpan? _slidingInvisibilityTimeout;
-        private DbProviderFactory _sqlClientFactory;
+        private DbProviderFactory? _sqlClientFactory;
 
         public SqlServerStorageOptions()
         {
@@ -55,7 +56,7 @@ namespace Hangfire.SqlServer
             InactiveStateExpirationTimeout = TimeSpan.Zero;
         }
 
-        private static DbProviderFactory GetDefaultSqlClientFactory()
+        private static DbProviderFactory? GetDefaultSqlClientFactory()
         {
             var dbProviderFactoryTypes = new[]
             {
@@ -157,7 +158,8 @@ namespace Hangfire.SqlServer
             }
         }
 
-        public Func<IDisposable> ImpersonationFunc { get; set; }
+        [CanBeNull]
+        public Func<IDisposable>? ImpersonationFunc { get; set; }
         public bool DisableGlobalLocks { get; set; }
         
         [Obsolete("This option is deprecated and doesn't change anything. You can safely remove it. Will be removed in 2.0.0.")]
@@ -195,6 +197,7 @@ namespace Hangfire.SqlServer
         /// <c>Microsoft.Data.SqlClient.SqlClientFactory</c> depending on which package reference exists
         /// on the consuming project.
         /// </summary>
+        [NotNull]
         public DbProviderFactory SqlClientFactory
         {
             get => _sqlClientFactory ?? throw new InvalidOperationException("Please add a NuGet package reference to either 'Microsoft.Data.SqlClient' or 'System.Data.SqlClient' in your application project. " +
@@ -214,6 +217,7 @@ namespace Hangfire.SqlServer
         /// Gets or sets a default queue provider that will be used when no special provider was
         /// registered for a particular queue.
         /// </summary>
-        public IPersistentJobQueueProvider DefaultQueueProvider { get; set; }
+        [CanBeNull]
+        public IPersistentJobQueueProvider? DefaultQueueProvider { get; set; }
     }
 }

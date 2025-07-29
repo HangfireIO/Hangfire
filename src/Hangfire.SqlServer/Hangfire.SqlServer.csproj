@@ -4,6 +4,7 @@
     <Description>SQL Server job storage for Hangfire</Description>
     <TargetFrameworks>net451;netstandard1.3;netstandard2.0;</TargetFrameworks>
     <RootNamespace>Hangfire.SqlServer</RootNamespace>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(TargetFramework)'=='net451'">

@@ -18,7 +18,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
-using Hangfire.Annotations;
 
 // ReSharper disable RedundantAnonymousTypePropertyName
 
@@ -32,9 +31,9 @@ namespace Hangfire.SqlServer
         private readonly object _cacheLock = new object();
 
         private List<string> _queuesCache = new List<string>();
-        private Stopwatch _cacheUpdated;
+        private Stopwatch? _cacheUpdated;
 
-        public SqlServerJobQueueMonitoringApi([NotNull] SqlServerStorage storage)
+        public SqlServerJobQueueMonitoringApi(SqlServerStorage storage)
         {
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
         }
@@ -43,7 +42,7 @@ namespace Hangfire.SqlServer
         {
             lock (_cacheLock)
             {
-                if (_queuesCache.Count == 0 || _cacheUpdated.Elapsed > QueuesCacheTimeout)
+                if (_queuesCache.Count == 0 || _cacheUpdated?.Elapsed > QueuesCacheTimeout)
                 {
                     var result = _storage.UseConnection(static (storage, connection) =>
                     {
@@ -134,12 +133,6 @@ from (
                     FetchedCount = reader.GetOptionalValue<int?>("FetchedCount")
                 });
             }, queue);
-        }
-
-        private sealed class JobIdDto
-        {
-            [UsedImplicitly]
-            public long JobId { get; set; }
         }
     }
 }

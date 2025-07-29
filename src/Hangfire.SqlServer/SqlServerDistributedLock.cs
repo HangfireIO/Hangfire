@@ -50,10 +50,10 @@ namespace Hangfire.SqlServer
         private static readonly ThreadLocal<Dictionary<string, int>> AcquiredLocks
             = new ThreadLocal<Dictionary<string, int>>(static () => new Dictionary<string, int>()); 
 
-        private DbConnection _connection;
+        private DbConnection? _connection;
         private readonly SqlServerStorage _storage;
         private readonly string _resource;
-        private readonly Timer _timer;
+        private readonly Timer? _timer;
         private readonly object _lockObject = new object();
 
         private bool _completed;
@@ -119,7 +119,7 @@ namespace Hangfire.SqlServer
 
                     _timer?.Dispose();
 
-                    if (_connection.State == ConnectionState.Open)
+                    if (_connection?.State == ConnectionState.Open)
                     {
                         // Session-scoped application locks are held only when connection
                         // is open. When connection is closed or broken, for example, when

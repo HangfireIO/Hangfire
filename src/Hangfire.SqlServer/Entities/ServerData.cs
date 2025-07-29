@@ -19,8 +19,8 @@ namespace Hangfire.SqlServer.Entities
 {
     internal sealed class ServerData
     {
-        public int WorkerCount { get; set; }
-        public string[] Queues { get; set; }
-        public DateTime? StartedAt { get; set; }
+        public required int WorkerCount { get; set; }
+        public required string[] Queues { get; set; }
+        public required DateTime? StartedAt { get; set; }
     }
 }

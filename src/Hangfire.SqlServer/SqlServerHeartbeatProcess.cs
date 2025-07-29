@@ -25,8 +25,8 @@ namespace Hangfire.SqlServer
     internal sealed class SqlServerHeartbeatProcess : IServerComponent, IBackgroundProcess
 #pragma warning restore CS0618
     {
-        private readonly ConcurrentDictionary<SqlServerTimeoutJob, object> _items =
-            new ConcurrentDictionary<SqlServerTimeoutJob, object>();
+        private readonly ConcurrentDictionary<SqlServerTimeoutJob, object?> _items =
+            new ConcurrentDictionary<SqlServerTimeoutJob, object?>();
 
         public void Track(SqlServerTimeoutJob item)
         {

@@ -43,10 +43,10 @@ namespace Hangfire.SqlServer
 
         private readonly ConcurrentDictionary<KeyValuePair<Func<string, string>, string>, string> _queryTemplateCache = new(new QueryTemplateKeyEqualityComparer());
 
-        private readonly DbConnection _existingConnection;
+        private readonly DbConnection? _existingConnection;
         private readonly Func<DbConnection> _connectionFactory;
         private readonly SqlServerStorageOptions _options;
-        private readonly string _connectionString;
+        private readonly string? _connectionString;
         private string _escapedSchemaName;
         private SqlServerHeartbeatProcess _heartbeatProcess;
 
@@ -113,11 +113,9 @@ namespace Hangfire.SqlServer
         /// </summary>
         public SqlServerStorage([NotNull] DbConnection existingConnection, [NotNull] SqlServerStorageOptions options)
         {
-            if (existingConnection == null) throw new ArgumentNullException(nameof(existingConnection));
-            if (options == null) throw new ArgumentNullException(nameof(options));
-
-            _existingConnection = existingConnection;
-            _options = options;
+            _existingConnection = existingConnection ?? throw new ArgumentNullException(nameof(existingConnection));
+            _connectionFactory = () => throw new InvalidOperationException("Existing connection should be used when specified");
+            _options = options ?? throw new ArgumentNullException(nameof(options));
 
             Initialize();
         }
@@ -139,11 +137,8 @@ namespace Hangfire.SqlServer
         /// </summary>
         public SqlServerStorage([NotNull] Func<DbConnection> connectionFactory, [NotNull] SqlServerStorageOptions options)
         {
-            if (connectionFactory == null) throw new ArgumentNullException(nameof(connectionFactory));
-            if (options == null) throw new ArgumentNullException(nameof(options));
-
-            _connectionFactory = connectionFactory;
-            _options = options;
+            _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
 
             Initialize();
         }
@@ -261,7 +256,7 @@ namespace Hangfire.SqlServer
         }
 
         internal void UseConnection(
-            DbConnection dedicatedConnection,
+            DbConnection? dedicatedConnection,
             [InstantHandle] Action<SqlServerStorage, DbConnection> action)
         {
             UseConnection(dedicatedConnection, static (storage, connection, ctx) =>
@@ -278,7 +273,7 @@ namespace Hangfire.SqlServer
         }
 
         internal TResult UseConnection<TResult>(
-            DbConnection dedicatedConnection,
+            DbConnection? dedicatedConnection,
             [InstantHandle] Func<SqlServerStorage, DbConnection, TResult> action)
         {
             return UseConnection(dedicatedConnection, static (storage, connection, ctx) => ctx(storage, connection), action);
@@ -292,11 +287,11 @@ namespace Hangfire.SqlServer
         }
 
         internal TResult UseConnection<TContext, TResult>(
-            DbConnection dedicatedConnection,
+            DbConnection? dedicatedConnection,
             [InstantHandle] Func<SqlServerStorage, DbConnection, TContext, TResult> func,
             TContext context)
         {
-            DbConnection connection = null;
+            DbConnection? connection = null;
 
             try
             {
@@ -313,20 +308,20 @@ namespace Hangfire.SqlServer
         }
 
         internal void UseTransaction<TContext>(
-            DbConnection dedicatedConnection,
-            [InstantHandle] Action<SqlServerStorage, DbConnection, DbTransaction, TContext> action,
+            DbConnection? dedicatedConnection,
+            [InstantHandle] Action<SqlServerStorage, DbConnection, DbTransaction?, TContext> action,
             TContext context)
         {
             UseTransaction(dedicatedConnection, static (storage, connection, transaction, ctx) =>
             {
                 ctx.Key(storage, connection, transaction, ctx.Value);
                 return true;
-            }, new KeyValuePair<Action<SqlServerStorage, DbConnection, DbTransaction, TContext>, TContext>(action, context), null);
+            }, new KeyValuePair<Action<SqlServerStorage, DbConnection, DbTransaction?, TContext>, TContext>(action, context), null);
         }
         
         internal TResult UseTransaction<TContext, TResult>(
-            DbConnection dedicatedConnection,
-            [InstantHandle] Func<SqlServerStorage, DbConnection, DbTransaction, TContext, TResult> func,
+            DbConnection? dedicatedConnection,
+            [InstantHandle] Func<SqlServerStorage, DbConnection, DbTransaction?, TContext, TResult> func,
             TContext context,
             IsolationLevel? isolationLevel)
         {
@@ -345,7 +340,7 @@ namespace Hangfire.SqlServer
                     {
                         connection.EnlistTransaction(Transaction.Current);
                         return ctx.Key(storage, connection, null, ctx.Value);
-                    }, new KeyValuePair<Func<SqlServerStorage, DbConnection, DbTransaction, TContext, TResult>, TContext>(func, context));
+                    }, new KeyValuePair<Func<SqlServerStorage, DbConnection, DbTransaction?, TContext, TResult>, TContext>(func, context));
 
                     transaction.Complete();
 
@@ -407,7 +402,7 @@ namespace Hangfire.SqlServer
         {
             using (_options.ImpersonationFunc?.Invoke())
             {
-                DbConnection connection = null;
+                DbConnection? connection = null;
 
                 try
                 {
@@ -428,12 +423,12 @@ namespace Hangfire.SqlServer
             }
         }
 
-        internal bool IsExistingConnection(IDbConnection connection)
+        internal bool IsExistingConnection(IDbConnection? connection)
         {
             return connection != null && ReferenceEquals(connection, _existingConnection);
         }
 
-        internal void ReleaseConnection(IDbConnection connection)
+        internal void ReleaseConnection(IDbConnection? connection)
         {
             if (connection != null && !IsExistingConnection(connection))
             {
@@ -457,6 +452,9 @@ namespace Hangfire.SqlServer
 #endif
         }
 
+        [System.Diagnostics.CodeAnalysis.MemberNotNull(nameof(_escapedSchemaName))]
+        [System.Diagnostics.CodeAnalysis.MemberNotNull(nameof(_heartbeatProcess))]
+        [System.Diagnostics.CodeAnalysis.MemberNotNull(nameof(QueueProviders))]
         private void Initialize()
         {
             _escapedSchemaName = _options.SchemaName.Replace("]", "]]");
@@ -468,7 +466,7 @@ namespace Hangfire.SqlServer
 
                 log.Info("Start installing Hangfire SQL objects...");
 
-                Exception lastException = null;
+                Exception? lastException = null;
 
                 for (var i = 0; i < RetryAttempts; i++)
                 {
@@ -536,6 +534,7 @@ namespace Hangfire.SqlServer
                 _options.UseTransactionalAcknowledge);
         }
 
+        [System.Diagnostics.CodeAnalysis.MemberNotNull(nameof(QueueProviders))]
         private void InitializeQueueProviders()
         {
             var defaultQueueProvider = _options.DefaultQueueProvider ?? new SqlServerJobQueueProvider(this, _options);
@@ -730,8 +729,8 @@ where type = 1;";
                 });
             });
 
-        public static readonly Func<string, string, string, DashboardMetric> PerformanceCounterDatabaseMetric = 
-            static (string objectName, string counterName, string instanceName) => new DashboardMetric(
+        public static readonly Func<string, string, string?, DashboardMetric> PerformanceCounterDatabaseMetric = 
+            static (string objectName, string counterName, string? instanceName) => new DashboardMetric(
             $"sqlserver:counter:{objectName}:{counterName}:{instanceName ?? "db"}",
             counterName,
             page =>

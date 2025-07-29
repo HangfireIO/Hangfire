@@ -27,7 +27,7 @@ namespace Hangfire.SqlServer
         private static readonly ConcurrentDictionary<Assembly, Type> SqlCommandSetType = new ConcurrentDictionary<Assembly, Type>();
         private static readonly ConcurrentDictionary<Type, Func<object>> CreateInstance = new ConcurrentDictionary<Type, Func<object>>();
         private static readonly ConcurrentDictionary<Type, Action<object, DbConnection>> SetConnection = new ConcurrentDictionary<Type, Action<object, DbConnection>>();
-        private static readonly ConcurrentDictionary<Type, Action<object, DbTransaction>> SetTransaction = new ConcurrentDictionary<Type, Action<object, DbTransaction>>();
+        private static readonly ConcurrentDictionary<Type, Action<object, DbTransaction?>> SetTransaction = new ConcurrentDictionary<Type, Action<object, DbTransaction?>>();
         private static readonly ConcurrentDictionary<Type, Func<object, DbCommand>> GetBatchCommand = new ConcurrentDictionary<Type, Func<object, DbCommand>>();
         private static readonly ConcurrentDictionary<Type, Action<object, DbCommand>> AppendMethod = new ConcurrentDictionary<Type, Action<object, DbCommand>>();
         private static readonly ConcurrentDictionary<Type, Func<object, int>> ExecuteNonQueryMethod = new ConcurrentDictionary<Type, Func<object, int>>();
@@ -36,7 +36,7 @@ namespace Hangfire.SqlServer
         private readonly object _instance;
 
         private readonly Action<object, DbConnection> _setConnection;
-        private readonly Action<object, DbTransaction> _setTransaction;
+        private readonly Action<object, DbTransaction?> _setTransaction;
         private readonly Func<object, DbCommand> _getBatchCommand;
         private readonly Action<object, DbCommand> _appendMethod;
         private readonly Func<object, int> _executeNonQueryMethod;
@@ -84,7 +84,7 @@ namespace Hangfire.SqlServer
                     var converted = Expression.Convert(p, type);
                     var transactionParameter = Expression.Parameter(typeof(DbTransaction));
                     var transactionProperty = type.GetProperty("Transaction", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic) ?? throw new MissingMemberException($"Property '{type.FullName}.Transaction' not found.");
-                    return Expression.Lambda<Action<object, DbTransaction>>(Expression.Assign(Expression.Property(converted, transactionProperty), Expression.Convert(transactionParameter, transactionProperty.PropertyType)), p, transactionParameter).Compile();
+                    return Expression.Lambda<Action<object, DbTransaction?>>(Expression.Assign(Expression.Property(converted, transactionProperty), Expression.Convert(transactionParameter, transactionProperty.PropertyType)), p, transactionParameter).Compile();
                 });
                 _getBatchCommand = GetBatchCommand.GetOrAdd(sqlCommandSetType, static type =>
                 {
@@ -141,7 +141,7 @@ namespace Hangfire.SqlServer
             set => _setConnection(_instance, value);
         }
 
-        public DbTransaction Transaction
+        public DbTransaction? Transaction
         {
             set => _setTransaction(_instance, value);
         }

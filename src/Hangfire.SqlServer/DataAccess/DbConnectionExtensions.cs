@@ -16,15 +16,14 @@
 using System;
 using System.Data;
 using System.Data.Common;
-using Hangfire.Annotations;
 
 namespace Hangfire.SqlServer
 {
     internal static class DbConnectionExtensions
     {
         public static DbCommand CreateCommand(
-            [NotNull] this DbConnection connection,
-            [NotNull] string text,
+            this DbConnection connection,
+            string text,
             CommandType type = CommandType.Text,
             int? timeout = null)
         {

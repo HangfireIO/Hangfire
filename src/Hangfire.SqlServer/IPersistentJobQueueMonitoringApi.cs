@@ -14,18 +14,23 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
+using Hangfire.Annotations;
 
 namespace Hangfire.SqlServer
 {
     public interface IPersistentJobQueueMonitoringApi
     {
+        [NotNull]
         IEnumerable<string> GetQueues();
 
-        IEnumerable<long> GetEnqueuedJobIds(string queue, int from, int perPage);
+        [NotNull]
+        IEnumerable<long> GetEnqueuedJobIds([NotNull] string queue, int from, int perPage);
 
         // TODO: Extend return type by including DateTime to allow getting the FetchedAt value in 2.0
-        IEnumerable<long> GetFetchedJobIds(string queue, int from, int perPage);
+        [NotNull]
+        IEnumerable<long> GetFetchedJobIds([NotNull] string queue, int from, int perPage);
 
-        EnqueuedAndFetchedCountDto GetEnqueuedAndFetchedCount(string queue);
+        [NotNull]
+        EnqueuedAndFetchedCountDto GetEnqueuedAndFetchedCount([NotNull] string queue);
     }
 }

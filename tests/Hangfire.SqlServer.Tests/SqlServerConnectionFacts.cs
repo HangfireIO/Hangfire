@@ -1587,7 +1587,7 @@ values (@key, @field, @value)";
 
         [Theory, CleanDatabase]
         [InlineData(false), InlineData(true)]
-        public void GetAllEntriesFromHash_CanReturnFieldsWithNullValues(bool useMicrosoftDataSqlClient)
+        public void GetAllEntriesFromHash_DoNotReturnFieldsWithNullValues(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Hash ([Key], [Field], [Value])
@@ -1607,10 +1607,9 @@ values (@key, @field, @value)";
                 var result = connection.GetAllEntriesFromHash("some-hash");
 
                 // Assert
-                Assert.NotNull(result);
-                Assert.Equal(2, result.Count);
+                Assert.Single(result);
                 Assert.Equal("Value1", result["Key1"]);
-                Assert.Null(result["Key2"]);
+                Assert.DoesNotContain("Key2", result.Keys);
             }, useBatching: false, useMicrosoftDataSqlClient);
         }
 

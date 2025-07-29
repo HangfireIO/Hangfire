@@ -16,7 +16,6 @@
 using System;
 using System.Data.Common;
 using System.Threading;
-using Hangfire.Annotations;
 using Hangfire.Storage;
 
 namespace Hangfire.SqlServer
@@ -31,30 +30,24 @@ namespace Hangfire.SqlServer
         private static readonly TimeSpan KeepAliveInterval = TimeSpan.FromMinutes(1);
 
         private readonly SqlServerStorage _storage;
-        private DbConnection _connection;
+        private DbConnection? _connection;
         private readonly DbTransaction _transaction;
-        private readonly Timer _timer;
+        private readonly Timer? _timer;
         private readonly object _lockObject = new object();
 
         public SqlServerTransactionJob(
-            [NotNull] SqlServerStorage storage,
-            [NotNull] DbConnection connection, 
-            [NotNull] DbTransaction transaction, 
+            SqlServerStorage storage,
+            DbConnection connection, 
+            DbTransaction transaction, 
             string jobId, 
             string queue)
         {
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
-            if (connection == null) throw new ArgumentNullException(nameof(connection));
-            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
-            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
-            if (queue == null) throw new ArgumentNullException(nameof(queue));
+            _storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            _connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            _transaction = transaction ?? throw new ArgumentNullException(nameof(transaction));
 
-            _storage = storage;
-            _connection = connection;
-            _transaction = transaction;
-
-            JobId = jobId;
-            Queue = queue;
+            JobId = jobId ?? throw new ArgumentNullException(nameof(jobId));
+            Queue = queue ?? throw new ArgumentNullException(nameof(queue));
 
             if (!_storage.IsExistingConnection(_connection))
             {

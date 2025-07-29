@@ -22,10 +22,10 @@ namespace Hangfire.SqlServer
     internal sealed class SqlCommandBatch : IDisposable
     {
         private readonly List<DbCommand> _commandList = new List<DbCommand>();
-        private readonly SqlCommandSet _commandSet;
+        private readonly SqlCommandSet? _commandSet;
         private readonly int _defaultTimeout;
 
-        public SqlCommandBatch(DbConnection connection, DbTransaction transaction, bool preferBatching)
+        public SqlCommandBatch(DbConnection connection, DbTransaction? transaction, bool preferBatching)
         {
             Connection = connection;
             Transaction = transaction;
@@ -45,7 +45,7 @@ namespace Hangfire.SqlServer
         }
 
         public DbConnection Connection { get; }
-        public DbTransaction Transaction { get; }
+        public DbTransaction? Transaction { get; }
 
         public int? CommandTimeout { get; set; }
         public int? CommandBatchMaxTimeout { get; set; }

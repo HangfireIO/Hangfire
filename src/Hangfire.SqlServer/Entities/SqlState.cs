@@ -13,16 +13,12 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-
 namespace Hangfire.SqlServer.Entities
 {
     internal sealed class SqlState
     {
-        public long JobId { get; set; }
-        public string Name { get; set; }
-        public string Reason { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public string Data { get; set; }
+        public required string Name { get; set; }
+        public required string? Reason { get; set; }
+        public required string? Data { get; set; }
     }
 }

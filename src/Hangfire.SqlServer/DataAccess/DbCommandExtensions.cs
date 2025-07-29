@@ -18,9 +18,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
-using Hangfire.Annotations;
 
 namespace Hangfire.SqlServer
 {
@@ -30,11 +30,11 @@ namespace Hangfire.SqlServer
             new ConcurrentDictionary<KeyValuePair<string, KeyValuePair<string, int>>, string>();
 
         public static DbCommand AddParameter(
-            [NotNull] this DbCommand command,
-            [NotNull] string parameterName,
-            [CanBeNull] object value,
+            this DbCommand command,
+            string parameterName,
+            object? value,
             DbType dbType,
-            [CanBeNull] int? size = null)
+            int? size = null)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
             if (parameterName == null) throw new ArgumentNullException(nameof(parameterName));
@@ -46,7 +46,7 @@ namespace Hangfire.SqlServer
         }
 
         public static DbCommand AddReturnParameter(
-            [NotNull] this DbCommand command,
+            this DbCommand command,
             string parameterName,
             out DbParameter parameter,
             DbType dbType,
@@ -63,9 +63,9 @@ namespace Hangfire.SqlServer
         }
 
         public static DbCommand AddExpandedParameter<T>(
-            [NotNull] this DbCommand command,
-            [NotNull] string parameterName,
-            [NotNull] IReadOnlyList<T> parameterValues,
+            this DbCommand command,
+            string parameterName,
+            IReadOnlyList<T> parameterValues,
             DbType parameterType,
             int? parameterSize = null)
         {
@@ -85,19 +85,19 @@ namespace Hangfire.SqlServer
             for (var i = 0; i < parameterValues.Count; i++)
             {
                 var parameter = AddParameterInternal(command, parameterName + i.ToString(CultureInfo.InvariantCulture), parameterType, parameterSize);
-                parameter.Value = (object)parameterValues[i] ?? DBNull.Value;
+                parameter.Value = (object?)parameterValues[i] ?? DBNull.Value;
             }
 
             return command;
         }
 
-        public static T ExecuteScalar<T>([NotNull] this DbCommand command)
+        public static T ExecuteScalar<T>(this DbCommand command)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
             return ConvertValue<T>(command.ExecuteScalar());
         }
 
-        public static T ExecuteSingleOrDefault<T>([NotNull] this DbCommand command, [NotNull] Func<DbDataReader, T> mapper)
+        public static T? ExecuteSingleOrDefault<T>(this DbCommand command, Func<DbDataReader, T> mapper)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
             if (mapper == null) throw new ArgumentNullException(nameof(mapper));
@@ -106,7 +106,7 @@ namespace Hangfire.SqlServer
             return reader.ReadSingleOrDefaultAndFinish(mapper);
         }
 
-        public static T ExecuteSingle<T>([NotNull] this DbCommand command, [NotNull] Func<DbDataReader, T> mapper)
+        public static T ExecuteSingle<T>(this DbCommand command, Func<DbDataReader, T> mapper)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
             if (mapper == null) throw new ArgumentNullException(nameof(mapper));
@@ -115,7 +115,7 @@ namespace Hangfire.SqlServer
             return reader.ReadSingleAndFinish(mapper);
         }
 
-        public static List<T> ExecuteList<T>([NotNull] this DbCommand command, [NotNull] Func<DbDataReader, T> mapper)
+        public static List<T> ExecuteList<T>(this DbCommand command, Func<DbDataReader, T> mapper)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
             if (mapper == null) throw new ArgumentNullException(nameof(mapper));
@@ -124,7 +124,7 @@ namespace Hangfire.SqlServer
             return reader.ReadListAndFinish(mapper);
         }
 
-        public static DbDataReader ExecuteMultiple([NotNull] this DbCommand command)
+        public static DbDataReader ExecuteMultiple(this DbCommand command)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
             return command.ExecuteReader(CommandBehavior.SequentialAccess);
@@ -146,7 +146,8 @@ namespace Hangfire.SqlServer
             return parameter;
         }
 
-        internal static T ConvertValue<T>(object value)
+        [return: NotNullIfNotNull(nameof(value))]
+        internal static T? ConvertValue<T>(object? value)
         {
             switch (value)
             {

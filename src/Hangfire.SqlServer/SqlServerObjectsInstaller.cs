@@ -18,6 +18,7 @@ using System.Data;
 using System.Data.Common;
 using System.IO;
 using System.Reflection;
+using Hangfire.Annotations;
 
 namespace Hangfire.SqlServer
 {
@@ -28,17 +29,17 @@ namespace Hangfire.SqlServer
 
         public static readonly int LatestSchemaVersion = 9;
 
-        public static void Install(DbConnection connection)
+        public static void Install([NotNull] DbConnection connection)
         {
             Install(connection, null);
         }
 
-        public static void Install(DbConnection connection, string schema)
+        public static void Install([NotNull] DbConnection connection, [CanBeNull] string? schema)
         {
             Install(connection, schema, false);
         }
 
-        public static void Install(DbConnection connection, string schema, bool enableHeavyMigrations)
+        public static void Install([NotNull] DbConnection connection, [CanBeNull] string? schema, bool enableHeavyMigrations)
         {
             if (connection == null) throw new ArgumentNullException(nameof(connection));
 
@@ -64,7 +65,7 @@ namespace Hangfire.SqlServer
             }
         }
 
-        public static string GetInstallScript(string schema, bool enableHeavyMigrations)
+        public static string GetInstallScript([CanBeNull] string? schema, bool enableHeavyMigrations)
         {
             var script = GetStringResource(
                 typeof(SqlServerObjectsInstaller).GetTypeInfo().Assembly,

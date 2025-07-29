@@ -18,7 +18,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
-using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
@@ -29,7 +28,7 @@ namespace Hangfire.SqlServer
 {
     internal sealed class SqlServerWriteOnlyTransaction : JobStorageTransaction
     {
-        private readonly Queue<Action<DbConnection, DbTransaction>> _queueCommandQueue = new();
+        private readonly Queue<Action<DbConnection, DbTransaction?>> _queueCommandQueue = new();
         private readonly HashSet<string> _queuesToSignal = new();
 
         private readonly SqlServerStorage _storage;
@@ -49,10 +48,9 @@ namespace Hangfire.SqlServer
 
         private bool _committed;
 
-        public SqlServerWriteOnlyTransaction([NotNull] SqlServerConnection connection)
+        public SqlServerWriteOnlyTransaction(SqlServerConnection connection)
         {
-            if (connection == null) throw new ArgumentNullException(nameof(connection));
-            _connection = connection;
+            _connection = connection ?? throw new ArgumentNullException(nameof(connection));
             _storage = connection.Storage;
         }
 
@@ -144,11 +142,11 @@ namespace Hangfire.SqlServer
         {
             if (String.IsNullOrWhiteSpace(resource)) throw new ArgumentNullException(nameof(resource));
 
-            var disposableLock = _connection.AcquireLock($"{_storage.SchemaName}:{resource}", timeout);
+            var disposableLock = _connection.AcquireLock($"{_storage.SchemaName}:{resource}", timeout, out var dedicatedConnection);
             if (disposableLock.OwnLock)
             {
                 var command = SqlServerDistributedLock.CreateReleaseCommand(
-                    _connection.DedicatedConnection,
+                    dedicatedConnection,
                     disposableLock.Resource,
                     out var resultParameter);
 
@@ -395,7 +393,7 @@ delete from cte where row_num not between @start and @end");
                 .AddParameter("@end", keepEndingAt + 1, DbType.Int32));
         }
 
-        public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
+        public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string?>> keyValuePairs)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
