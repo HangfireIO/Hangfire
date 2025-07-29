@@ -327,7 +327,7 @@ where j.Id = @jobId");
                 }
 
                 var data = new Dictionary<string, string>(
-                    SerializationHelper.Deserialize<Dictionary<string, string>>(sqlState.Data),
+                    SerializationHelper.Deserialize<Dictionary<string, string>>(sqlState.Data) ?? [],
                     StringComparer.OrdinalIgnoreCase);
 
                 return new StateData
@@ -395,7 +395,7 @@ end catch");
                         .AddParameter("@id", pair.Key, DbType.Int64)
                         .AddParameter("@name", pair.Value, DbType.String);
 
-                    return command.ExecuteScalar<string>();
+                    return command.ExecuteScalar<string?>();
                 },
                 new KeyValuePair<long, string>(parsedId, name));
         }
@@ -763,7 +763,7 @@ $@"select min([ExpireAt]) from [{schemaName}].Hash with (forceseek) where [Key] 
             }, key);
         }
 
-        public override string GetValueFromHash(string key, string name)
+        public override string? GetValueFromHash(string key, string name)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (name == null) throw new ArgumentNullException(nameof(name));
@@ -778,7 +778,7 @@ where [Key] = @key and [Field] = @field");
                     .AddParameter("@key", pair.Key, DbType.String)
                     .AddParameter("@field", pair.Value, DbType.String);
 
-                return command.ExecuteScalar<string>();
+                return command.ExecuteScalar<string?>();
             }, new KeyValuePair<string, string>(key, name));
         }
 

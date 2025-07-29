@@ -20,7 +20,7 @@ namespace Hangfire.SqlServer
 {
     internal static class DbParameterExtensions
     {
-        public static T GetParameterValue<T>(this DbParameter parameter)
+        public static T? GetParameterValue<T>(this DbParameter parameter)
         {
             if (parameter == null) throw new ArgumentNullException(nameof(parameter));
             return DbCommandExtensions.ConvertValue<T>(parameter.Value);

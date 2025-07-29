@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Title>Hangfire.SqlServer</Title>
     <Description>SQL Server job storage for Hangfire</Description>
-    <TargetFrameworks>net451;netstandard1.3;netstandard2.0;</TargetFrameworks>
+    <TargetFrameworks>net451;netstandard1.3;netstandard2.0;net6.0</TargetFrameworks>
     <RootNamespace>Hangfire.SqlServer</RootNamespace>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -27,7 +27,7 @@
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.3' or '$(TargetFramework)'=='netstandard2.0'">
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.3' or '$(TargetFramework)'=='netstandard2.0' or '$(TargetFramework)'=='net6.0'">
     <Compile Remove="SqlServerBootstrapperConfigurationExtensions.cs" />
   </ItemGroup>
   

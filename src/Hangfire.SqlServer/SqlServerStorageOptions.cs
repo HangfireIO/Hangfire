@@ -76,7 +76,7 @@ namespace Hangfire.SqlServer
                     {
                         continue;
                     }
-                    var instance = (DbProviderFactory)instanceField.GetValue(null);
+                    var instance = (DbProviderFactory?)instanceField.GetValue(null);
                     if (instance != null)
                     {
                         return instance;

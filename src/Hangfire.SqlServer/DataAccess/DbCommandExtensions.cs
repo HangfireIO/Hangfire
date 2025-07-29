@@ -91,10 +91,10 @@ namespace Hangfire.SqlServer
             return command;
         }
 
-        public static T ExecuteScalar<T>(this DbCommand command)
+        public static T? ExecuteScalar<T>(this DbCommand command)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
-            return ConvertValue<T>(command.ExecuteScalar());
+            return ConvertValue<T?>(command.ExecuteScalar());
         }
 
         public static T? ExecuteSingleOrDefault<T>(this DbCommand command, Func<DbDataReader, T> mapper)

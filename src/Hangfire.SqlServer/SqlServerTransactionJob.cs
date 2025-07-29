@@ -87,7 +87,7 @@ namespace Hangfire.SqlServer
             }
         }
 
-        private void ExecuteKeepAliveQuery(object obj)
+        private void ExecuteKeepAliveQuery(object? obj)
         {
             lock (_lockObject)
             {

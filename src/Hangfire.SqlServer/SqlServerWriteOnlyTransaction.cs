@@ -558,6 +558,7 @@ $@"delete JQ from [{schemaName}].JobQueue JQ with (forceseek, rowlock) where Que
         private static void AppendBatch<TKey>(
             SortedDictionary<TKey, List<Func<DbConnection, DbCommand>>> collection,
             SqlCommandBatch batch)
+            where TKey : notnull
         {
             foreach (var pair in collection)
             {
@@ -572,6 +573,7 @@ $@"delete JQ from [{schemaName}].JobQueue JQ with (forceseek, rowlock) where Que
             SortedDictionary<TKey, List<Func<DbConnection, DbCommand>>> collection,
             TKey key,
             Func<DbConnection, DbCommand> command)
+            where TKey : notnull
         {
             if (!collection.TryGetValue(key, out var commands))
             {

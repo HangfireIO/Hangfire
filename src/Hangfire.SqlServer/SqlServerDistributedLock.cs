@@ -18,7 +18,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Storage;
@@ -59,7 +58,7 @@ namespace Hangfire.SqlServer
         private bool _completed;
 
         [Obsolete("Don't use this class directly, use SqlServerConnection.AcquireDistributedLock instead as it provides better safety. Will be removed in 2.0.0.")]
-        [SuppressMessage("Performance", "CA1854:Prefer the \'IDictionary.TryGetValue(TKey, out TValue)\' method")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1854:Prefer the \'IDictionary.TryGetValue(TKey, out TValue)\' method")]
         public SqlServerDistributedLock([NotNull] SqlServerStorage storage, [NotNull] string resource, TimeSpan timeout)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
@@ -68,7 +67,7 @@ namespace Hangfire.SqlServer
             _storage = storage;
             _resource = resource;
 
-            if (!AcquiredLocks.Value.ContainsKey(_resource) || AcquiredLocks.Value[_resource] == 0)
+            if (!AcquiredLocks.Value!.ContainsKey(_resource) || AcquiredLocks.Value[_resource] == 0)
             {
                 _connection = storage.CreateAndOpenConnection();
 
@@ -95,14 +94,14 @@ namespace Hangfire.SqlServer
             }
         }
 
-        [SuppressMessage("Performance", "CA1854:Prefer the \'IDictionary.TryGetValue(TKey, out TValue)\' method")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1854:Prefer the \'IDictionary.TryGetValue(TKey, out TValue)\' method")]
         public void Dispose()
         {
             if (_completed) return;
 
             _completed = true;
 
-            if (!AcquiredLocks.Value.ContainsKey(_resource)) return;
+            if (!AcquiredLocks.Value!.ContainsKey(_resource)) return;
 
             AcquiredLocks.Value[_resource]--;
 
@@ -138,7 +137,7 @@ namespace Hangfire.SqlServer
             GC.SuppressFinalize(this);
         }
 
-        private void ExecuteKeepAliveQuery(object obj)
+        private void ExecuteKeepAliveQuery(object? obj)
         {
             lock (_lockObject)
             {
@@ -204,7 +203,7 @@ namespace Hangfire.SqlServer
 
                 command.ExecuteNonQuery();
 
-                var lockResult = (int)resultParameter.Value;
+                var lockResult = (int)resultParameter.Value!;
 
                 if (lockResult >= 0)
                 {
@@ -228,7 +227,7 @@ namespace Hangfire.SqlServer
             {
                 command.ExecuteNonQuery();
 
-                var releaseResult = (int)resultParameter.Value;
+                var releaseResult = (int)resultParameter.Value!;
 
                 if (releaseResult < 0)
                 {

@@ -810,6 +810,7 @@ where j.Id in @jobIds");
         /// Fixes issues such as https://github.com/HangfireIO/Hangfire/issues/871
         /// </summary>
         private sealed class SafeDictionary<TKey, TValue> : Dictionary<TKey, TValue>
+            where TKey : notnull
         {
             public SafeDictionary()
             {
