@@ -4,7 +4,6 @@
     <Description>Core classes of Hangfire that are independent of any framework.</Description>
     <TargetFrameworks>net451;net46;netstandard1.3;netstandard2.0;net6.0</TargetFrameworks>
     <RootNamespace>Hangfire</RootNamespace>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(TargetFramework)'=='net451' or '$(TargetFramework)'=='net46'">

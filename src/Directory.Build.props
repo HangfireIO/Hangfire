@@ -11,6 +11,7 @@
         <CheckNotRecommendedTargetFramework>false</CheckNotRecommendedTargetFramework>
         <NoWarn>CA1200;CA1859;1591</NoWarn>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <!-- Plugging in Roslyn Analysers -->

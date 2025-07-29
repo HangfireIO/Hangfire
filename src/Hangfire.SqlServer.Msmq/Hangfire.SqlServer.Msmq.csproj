@@ -4,7 +4,6 @@
     <Description>Hangfire MSMQ job queue for SQL Server storage implementation</Description>
     <TargetFramework>net451</TargetFramework>
     <RootNamespace>Hangfire.SqlServer.Msmq</RootNamespace>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
   
   <ItemGroup>
