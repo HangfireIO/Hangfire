@@ -30,20 +30,22 @@ namespace Hangfire.Server
         private static readonly char[] ColonSeparator = new [] { ':' };
 
         private readonly ILog _logger = LogProvider.GetLogger(typeof(BackgroundServerProcess));
+        private readonly IBackgroundConfiguration _configuration;
         private readonly JobStorage _storage;
         private readonly BackgroundProcessingServerOptions _options;
         private readonly IDictionary<string, object> _properties;
         private readonly IBackgroundProcessDispatcherBuilder[] _dispatcherBuilders;
 
         public BackgroundServerProcess(
-            [NotNull] JobStorage storage,
+            [NotNull] IBackgroundConfiguration configuration,
             [NotNull] IEnumerable<IBackgroundProcessDispatcherBuilder> dispatcherBuilders,
             [NotNull] BackgroundProcessingServerOptions options,
             [NotNull] IDictionary<string, object> properties)
         {
             if (dispatcherBuilders == null) throw new ArgumentNullException(nameof(dispatcherBuilders));
 
-            _storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _storage = configuration.Resolve<JobStorage>();
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _properties = properties ?? throw new ArgumentNullException(nameof(properties));
 
@@ -91,7 +93,7 @@ namespace Hangfire.Server
             {
                 var context = new BackgroundServerContext(
                     serverId,
-                    _storage,
+                    _configuration,
                     _properties,
                     restartStoppingCts.Token,
                     restartStoppedCts.Token,
@@ -134,7 +136,7 @@ namespace Hangfire.Server
             // shutdown.
             var heartbeatContext = new BackgroundServerContext(
                 context.ServerId,
-                context.Storage,
+                context.Configuration,
                 context.Properties,
                 context.ShutdownToken,
                 context.ShutdownToken,

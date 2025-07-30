@@ -21,23 +21,26 @@ namespace Hangfire.Core.Tests
             OldStateName = null;
             JobExpirationTimeout = TimeSpan.FromMinutes(1);
             StateMachine = new Mock<IStateMachine>();
+            Configuration = new BackgroundConfiguration()
+                .WithJobStorage(_ => Storage.Object)
+                .WithStateMachine(_ => StateMachine.Object)
+                .WithProfiler(_ => EmptyProfiler.Instance);
 
             _context = new Lazy<ApplyStateContext>(
                 () => new ApplyStateContext(
-                    Storage.Object,
+                    Configuration,
                     Connection.Object,
                     Transaction.Object,
                     BackgroundJob.Object,
                     NewStateObject ?? NewState.Object,
                     OldStateName,
-                    EmptyProfiler.Instance,
-                    StateMachine.Object,
                     CustomData)
                 {
                     JobExpirationTimeout = JobExpirationTimeout
                 });
         }
 
+        public IBackgroundConfiguration Configuration { get; set; }
         public Mock<JobStorage> Storage { get; set; }
         public Mock<IStorageConnection> Connection { get; set; } 
         public Mock<IWriteOnlyTransaction> Transaction { get; set; } 

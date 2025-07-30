@@ -29,11 +29,12 @@ namespace Hangfire.Client
     public class CreateContext
     {
         public CreateContext([NotNull] CreateContext context)
-            : this(context.Storage, context.Connection, context.Job, context.InitialState, context.Parameters, context.Profiler, context.Items)
+            : this(context.Configuration, context.Connection, context.Job, context.InitialState, context.Parameters, context.Items)
         {
             Factory = context.Factory;
         }
 
+        [Obsolete("Please use the overload that takes an IBackgroundConfiguration instead of JobStorage.")]
         public CreateContext(
             [NotNull] JobStorage storage,
             [NotNull] IStorageConnection connection,
@@ -44,33 +45,56 @@ namespace Hangfire.Client
         }
 
         public CreateContext(
+            [NotNull] IBackgroundConfiguration configuration,
+            [NotNull] IStorageConnection connection,
+            [NotNull] Job job,
+            [CanBeNull] IState? initialState)
+            : this(configuration, connection, job, initialState, null)
+        {
+        }
+
+        [Obsolete("Please use the overload that takes an IBackgroundConfiguration instead of JobStorage.")]
+        public CreateContext(
             [NotNull] JobStorage storage,
             [NotNull] IStorageConnection connection,
             [NotNull] Job job,
             [CanBeNull] IState? initialState,
             [CanBeNull] IDictionary<string, object?>? parameters)
-            : this(storage, connection, job, initialState, parameters, EmptyProfiler.Instance, null)
+            : this(BackgroundConfiguration.Instance.WithJobStorage(_ => storage), connection, job, initialState, parameters, null)
+        {
+        }
+
+        public CreateContext(
+            [NotNull] IBackgroundConfiguration configuration,
+            [NotNull] IStorageConnection connection,
+            [NotNull] Job job,
+            [CanBeNull] IState? initialState,
+            [CanBeNull] IDictionary<string, object?>? parameters)
+            : this(configuration, connection, job, initialState, parameters, null)
         {
         }
 
         internal CreateContext(
-            [NotNull] JobStorage storage, 
+            [NotNull] IBackgroundConfiguration configuration, 
             [NotNull] IStorageConnection connection, 
             [NotNull] Job job, 
             [CanBeNull] IState? initialState,
             [CanBeNull] IDictionary<string, object?>? parameters,
-            [NotNull] IProfiler profiler,
             [CanBeNull] IDictionary<string, object?>? items)
         {
-            Storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            Storage = configuration.Resolve<JobStorage>();
             Connection = connection ?? throw new ArgumentNullException(nameof(connection));
             Job = job ?? throw new ArgumentNullException(nameof(job));
             InitialState = initialState;
-            Profiler = profiler;
+            Profiler = configuration.Resolve<IProfiler>();
 
             Items = items ?? new Dictionary<string, object?>();
             Parameters = parameters ?? new Dictionary<string, object?>();
         }
+
+        [NotNull]
+        public IBackgroundConfiguration Configuration { get; }
 
         [NotNull]
         public JobStorage Storage { get; }

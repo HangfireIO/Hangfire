@@ -22,18 +22,17 @@ namespace Hangfire.Core.Tests
         {
             _connection = new Mock<IStorageConnection>();
 
-            var storage = new Mock<JobStorage>();
-            var backgroundJob = new BackgroundJobMock { Id = JobId };
-            var state = new Mock<IState>();
+            var createContext = new CreateContextMock();
+            createContext.Connection = _connection;
 
-            var createContext = new CreateContext(
-                storage.Object, _connection.Object, backgroundJob.Job, state.Object);
-            _creatingContext = new CreatingContext(createContext);
+            _creatingContext = new CreatingContext(createContext.Object);
 
-            var performContext = new PerformContext(
-                _connection.Object, backgroundJob.Object, new Mock<IJobCancellationToken>().Object);
-            _performingContext = new PerformingContext(performContext);
-            _performedContext = new PerformedContext(performContext, null, false, null);
+            var performContext = new PerformContextMock();
+            performContext.Connection = _connection;
+            performContext.BackgroundJob.Id = JobId;
+
+            _performingContext = new PerformingContext(performContext.Object);
+            _performedContext = new PerformedContext(performContext.Object, null, false, null);
         }
 
         [Fact]

@@ -215,7 +215,7 @@ namespace Hangfire.Server
                 try
                 {
                     var stateChangeContext = new StateChangeContext(
-                        context.Storage,
+                        context.Configuration.WithProfiler(_ => _profiler),
                         connection,
                         null,
                         jobId,
@@ -224,7 +224,6 @@ namespace Hangfire.Server
                         disableFilters: false,
                         completeJob,
                         initializeToken,
-                        _profiler,
                         context.ServerId,
                         customData);
 
@@ -250,7 +249,7 @@ namespace Hangfire.Server
                 exception);
 
             var failedStateContext = new StateChangeContext(
-                context.Storage,
+                context.Configuration.WithProfiler(_ => _profiler),
                 connection,
                 null,
                 jobId,
@@ -259,7 +258,6 @@ namespace Hangfire.Server
                 disableFilters: true,
                 completeJob,
                 initializeToken,
-                _profiler,
                 context.ServerId);
 
             var failedResult = _stateChanger.ChangeState(failedStateContext);
@@ -308,7 +306,7 @@ namespace Hangfire.Server
 
                 using (var jobToken = new ServerJobCancellationToken(connection, backgroundJob.Id, context.ServerId, WorkerGuidCache.GetOrAdd(context.ExecutionId, static guid => guid.ToString()), context.StoppedToken))
                 {
-                    var performContext = new PerformContext(context.Storage, connection, backgroundJob, jobToken, _profiler, context.ServerId, null);
+                    var performContext = new PerformContext(context.Configuration, connection, backgroundJob, jobToken, _profiler, context.ServerId, null);
 
                     var latency = (DateTime.UtcNow - backgroundJob.CreatedAt).TotalMilliseconds;
                     var duration = Stopwatch.StartNew();

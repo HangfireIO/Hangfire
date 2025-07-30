@@ -128,14 +128,12 @@ namespace Hangfire.States
                 using (disposableTransaction)
                 {
                     var applyContext = new ApplyStateContext(
-                        context.Storage,
+                        context.Configuration.WithStateMachine(_ => _stateMachine),
                         context.Connection,
                         transaction,
                         backgroundJob,
                         stateToApply,
                         jobData.State,
-                        context.Profiler,
-                        _stateMachine,
                         context.CustomData);
 
                     // State changing process can fail due to an exception in state filters themselves,

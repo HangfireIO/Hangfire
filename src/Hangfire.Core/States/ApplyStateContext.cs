@@ -29,11 +29,12 @@ namespace Hangfire.States
         public ApplyStateContext(
             [NotNull] IWriteOnlyTransaction transaction, 
             [NotNull] ElectStateContext context)
-            : this(context.Storage, context.Connection, transaction, context.BackgroundJob, context.CandidateState, context.CurrentState, context.Profiler, context.StateMachine, context.CustomData != null ? new Dictionary<string, object?>(context.CustomData) : null)
+            : this(context.Configuration, context.Connection, transaction, context.BackgroundJob, context.CandidateState, context.CurrentState, context.CustomData != null ? new Dictionary<string, object?>(context.CustomData) : null)
         {
             // TODO: Add explicit JobExpirationTimeout parameter in 2.0, because it's unclear it isn't preserved
         }
 
+        [Obsolete("Please use the overload that takes an IBackgroundConfiguration instead of JobStorage.")]
         public ApplyStateContext(
             [NotNull] JobStorage storage,
             [NotNull] IStorageConnection connection,
@@ -41,32 +42,45 @@ namespace Hangfire.States
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IState newState,
             [CanBeNull] string? oldStateName)
-            : this(storage, connection, transaction, backgroundJob, newState, oldStateName, EmptyProfiler.Instance, null)
+            : this(BackgroundConfiguration.Instance.WithJobStorage(_ => storage), connection, transaction, backgroundJob, newState, oldStateName, null)
+        {
+        }
+
+        public ApplyStateContext(
+            [NotNull] IBackgroundConfiguration configuration,
+            [NotNull] IStorageConnection connection,
+            [NotNull] IWriteOnlyTransaction transaction,
+            [NotNull] BackgroundJob backgroundJob,
+            [NotNull] IState newState,
+            [CanBeNull] string? oldStateName)
+            : this(configuration, connection, transaction, backgroundJob, newState, oldStateName, null)
         {
         }
 
         internal ApplyStateContext(
-            [NotNull] JobStorage storage,
+            [NotNull] IBackgroundConfiguration configuration,
             [NotNull] IStorageConnection connection,
             [NotNull] IWriteOnlyTransaction transaction,
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IState newState, 
             [CanBeNull] string? oldStateName,
-            [NotNull] IProfiler profiler,
-            [CanBeNull] IStateMachine? stateMachine,
             [CanBeNull] IReadOnlyDictionary<string, object?>? customData = null)
         {
-            BackgroundJob = backgroundJob ?? throw new ArgumentNullException(nameof(backgroundJob));
-            Storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            Storage = configuration.Resolve<JobStorage>(); 
             Connection = connection ?? throw new ArgumentNullException(nameof(connection));
             Transaction = transaction ?? throw new ArgumentNullException(nameof(transaction));
+            BackgroundJob = backgroundJob ?? throw new ArgumentNullException(nameof(backgroundJob));
             NewState = newState ?? throw new ArgumentNullException(nameof(newState));
             OldStateName = oldStateName;
-            Profiler = profiler ?? throw new ArgumentNullException(nameof(profiler));
-            StateMachine = stateMachine;
+            Profiler = configuration.Resolve<IProfiler>();
+            StateMachine = configuration.Resolve<IStateMachine>();
             CustomData = customData;
-            JobExpirationTimeout = storage.JobExpirationTimeout;
+            JobExpirationTimeout = Storage.JobExpirationTimeout;
         }
+
+        [NotNull]
+        public IBackgroundConfiguration Configuration { get; }
 
         [NotNull]
         public JobStorage Storage { get; }

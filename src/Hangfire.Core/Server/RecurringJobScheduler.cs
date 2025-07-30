@@ -134,10 +134,10 @@ namespace Hangfire.Server
         }
 
         public RecurringJobScheduler(
-            [NotNull] IBackgroundJobFactory factory,
+            [NotNull] IBackgroundJobFactory factory, // TODO: What to do with these services?????????????
             TimeSpan pollingDelay,
             [NotNull] ITimeZoneResolver timeZoneResolver,
-            [NotNull] Func<DateTime> nowFactory)
+            [NotNull] Func<DateTime> nowFactory) // TODO: Use from the context
         {
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
             _nowFactory = nowFactory ?? throw new ArgumentNullException(nameof(nowFactory));
@@ -327,9 +327,8 @@ namespace Hangfire.Server
                     foreach (var execution in executions)
                     {
                         var backgroundJob = _factory.TriggerRecurringJob(
-                            context.Storage,
+                            context.Configuration.WithProfiler(_ => _profiler),
                             connection,
-                            _profiler,
                             recurringJob,
                             execution);
 
@@ -346,13 +345,12 @@ namespace Hangfire.Server
                     foreach (var backgroundJob in backgroundJobs)
                     {
                         _factory.StateMachine.EnqueueBackgroundJob(
-                            context.Storage,
+                            context.Configuration.WithProfiler(_ => _profiler),
                             connection,
                             transaction,
                             recurringJob,
                             backgroundJob,
-                            "Triggered by recurring job scheduler",
-                            _profiler);
+                            "Triggered by recurring job scheduler");
                     }
 
                     recurringJob.RetryAttempt = 0;

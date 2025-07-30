@@ -42,16 +42,20 @@ namespace Hangfire.States
             BackgroundJob = applyContext.BackgroundJob;
             _candidateState = applyContext.NewState;
 
+            Configuration =  applyContext.Configuration;
             Storage = applyContext.Storage;
             Connection = applyContext.Connection;
             Transaction = applyContext.Transaction;
             CurrentState = applyContext.OldStateName;
             Profiler = applyContext.Profiler;
             CustomData = applyContext.CustomData?.ToDictionary(static x => x.Key, static x => x.Value);
-            StateMachine = stateMachine;
+            StateMachine = stateMachine; // TODO: Resolve from config
         }
         
         public override BackgroundJob BackgroundJob { get; }
+
+        [NotNull]
+        public IBackgroundConfiguration Configuration { get; }
 
         [NotNull]
         public JobStorage Storage { get; }

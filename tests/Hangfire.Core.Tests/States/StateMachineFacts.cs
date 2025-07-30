@@ -76,6 +76,7 @@ namespace Hangfire.Core.Tests.States
             stateMachine.ApplyState(_context.Object);
 
             filter.Verify(x => x.OnStateElection(It.Is<ElectStateContext>(context =>
+                context.Configuration == _context.Configuration &&
                 context.Storage == _context.Storage.Object &&
                 context.Connection == _context.Connection.Object &&
                 context.BackgroundJob == _context.BackgroundJob.Object &&

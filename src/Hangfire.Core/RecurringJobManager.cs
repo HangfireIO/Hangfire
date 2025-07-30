@@ -33,11 +33,13 @@ namespace Hangfire
 
         private readonly ILog _logger = LogProvider.GetLogger(typeof(RecurringJobManager));
 
+        private readonly IBackgroundConfiguration _configuration;
         private readonly JobStorage _storage;
         private readonly IBackgroundJobFactory _factory;
-        private readonly Func<DateTime> _nowFactory;
+        private readonly IBackgroundClock _clock;
         private readonly ITimeZoneResolver _timeZoneResolver;
 
+        // TODO: Obsolete or provide alternative with IBackgroundConfiguration
         public RecurringJobManager()
             : this(JobStorage.Current)
         {
@@ -80,16 +82,34 @@ namespace Hangfire
         {
         }
 
+        public RecurringJobManager(IBackgroundConfiguration configuration)
+        {
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _storage = configuration.Resolve<JobStorage>();
+            _factory = configuration.Resolve<IBackgroundJobFactory>();
+            _timeZoneResolver = configuration.Resolve<ITimeZoneResolver>();
+            _clock = configuration.Resolve<IBackgroundClock>();
+        }
+
+        // TODO: Make obsolete
         internal RecurringJobManager(
             [NotNull] JobStorage storage, 
             [NotNull] IBackgroundJobFactory factory,
             [NotNull] ITimeZoneResolver timeZoneResolver,
             [NotNull] Func<DateTime> nowFactory)
         {
+            if (nowFactory == null) throw new ArgumentNullException(nameof(nowFactory));
+
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
             _timeZoneResolver = timeZoneResolver ?? throw new ArgumentNullException(nameof(timeZoneResolver));
-            _nowFactory = nowFactory ?? throw new ArgumentNullException(nameof(nowFactory));
+            _clock = new CallbackBackgroundClock(nowFactory);
+
+            _configuration = BackgroundConfiguration.Instance
+                .WithJobStorage(_ => _storage)
+                .WithJobFactory(_ => _factory)
+                .WithTimeZoneResolver(_ => _timeZoneResolver)
+                .WithClock(_ => _clock);
         }
 
         public JobStorage Storage => _storage;
@@ -111,7 +131,7 @@ namespace Hangfire
             using (var connection = _storage.GetConnection())
             using (connection.AcquireDistributedRecurringJobLock(recurringJobId, DefaultTimeout))
             {
-                var now = _nowFactory();
+                var now = _clock.GetCurrentTime();
                 var recurringJob = connection.GetOrCreateRecurringJob(recurringJobId);
                 var scheduleChanged = false;
 
@@ -178,7 +198,7 @@ namespace Hangfire
             using (var connection = _storage.GetConnection())
             using (connection.AcquireDistributedRecurringJobLock(recurringJobId, DefaultTimeout))
             {
-                var now = _nowFactory();
+                var now = _clock.GetCurrentTime();
 
                 var recurringJob = connection.GetRecurringJob(recurringJobId);
                 if (recurringJob == null) return null;
@@ -187,7 +207,7 @@ namespace Hangfire
 
                 try
                 {
-                    backgroundJob = _factory.TriggerRecurringJob(_storage, connection, EmptyProfiler.Instance, recurringJob, now);
+                    backgroundJob = _factory.TriggerRecurringJob(_configuration, connection, recurringJob, now);
                     recurringJob.ScheduleNext(_timeZoneResolver, now);
                 }
                 catch (Exception ex) when (ex.IsCatchableExceptionType())
@@ -203,13 +223,12 @@ namespace Hangfire
                         if (backgroundJob != null)
                         {
                             _factory.StateMachine.EnqueueBackgroundJob(
-                                _storage,
+                                _configuration,
                                 connection,
                                 transaction,
                                 recurringJob,
                                 backgroundJob,
-                                "Triggered using recurring job manager",
-                                EmptyProfiler.Instance);
+                                "Triggered using recurring job manager");
                         }
 
                         transaction.UpdateRecurringJob(recurringJob, changedFields, _logger);

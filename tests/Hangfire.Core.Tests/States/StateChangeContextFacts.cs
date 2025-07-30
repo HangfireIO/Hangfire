@@ -15,6 +15,7 @@ namespace Hangfire.Core.Tests.States
     {
         private const string JobId = "SomeJob";
 
+        private readonly IBackgroundConfiguration _configuration;
         private readonly Mock<JobStorage> _storage;
         private readonly Mock<IStorageConnection> _connection;
         private readonly Mock<IState> _newState;
@@ -32,19 +33,22 @@ namespace Hangfire.Core.Tests.States
             _token = new CancellationToken(true);
             _profiler = new Mock<IProfiler>();
             _customData = new Dictionary<string, object>();
+            _configuration = new BackgroundConfiguration()
+                .WithJobStorage(_ => _storage.Object)
+                .WithProfiler(_ => _profiler.Object);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
-            var exception = Assert.Throws<ArgumentNullException>(
+            var exception = Assert.Throws<InvalidOperationException>(
                 () => new StateChangeContext(
-                    null,
+                    (JobStorage)null,
                     _connection.Object,
                     JobId,
                     _newState.Object));
 
-            Assert.Equal("storage", exception.ParamName);
+            Assert.Contains("JobStorage", exception.Message);
         }
 
         [Fact]
@@ -84,24 +88,6 @@ namespace Hangfire.Core.Tests.States
                     null));
 
             Assert.Equal("newState", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenProfilerIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new StateChangeContext(
-                    _storage.Object,
-                    _connection.Object,
-                    JobId,
-                    _newState.Object,
-                    null,
-                    false,
-                    CancellationToken.None,
-                    null,
-                    null));
-
-            Assert.Equal("profiler", exception.ParamName);
         }
 
         [Fact]
@@ -168,17 +154,17 @@ namespace Hangfire.Core.Tests.States
         public void InternalCtor_CorrectlySets_AllTheProperties()
         {
             var context = new StateChangeContext(
-                _storage.Object,
+                _configuration,
                 _connection.Object,
                 JobId,
                 _newState.Object,
                 _expectedStates,
                 false,
                 _token,
-                _profiler.Object,
                 "some-server",
                 _customData);
 
+            Assert.Same(_configuration, context.Configuration);
             Assert.Same(_storage.Object, context.Storage);
             Assert.Same(_connection.Object, context.Connection);
             Assert.Equal(JobId, context.BackgroundJobId);

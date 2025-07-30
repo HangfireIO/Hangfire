@@ -29,7 +29,7 @@ namespace Hangfire.Server
     public class PerformContext
     {
         public PerformContext([NotNull] PerformContext context)
-            : this(context.Storage, context.Connection, context.BackgroundJob, context.CancellationToken, context.Profiler, context.ServerId, context.Items)
+            : this(context.Configuration, context.Connection, context.BackgroundJob, context.CancellationToken, context.Profiler, context.ServerId, context.Items)
         {
             Performer = context.Performer;
         }
@@ -39,29 +39,40 @@ namespace Hangfire.Server
             [NotNull] IStorageConnection connection,
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IJobCancellationToken cancellationToken)
-            : this(null, connection, backgroundJob, cancellationToken)
+            : this(BackgroundConfiguration.Instance, connection, backgroundJob, cancellationToken)
         {
         }
 
+        [Obsolete("Please use the overload that takes an IBackgroundConfiguration instead of JobStorage.")]
         public PerformContext(
             [CanBeNull] JobStorage? storage,
             [NotNull] IStorageConnection connection, 
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IJobCancellationToken cancellationToken)
-            : this(storage, connection, backgroundJob, cancellationToken, EmptyProfiler.Instance, null, null)
+            : this(BackgroundConfiguration.Instance.WithJobStorage(_ => storage ?? JobStorage.Current), connection, backgroundJob, cancellationToken, EmptyProfiler.Instance, null, null)
+        {
+        }
+
+        public PerformContext(
+            [NotNull] IBackgroundConfiguration configuration,
+            [NotNull] IStorageConnection connection, 
+            [NotNull] BackgroundJob backgroundJob,
+            [NotNull] IJobCancellationToken cancellationToken)
+            : this(configuration, connection, backgroundJob, cancellationToken, EmptyProfiler.Instance, null, null)
         {
         }
 
         internal PerformContext(
-            [CanBeNull] JobStorage? storage,
+            [NotNull] IBackgroundConfiguration configuration,
             [NotNull] IStorageConnection connection, 
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IJobCancellationToken cancellationToken,
-            [NotNull] IProfiler profiler,
-            [CanBeNull] string? serverId,
+            [NotNull] IProfiler profiler, // TODO: Resolve
+            [CanBeNull] string? serverId, // TODO: Resolve
             [CanBeNull] IDictionary<string, object?>? items)
         {
-            Storage = storage;
+            Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            Storage = configuration.Resolve<JobStorage>();
             Connection = connection ?? throw new ArgumentNullException(nameof(connection));
             BackgroundJob = backgroundJob ?? throw new ArgumentNullException(nameof(backgroundJob));
             CancellationToken = cancellationToken ?? throw new ArgumentNullException(nameof(cancellationToken));
@@ -70,9 +81,12 @@ namespace Hangfire.Server
 
             Items = items ?? new Dictionary<string, object?>();
         }
+        
+        [NotNull]
+        public IBackgroundConfiguration Configuration { get; }
 
-        [CanBeNull]
-        public JobStorage? Storage { get; }
+        [NotNull]
+        public JobStorage Storage { get; }
 
         /// <summary>
         /// Gets an instance of the key-value storage. You can use it

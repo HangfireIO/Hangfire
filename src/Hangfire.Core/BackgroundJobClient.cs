@@ -46,6 +46,7 @@ namespace Hangfire
     /// <threadsafety static="true" instance="true" />
     public class BackgroundJobClient : IBackgroundJobClient, IBackgroundJobClientV2
     {
+        private readonly IBackgroundConfiguration _configuration;
         private readonly JobStorage _storage;
         private readonly IBackgroundJobFactory _factory;
         private readonly IBackgroundJobStateChanger _stateChanger;
@@ -110,10 +111,23 @@ namespace Hangfire
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
             _stateChanger = stateChanger ?? throw new ArgumentNullException(nameof(stateChanger));
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+
+            _configuration = BackgroundConfiguration.Instance
+                .WithJobStorage(_ => _storage)
+                .WithJobFactory(_ => _factory)
+                .WithStateChanger(_ => _stateChanger);
+        }
+
+        public BackgroundJobClient([NotNull] IBackgroundConfiguration configuration)
+        {
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _storage = configuration.Resolve<JobStorage>();
+            _factory = configuration.Resolve<IBackgroundJobFactory>();
+            _stateChanger = configuration.Resolve<IBackgroundJobStateChanger>();
         }
 
         /// <inheritdoc />
-        public JobStorage Storage => _storage;
+        public JobStorage Storage => _storage; // TODO: also potentially obsolete
 
         public int RetryAttempts
         {
@@ -148,7 +162,7 @@ namespace Hangfire
             {
                 using (var connection = _storage.GetConnection())
                 {
-                    var context = new CreateContext(_storage, connection, job, state, parameters);
+                    var context = new CreateContext(_configuration, connection, job, state, parameters);
                     var backgroundJob = _factory.Create(context);
 
                     return backgroundJob?.Id;
@@ -171,7 +185,7 @@ namespace Hangfire
                 using (var connection = _storage.GetConnection())
                 {
                     var appliedState = _stateChanger.ChangeState(new StateChangeContext(
-                        _storage,
+                        _configuration,
                         connection,
                         jobId,
                         state,

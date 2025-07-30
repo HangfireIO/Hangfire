@@ -94,17 +94,15 @@ namespace Hangfire
         }
 
         public static BackgroundJob? TriggerRecurringJob(
-            [NotNull] this IBackgroundJobFactory factory,
-            [NotNull] JobStorage storage,
+            [NotNull] this IBackgroundJobFactory factory, // TODO: Resolve
+            [NotNull] IBackgroundConfiguration configuration,
             [NotNull] IStorageConnection connection,
-            [NotNull] IProfiler profiler,
             [NotNull] RecurringJobEntity recurringJob,
             DateTime now)
         {
             if (factory == null) throw new ArgumentNullException(nameof(factory));
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             if (connection == null) throw new ArgumentNullException(nameof(connection));
-            if (profiler == null) throw new ArgumentNullException(nameof(profiler));
             if (recurringJob == null) throw new ArgumentNullException(nameof(recurringJob));
 
             if (recurringJob.Job == null)
@@ -114,7 +112,7 @@ namespace Hangfire
 
             var job = InvocationData.DeserializePayload(recurringJob.Job).DeserializeJob();
 
-            var context = new CreateContext(storage, connection, job, null, null, profiler, null);
+            var context = new CreateContext(configuration, connection, job, null, null, null);
             context.Parameters["RecurringJobId"] = recurringJob.RecurringJobId;
             context.Parameters["Time"] = JobHelper.ToTimestamp(now);
 
@@ -127,22 +125,20 @@ namespace Hangfire
         }
 
         public static void EnqueueBackgroundJob(
-            [NotNull] this IStateMachine stateMachine,
-            [NotNull] JobStorage storage,
+            [NotNull] this IStateMachine stateMachine, // TODO: Resolve
+            [NotNull] IBackgroundConfiguration configuration,
             [NotNull] IStorageConnection connection,
             [NotNull] IWriteOnlyTransaction transaction,
             [NotNull] RecurringJobEntity recurringJob,
             [NotNull] BackgroundJob backgroundJob,
-            [CanBeNull] string? reason,
-            [NotNull] IProfiler profiler)
+            [CanBeNull] string? reason)
         {
             if (stateMachine == null) throw new ArgumentNullException(nameof(stateMachine));
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             if (connection == null) throw new ArgumentNullException(nameof(connection));
             if (transaction == null) throw new ArgumentNullException(nameof(transaction));
             if (recurringJob == null) throw new ArgumentNullException(nameof(recurringJob));
             if (backgroundJob == null) throw new ArgumentNullException(nameof(backgroundJob));
-            if (profiler == null) throw new ArgumentNullException(nameof(profiler));
 
             var state = new EnqueuedState { Reason = reason };
 
@@ -152,14 +148,12 @@ namespace Hangfire
             }
 
             stateMachine.ApplyState(new ApplyStateContext(
-                storage,
+                configuration.WithStateMachine(_ => stateMachine),
                 connection,
                 transaction,
                 backgroundJob,
                 state,
-                null,
-                profiler,
-                stateMachine));
+                null));
         }
     }
 }

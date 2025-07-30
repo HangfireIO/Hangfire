@@ -273,7 +273,7 @@ namespace Hangfire
                 }
 
                 _stateChanger.ChangeState(new StateChangeContext(
-                    context.Storage,
+                    context.Configuration,
                     context.Connection,
                     tuple.Key,
                     tuple.Value,

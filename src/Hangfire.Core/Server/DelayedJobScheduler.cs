@@ -296,14 +296,13 @@ namespace Hangfire.Server
                 try
                 {
                     var appliedState = _stateChanger.ChangeState(new StateChangeContext(
-                        context.Storage,
+                        context.Configuration.WithProfiler(_ => _profiler),
                         connection,
                         jobId,
                         new EnqueuedState { Reason = $"Triggered by {ToString()}" },
                         new [] { ScheduledState.StateName },
                         disableFilters: false,
                         context.StoppingToken,
-                        _profiler,
                         context.ServerId));
 
                     if (appliedState == null)
@@ -353,7 +352,7 @@ namespace Hangfire.Server
             // and will be unable to make any progress. Any successful state change will cause that identifier
             // to be removed from the schedule.
             _stateChanger.ChangeState(new StateChangeContext(
-                context.Storage,
+                context.Configuration.WithProfiler(_ => _profiler),
                 connection,
                 jobId,
                 new FailedState(exception!, context.ServerId)
@@ -363,7 +362,6 @@ namespace Hangfire.Server
                 new[] { ScheduledState.StateName },
                 disableFilters: true,
                 context.StoppingToken,
-                _profiler,
                 context.ServerId));
         }
 

@@ -25,6 +25,7 @@ namespace Hangfire.States
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1068:CancellationToken parameters must come last", Justification = "Cancellation tokens in this class are used only as a part of a general context and don't have usual meaning.")]
     public class StateChangeContext
     {
+        [Obsolete("Please use the overload that takes an IBackgroundConfiguration instead of JobStorage.")]
         public StateChangeContext(
             [NotNull] JobStorage storage,
             [NotNull] IStorageConnection connection,
@@ -34,6 +35,16 @@ namespace Hangfire.States
         {
         }
 
+        public StateChangeContext(
+            [NotNull] IBackgroundConfiguration configuration,
+            [NotNull] IStorageConnection connection,
+            [NotNull] string backgroundJobId, 
+            [NotNull] IState newState)
+            : this(configuration, connection, backgroundJobId, newState, null)
+        {
+        }
+
+        [Obsolete("Please use the overload that takes an IBackgroundConfiguration instead of JobStorage.")]
         public StateChangeContext(
             [NotNull] JobStorage storage,
             [NotNull] IStorageConnection connection,
@@ -45,16 +56,39 @@ namespace Hangfire.States
         }
 
         public StateChangeContext(
+            [NotNull] IBackgroundConfiguration configuration,
+            [NotNull] IStorageConnection connection,
+            [NotNull] string backgroundJobId, 
+            [NotNull] IState newState, 
+            [CanBeNull] params string[]? expectedStates)
+            : this(configuration, connection, backgroundJobId, newState, expectedStates, CancellationToken.None)
+        {
+        }
+
+        [Obsolete("Please use the overload that takes an IBackgroundConfiguration instead of JobStorage.")]
+        public StateChangeContext(
             [NotNull] JobStorage storage,
             [NotNull] IStorageConnection connection,
             [NotNull] string backgroundJobId,
             [NotNull] IState newState,
             [CanBeNull] IEnumerable<string>? expectedStates,
             CancellationToken cancellationToken)
-        : this(storage, connection, null, backgroundJobId, newState, expectedStates, false, null, cancellationToken, EmptyProfiler.Instance, null)
+        : this(BackgroundConfiguration.Instance.WithJobStorage(_ => storage), connection, null, backgroundJobId, newState, expectedStates, false, null, cancellationToken, null)
         {
         }
 
+        public StateChangeContext(
+            [NotNull] IBackgroundConfiguration configuration,
+            [NotNull] IStorageConnection connection,
+            [NotNull] string backgroundJobId,
+            [NotNull] IState newState,
+            [CanBeNull] IEnumerable<string>? expectedStates,
+            CancellationToken cancellationToken)
+            : this(configuration, connection, null, backgroundJobId, newState, expectedStates, false, null, cancellationToken, null)
+        {
+        }
+
+        [Obsolete("Please use the overload that takes an IBackgroundConfiguration instead of JobStorage.")]
         public StateChangeContext(
             [NotNull] JobStorage storage,
             [NotNull] IStorageConnection connection,
@@ -63,27 +97,38 @@ namespace Hangfire.States
             [NotNull] IState newState,
             [CanBeNull] IEnumerable<string>? expectedStates,
             CancellationToken cancellationToken)
-            : this(storage, connection, transaction, backgroundJobId, newState, expectedStates, false, null, cancellationToken, EmptyProfiler.Instance, null)
+            : this(BackgroundConfiguration.Instance.WithJobStorage(_ => storage), connection, transaction, backgroundJobId, newState, expectedStates, false, null, cancellationToken, null)
+        {
+        }
+
+        public StateChangeContext(
+            [NotNull] IBackgroundConfiguration configuration,
+            [NotNull] IStorageConnection connection,
+            [CanBeNull] JobStorageTransaction? transaction,
+            [NotNull] string backgroundJobId,
+            [NotNull] IState newState,
+            [CanBeNull] IEnumerable<string>? expectedStates,
+            CancellationToken cancellationToken)
+            : this(configuration, connection, transaction, backgroundJobId, newState, expectedStates, false, null, cancellationToken, null)
         {
         }
 
         internal StateChangeContext(
-            [NotNull] JobStorage storage,
+            [NotNull] IBackgroundConfiguration configuration,
             [NotNull] IStorageConnection connection,
             [NotNull] string backgroundJobId,
             [NotNull] IState newState,
             [CanBeNull] IEnumerable<string>? expectedStates,
             bool disableFilters,
             CancellationToken cancellationToken,
-            [NotNull] IProfiler profiler,
             [CanBeNull] string? serverId,
             [CanBeNull] IReadOnlyDictionary<string, object?>? customData = null) 
-            : this(storage, connection, null, backgroundJobId, newState, expectedStates, disableFilters, null, cancellationToken, profiler, serverId, customData)
+            : this(configuration, connection, null, backgroundJobId, newState, expectedStates, disableFilters, null, cancellationToken, serverId, customData)
         {
         }
 
         internal StateChangeContext(
-            [NotNull] JobStorage storage, 
+            [NotNull] IBackgroundConfiguration configuration,
             [NotNull] IStorageConnection connection,
             [CanBeNull] JobStorageTransaction? transaction,
             [NotNull] string backgroundJobId, 
@@ -92,11 +137,11 @@ namespace Hangfire.States
             bool disableFilters,
             [CanBeNull] IFetchedJob? completeJob,
             CancellationToken cancellationToken,
-            [NotNull] IProfiler profiler,
             [CanBeNull] string? serverId,
             [CanBeNull] IReadOnlyDictionary<string, object?>? customData = null)
         {
-            Storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            Storage = configuration.Resolve<JobStorage>();
             Connection = connection ?? throw new ArgumentNullException(nameof(connection));
             Transaction = transaction;
             BackgroundJobId = backgroundJobId ?? throw new ArgumentNullException(nameof(backgroundJobId));
@@ -104,11 +149,14 @@ namespace Hangfire.States
             ExpectedStates = expectedStates;
             DisableFilters = disableFilters;
             CancellationToken = cancellationToken;
-            Profiler = profiler ?? throw new ArgumentNullException(nameof(profiler));
+            Profiler = configuration.Resolve<IProfiler>();
             ServerId = serverId;
             CustomData = customData;
             CompleteJob = completeJob;
         }
+
+        [NotNull]
+        public IBackgroundConfiguration Configuration { get; }
 
         [NotNull]
         public JobStorage Storage { get; }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Hangfire.Client;
 using Hangfire.Common;
+using Hangfire.Profiling;
 using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
@@ -19,6 +20,7 @@ namespace Hangfire.Core.Tests
         private readonly string _id;
         private Job _job;
         private readonly string _cronExpression;
+        private readonly IBackgroundConfiguration _configuration;
         private readonly Mock<IStorageConnection> _connection;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
         private readonly Mock<IBackgroundJobFactory> _factory;
@@ -27,6 +29,7 @@ namespace Hangfire.Core.Tests
         private readonly Func<DateTime> _nowFactory;
         private readonly BackgroundJob _backgroundJob;
         private readonly Mock<ITimeZoneResolver> _timeZoneResolver;
+        private readonly Mock<IJobFilterProvider> _filterProvider;
 
         public RecurringJobManagerFacts()
         {
@@ -37,6 +40,7 @@ namespace Hangfire.Core.Tests
             _storage = new Mock<JobStorage>();
             _factory = new Mock<IBackgroundJobFactory>();
             _stateMachine = new Mock<IStateMachine>();
+            _filterProvider = new Mock<IJobFilterProvider>();
             _factory.SetupGet(x => x.StateMachine).Returns(_stateMachine.Object);
             _nowFactory = () => _now;
 
@@ -55,6 +59,13 @@ namespace Hangfire.Core.Tests
                     ctx.Connection == _connection.Object &&
                     ctx.InitialState == null)))
                 .Returns(_backgroundJob);
+
+            _configuration = new BackgroundConfiguration()
+                .WithJobStorage(_ => _storage.Object)
+                .WithJobFactory(_ => _factory.Object)
+                .WithTimeZoneResolver(_ => _timeZoneResolver.Object)
+                .WithClock(_ => new CallbackBackgroundClock(_nowFactory))
+                .WithProfiler(_ => EmptyProfiler.Instance);
         }
 
         [Fact]
@@ -67,19 +78,19 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenFactoryIsNull()
+        public void Ctor_ThrowsAnException_WhenFilterProviderIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new RecurringJobManager(_storage.Object, (IBackgroundJobFactory)null));
+                () => new RecurringJobManager(_storage.Object, (IJobFilterProvider)null));
 
-            Assert.Equal("factory", exception.ParamName);
+            Assert.Equal("filterProvider", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenTimeZoneResolverIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new RecurringJobManager(_storage.Object, _factory.Object, null, _nowFactory));
+                () => new RecurringJobManager(_storage.Object, _filterProvider.Object, null, _nowFactory));
 
             Assert.Equal("timeZoneResolver", exception.ParamName);
         }
@@ -88,7 +99,7 @@ namespace Hangfire.Core.Tests
         public void Ctor_ThrowsAnException_WhenNowFactoryIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new RecurringJobManager(_storage.Object, _factory.Object, _timeZoneResolver.Object, null));
+                () => new RecurringJobManager(_storage.Object, _filterProvider.Object, _timeZoneResolver.Object, null));
 
             Assert.Equal("nowFactory", exception.ParamName);
         }
@@ -1022,7 +1033,7 @@ namespace Hangfire.Core.Tests
 
         private RecurringJobManager CreateManager()
         {
-            return new RecurringJobManager(_storage.Object, _factory.Object, _timeZoneResolver.Object, _nowFactory);
+            return new RecurringJobManager(_configuration);
         }
 
         [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]

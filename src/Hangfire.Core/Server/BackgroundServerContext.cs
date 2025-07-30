@@ -22,21 +22,37 @@ namespace Hangfire.Server
 {
     public class BackgroundServerContext
     {
+        [Obsolete("Please use the overload that takes an IBackgroundConfiguration instead of JobStorage.")]
         public BackgroundServerContext(
             [NotNull] string serverId,
             [NotNull] JobStorage storage,
+            [NotNull] IDictionary<string, object> properties,
+            CancellationToken stoppingToken,
+            CancellationToken stoppedToken,
+            CancellationToken shutdownToken)
+            : this(serverId, BackgroundConfiguration.Instance.WithJobStorage(_ => storage), properties, stoppingToken, stoppedToken, shutdownToken)
+        {
+        }
+
+        public BackgroundServerContext(
+            [NotNull] string serverId,
+            [NotNull] IBackgroundConfiguration configuration,
             [NotNull] IDictionary<string, object> properties, 
             CancellationToken stoppingToken, 
             CancellationToken stoppedToken,
             CancellationToken shutdownToken)
         {
             ServerId = serverId ?? throw new ArgumentNullException(nameof(serverId));
-            Storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            Storage = configuration.Resolve<JobStorage>();
             Properties = properties ?? throw new ArgumentNullException(nameof(properties));
             StoppingToken = stoppingToken;
             StoppedToken = stoppedToken;
             ShutdownToken = shutdownToken;
         }
+
+        [NotNull]
+        public IBackgroundConfiguration Configuration { get; }
 
         [NotNull]
         public string ServerId { get; }

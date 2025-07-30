@@ -21,10 +21,11 @@ namespace Hangfire.Core.Tests
             ExpectedStates = null;
             DisableFilters = false;
             CancellationToken = CancellationToken.None;
+            Configuration = new BackgroundConfiguration().WithJobStorage(_ => Storage.Object).WithProfiler(_ => EmptyProfiler.Instance);
 
             _context = new Lazy<StateChangeContext>(
                 () => new StateChangeContext(
-                    Storage.Object,
+                    Configuration,
                     Connection.Object,
                     Transaction?.Object,
                     BackgroundJobId,
@@ -33,11 +34,11 @@ namespace Hangfire.Core.Tests
                     DisableFilters,
                     CompleteJob?.Object,
                     CancellationToken,
-                    EmptyProfiler.Instance,
                     ServerId,
                     CustomData));
         }
 
+        public IBackgroundConfiguration Configuration { get; set; }
         public Mock<JobStorage> Storage { get; set; }
         public Mock<IStorageConnection> Connection { get; set; }
         public Mock<JobStorageTransaction> Transaction { get; set; }

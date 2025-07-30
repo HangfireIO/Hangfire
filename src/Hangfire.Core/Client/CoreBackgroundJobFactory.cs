@@ -121,14 +121,12 @@ namespace Hangfire.Client
                     using (var transaction = ctx.Context.Connection.CreateWriteTransaction())
                     {
                         var applyContext = new ApplyStateContext(
-                            ctx.Context.Storage,
+                            ctx.Context.Configuration.WithStateMachine(_ => ctx.StateMachine),
                             ctx.Context.Connection,
                             transaction,
                             ctx.BackgroundJob,
                             ctx.Context.InitialState!,
-                            oldStateName: null,
-                            ctx.Context.Profiler,
-                            ctx.StateMachine);
+                            oldStateName: null);
 
                         ctx.StateMachine.ApplyState(applyContext);
 
