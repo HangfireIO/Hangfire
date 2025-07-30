@@ -33,6 +33,20 @@ namespace Hangfire
 {
     public static class HangfireServiceCollectionExtensions
     {
+        /*public static IServiceCollection AddHangfire(
+            [NotNull] this IServiceCollection services,
+            [NotNull] Action<IServiceProvider, IBackgroundConfiguration> configuration)
+        {
+            if (services == null) throw new ArgumentNullException(nameof(services));
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+            services.AddSingleton<IBackgroundClock>(static provider =>
+            {
+                var config = provider.GetRequiredService<IBackgroundConfiguration>();
+                return config.Resolve<IBackgroundClock>();
+            });
+        }*/
+
         public static IServiceCollection AddHangfire(
             [NotNull] this IServiceCollection services,
             [NotNull] Action<IGlobalConfiguration> configuration)

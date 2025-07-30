@@ -38,17 +38,18 @@ namespace Hangfire
                 new CoreBackgroundJobFactory(c.Resolve<IStateMachine>())))
             .WithProfiler(static _ => EmptyProfiler.Instance)
             .WithStateChanger(static c => new BackgroundJobStateChanger(c.Resolve<StateMachine>()))
-            .With<IBackgroundJobPerformer>(static c => new BackgroundJobPerformer(
+            .WithJobPerformer(static c => new BackgroundJobPerformer(
                 c.Resolve<IJobFilterProvider>(),
                 new CoreBackgroundJobPerformer(c.Resolve<JobActivator>(), c.Resolve<TaskScheduler>())))
+            .WithTimeZoneResolver(static _ => new DefaultTimeZoneResolver())
+            .WithClock(static _ => new SystemTimeBackgroundClock())
             .With<BackgroundJobClient>(static c => new BackgroundJobClient(c))
             .With<IBackgroundJobClient>(static c => c.Resolve<BackgroundJobClient>())
             .With<IBackgroundJobClientV2>(static c => c.Resolve<BackgroundJobClient>())
             .With<RecurringJobManager>(static c => new RecurringJobManager(c))
             .With<IRecurringJobManager>(static c => c.Resolve<RecurringJobManager>())
             .With<IRecurringJobManagerV2>(static c => c.Resolve<RecurringJobManager>())
-            .With<JobActivator>(static _ => JobActivator.Current)
-            .With<TaskScheduler>(static _ => TaskScheduler.Default);
+            .WithJobActivator(static _ => JobActivator.Current);
 
         private readonly Dictionary<string, Func<IBackgroundConfiguration, object>> _registrations;
 

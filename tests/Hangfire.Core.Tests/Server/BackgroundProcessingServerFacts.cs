@@ -31,10 +31,10 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
-            var exception = Assert.Throws<InvalidOperationException>(
+            var exception = Assert.Throws<ArgumentNullException>(
                 () => new BackgroundProcessingServer((JobStorage)null, _processes, _properties));
 
-            Assert.Contains("JobStorage", exception.Message);
+            Assert.Equal("storage", exception.ParamName);
         }
 
         [Fact]

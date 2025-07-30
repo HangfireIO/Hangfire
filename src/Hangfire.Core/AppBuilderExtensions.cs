@@ -283,15 +283,26 @@ namespace Hangfire
         public static IAppBuilder UseHangfireServer(
             [NotNull] this IAppBuilder builder,
             [NotNull] JobStorage storage,
+            [NotNull] BackgroundJobServerOptions options,
+            [NotNull] params IBackgroundProcess[] additionalProcesses)
+        {
+            return UseHangfireServer(builder, storage, BackgroundConfiguration.Instance, options, additionalProcesses);
+        }
+
+        public static IAppBuilder UseHangfireServer(
+            [NotNull] this IAppBuilder builder,
+            [NotNull] JobStorage storage,
+            [NotNull] IBackgroundConfiguration configuration,
             [NotNull] BackgroundJobServerOptions options, 
             [NotNull] params IBackgroundProcess[] additionalProcesses)
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
             if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             if (options == null) throw new ArgumentNullException(nameof(options));
             if (additionalProcesses == null) throw new ArgumentNullException(nameof(additionalProcesses));
 
-            return UseHangfireServer(builder, new BackgroundJobServer(options, storage, additionalProcesses));
+            return UseHangfireServer(builder, new BackgroundJobServer(configuration, options, storage, additionalProcesses));
         }
 
         /// <summary>

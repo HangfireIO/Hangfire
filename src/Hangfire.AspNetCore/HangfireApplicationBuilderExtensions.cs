@@ -71,6 +71,8 @@ namespace Hangfire
 
             var services = app.ApplicationServices;
 
+            var configuration = services.GetRequiredService<IBackgroundConfiguration>();
+
             storage ??= services.GetRequiredService<JobStorage>();
             options ??= services.GetService<BackgroundJobServerOptions>() ?? new BackgroundJobServerOptions();
             additionalProcesses ??= services.GetServices<IBackgroundProcess>();
@@ -79,11 +81,15 @@ namespace Hangfire
             options.FilterProvider ??= services.GetService<IJobFilterProvider>();
             options.TimeZoneResolver ??= services.GetService<ITimeZoneResolver>();
 
-            services.RegisterHangfireServer(HangfireServiceCollectionExtensions.GetInternalServices(services, out var factory, out var stateChanger, out var performer)
-#pragma warning disable 618
-                ? new BackgroundJobServer(options, storage, additionalProcesses, null, null, factory, performer, stateChanger)
-#pragma warning restore 618
-                : new BackgroundJobServer(options, storage, additionalProcesses));
+            if (HangfireServiceCollectionExtensions.GetInternalServices(services, out var factory, out var stateChanger, out var performer))
+            {
+                configuration = configuration
+                    .WithJobFactory(_ => factory)
+                    .WithStateChanger(_ => stateChanger)
+                    .WithJobPerformer(_ => performer);
+            }
+
+            services.RegisterHangfireServer(new BackgroundJobServer(configuration, options, storage, additionalProcesses));
 
             return app;
         }

@@ -33,22 +33,9 @@ namespace Hangfire.Server
         {
         }
 
-        [Obsolete("Please use the overload that takes an IBackgroundConfiguration instead of JobStorage.")]
         public BackgroundProcessContext(
-            [NotNull] string serverId, 
-            [NotNull] JobStorage storage,
-            [NotNull] IDictionary<string, object> properties,
-            Guid executionId,
-            CancellationToken stoppingToken,
-            CancellationToken stoppedToken,
-            CancellationToken shutdownToken)
-            : this(serverId, BackgroundConfiguration.Instance.WithJobStorage(_ => storage), properties, executionId, stoppingToken, stoppedToken, shutdownToken)
-        {
-        }
-
-        public BackgroundProcessContext(
-            [NotNull] string serverId, // TODO: Put to configuration
-            [NotNull] IBackgroundConfiguration configuration, 
+            [NotNull] string serverId,
+            [NotNull] JobStorage storage, 
             [NotNull] IDictionary<string, object> properties, 
             Guid executionId,
             CancellationToken stoppingToken,
@@ -56,12 +43,11 @@ namespace Hangfire.Server
             CancellationToken shutdownToken)
         {
             if (serverId == null) throw new ArgumentNullException(nameof(serverId));
-            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
             if (properties == null) throw new ArgumentNullException(nameof(properties));
 
             ServerId = serverId;
-            Configuration = configuration;
-            Storage = configuration.Resolve<JobStorage>();
+            Storage = storage;
             ExecutionId = executionId;
             Properties = new Dictionary<string, object>(properties, StringComparer.OrdinalIgnoreCase);
             StoppingToken = stoppingToken;
@@ -71,9 +57,6 @@ namespace Hangfire.Server
         
         [NotNull]
         public string ServerId { get; }
-
-        [NotNull]
-        public IBackgroundConfiguration Configuration { get; }
 
         [NotNull]
         public IReadOnlyDictionary<string, object> Properties { get; }

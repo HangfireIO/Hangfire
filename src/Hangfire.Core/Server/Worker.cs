@@ -28,6 +28,21 @@ using Hangfire.Storage;
 
 namespace Hangfire.Server
 {
+    public sealed class WorkerOptions
+    {
+        private static readonly IEnumerable<string> DefaultQueues = ["default"];
+        private IEnumerable<string> _queues = DefaultQueues;
+
+        public IEnumerable<string> Queues
+        {
+            get => _queues;
+            set => _queues = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
+        public TimeSpan JobInitializationWaitTimeout { get; set; } = TimeSpan.FromMinutes(1);
+        public int MaxStateChangeAttempts { get; set; } = 10;
+    }
+
     /// <summary>
     /// Represents a background process responsible for <i>processing 
     /// fire-and-forget jobs</i>.
@@ -49,49 +64,61 @@ namespace Hangfire.Server
         private static readonly string[] EligibleWorkerStates = new[] { EnqueuedState.StateName, ScheduledState.StateName, ProcessingState.StateName };
         private static readonly string[] ProcessingStateArray = new[] { ProcessingState.StateName };
 
-        private readonly TimeSpan _jobInitializationWaitTimeout;
-        private readonly int _maxStateChangeAttempts;
-
         private readonly ILog _logger = LogProvider.For<Worker>();
 
-        private readonly IEnumerable<string> _queues;
-
+        private readonly IBackgroundConfiguration _configuration;
+        private readonly WorkerOptions _options;
         private readonly IBackgroundJobPerformer _performer;
         private readonly IBackgroundJobStateChanger _stateChanger;
         private readonly IProfiler _profiler;
-        
+
+        [Obsolete("Please use a constructor overload that takes IBackgroundConfiguration instead of specific services.")]
         public Worker() : this(EnqueuedState.DefaultQueue)
         {
         }
 
+        [Obsolete("Please use a constructor overload that takes IBackgroundConfiguration instead of specific services.")]
         public Worker([NotNull] params string[] queues)
             : this(queues, new BackgroundJobPerformer(), new BackgroundJobStateChanger())
         {
         }
 
+        [Obsolete("Please use a constructor overload that takes IBackgroundConfiguration instead of specific services.")]
         public Worker(
             [NotNull] IEnumerable<string> queues,
             [NotNull] IBackgroundJobPerformer performer,
             [NotNull] IBackgroundJobStateChanger stateChanger)
-            : this(queues, performer, stateChanger, jobInitializationTimeout: TimeSpan.FromMinutes(1), maxStateChangeAttempts: 10)
+            : this(new WorkerOptions { Queues = queues }, performer, stateChanger)
         {
         }
 
+        [Obsolete("Please use a constructor overload that takes IBackgroundConfiguration instead of specific services.")]
         internal Worker(
-            [NotNull] IEnumerable<string> queues,
-            [NotNull] IBackgroundJobPerformer performer, 
-            [NotNull] IBackgroundJobStateChanger stateChanger,
-            TimeSpan jobInitializationTimeout,
-            int maxStateChangeAttempts)
+            [NotNull] WorkerOptions options,
+            [NotNull] IBackgroundJobPerformer performer,
+            [NotNull] IBackgroundJobStateChanger stateChanger)
         {
-            _queues = queues ?? throw new ArgumentNullException(nameof(queues));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
             _performer = performer ?? throw new ArgumentNullException(nameof(performer));
             _stateChanger = stateChanger ?? throw new ArgumentNullException(nameof(stateChanger));
-
-            _jobInitializationWaitTimeout = jobInitializationTimeout;
-            _maxStateChangeAttempts = maxStateChangeAttempts;
-
             _profiler = new SlowLogProfiler(_logger);
+
+            _configuration = BackgroundConfiguration.Instance
+                .WithJobPerformer(_ => _performer)
+                .WithStateChanger(_ => _stateChanger)
+                .WithProfiler(_ => _profiler);
+        }
+
+        internal Worker(
+            [NotNull] WorkerOptions options,
+            [NotNull] IBackgroundConfiguration configuration)
+        {
+            _options = options ?? throw new ArgumentNullException(nameof(options));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+
+            _performer = configuration.Resolve<IBackgroundJobPerformer>();
+            _stateChanger = configuration.Resolve<IBackgroundJobStateChanger>();
+            _profiler = configuration.Resolve<IProfiler>(); // TODO: Should be SlowLogProfiler with logger
         }
 
         /// <inheritdoc />
@@ -100,7 +127,7 @@ namespace Hangfire.Server
             if (context == null) throw new ArgumentNullException(nameof(context));
 
             using (var connection = context.Storage.GetConnection())
-            using (var fetchedJob = connection.FetchNextJob(_queues.ToArray(), context.StoppingToken))
+            using (var fetchedJob = connection.FetchNextJob(_options.Queues.ToArray(), context.StoppingToken))
             {
                 var requeueOnException = true;
 
@@ -108,7 +135,7 @@ namespace Hangfire.Server
                 {
                     BackgroundJob? backgroundJob;
 
-                    using (var timeoutCts = new CancellationTokenSource(_jobInitializationWaitTimeout))
+                    using (var timeoutCts = new CancellationTokenSource(_options.JobInitializationWaitTimeout))
                     using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
                         context.StoppingToken,
                         timeoutCts.Token))
@@ -208,14 +235,15 @@ namespace Hangfire.Server
             abortToken.ThrowIfCancellationRequested();
 
             // At least one retry attempt should always be performed.
-            var maxRetryAttempts = _maxStateChangeAttempts > 0 ? _maxStateChangeAttempts : 1;
+            var maxStateChangeAttempts = _options.MaxStateChangeAttempts;
+            var maxRetryAttempts = maxStateChangeAttempts > 0 ? maxStateChangeAttempts : 1;
 
             for (var retryAttempt = 0; retryAttempt < maxRetryAttempts; retryAttempt++)
             {
                 try
                 {
                     var stateChangeContext = new StateChangeContext(
-                        context.Configuration.WithProfiler(_ => _profiler),
+                        _configuration,
                         connection,
                         null,
                         jobId,
@@ -235,7 +263,7 @@ namespace Hangfire.Server
                 catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     _logger.DebugException(
-                        $"State change attempt {retryAttempt + 1} of {_maxStateChangeAttempts} failed due to an error, see inner exception for details", 
+                        $"State change attempt {retryAttempt + 1} of {maxRetryAttempts} failed due to an error, see inner exception for details", 
                         ex);
 
                     exception = ex;
@@ -245,15 +273,15 @@ namespace Hangfire.Server
             }
 
             _logger.ErrorException(
-                $"{_maxStateChangeAttempts} state change attempt(s) failed due to an exception, moving job to the FailedState",
+                $"{maxRetryAttempts} state change attempt(s) failed due to an exception, moving job to the FailedState",
                 exception);
 
             var failedStateContext = new StateChangeContext(
-                context.Configuration.WithProfiler(_ => _profiler),
+                _configuration,
                 connection,
                 null,
                 jobId,
-                new FailedState(exception!, context.ServerId) { Reason = $"Failed to change state to a '{state.Name}' one due to an exception after {_maxStateChangeAttempts} retry attempts" },
+                new FailedState(exception!, context.ServerId) { Reason = $"Failed to change state to a '{state.Name}' one due to an exception after {maxRetryAttempts} retry attempts" },
                 expectedStates,
                 disableFilters: true,
                 completeJob,
@@ -306,7 +334,7 @@ namespace Hangfire.Server
 
                 using (var jobToken = new ServerJobCancellationToken(connection, backgroundJob.Id, context.ServerId, WorkerGuidCache.GetOrAdd(context.ExecutionId, static guid => guid.ToString()), context.StoppedToken))
                 {
-                    var performContext = new PerformContext(context.Configuration, connection, backgroundJob, jobToken, _profiler, context.ServerId, null);
+                    var performContext = new PerformContext(_configuration, connection, backgroundJob, jobToken, _profiler, context.ServerId, null);
 
                     var latency = (DateTime.UtcNow - backgroundJob.CreatedAt).TotalMilliseconds;
                     var duration = Stopwatch.StartNew();

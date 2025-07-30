@@ -32,6 +32,7 @@ namespace Hangfire
     {
         private readonly ILog _logger = LogProvider.For<BackgroundJobServer>();
 
+        private readonly IBackgroundConfiguration _configuration;
         private readonly BackgroundJobServerOptions _options;
         private readonly BackgroundProcessingServer _processingServer;
 
@@ -39,6 +40,7 @@ namespace Hangfire
         /// Initializes a new instance of the <see cref="BackgroundJobServer"/> class
         /// with default options and <see cref="JobStorage.Current"/> storage.
         /// </summary>
+        [Obsolete("Please use a constructor overload that takes IBackgroundConfiguration instead of specific services.")]
         public BackgroundJobServer()
             : this(new BackgroundJobServerOptions())
         {
@@ -49,6 +51,7 @@ namespace Hangfire
         /// with default options and the given storage.
         /// </summary>
         /// <param name="storage">The storage</param>
+        [Obsolete("Please use a constructor overload that takes IBackgroundConfiguration instead of specific services.")]
         public BackgroundJobServer([NotNull] JobStorage storage)
             : this(new BackgroundJobServerOptions(), storage)
         {
@@ -59,6 +62,7 @@ namespace Hangfire
         /// with the given options and <see cref="JobStorage.Current"/> storage.
         /// </summary>
         /// <param name="options">Server options</param>
+        [Obsolete("Please use a constructor overload that takes IBackgroundConfiguration instead of specific services.")]
         public BackgroundJobServer([NotNull] BackgroundJobServerOptions options)
             : this(options, JobStorage.Current)
         {
@@ -70,18 +74,18 @@ namespace Hangfire
         /// </summary>
         /// <param name="options">Server options</param>
         /// <param name="storage">The storage</param>
+        [Obsolete("Please use a constructor overload that takes IBackgroundConfiguration instead of specific services.")]
         public BackgroundJobServer([NotNull] BackgroundJobServerOptions options, [NotNull] JobStorage storage)
             : this(options, storage, Enumerable.Empty<IBackgroundProcess>())
         {
         }
 
+        [Obsolete("Please use a constructor overload that takes IBackgroundConfiguration instead of specific services.")]
         public BackgroundJobServer(
             [NotNull] BackgroundJobServerOptions options,
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses)
-#pragma warning disable 618
             : this(options, storage, additionalProcesses, null, null, null, null, null)
-#pragma warning restore 618
         {
         }
 
@@ -98,50 +102,83 @@ namespace Hangfire
             [CanBeNull] IBackgroundJobStateChanger? stateChanger)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
-            if (options == null) throw new ArgumentNullException(nameof(options));
             if (additionalProcesses == null) throw new ArgumentNullException(nameof(additionalProcesses));
 
-            _options = options;
+            var configuration = BackgroundConfiguration.Instance;
 
-            var processes = new List<IBackgroundProcessDispatcherBuilder>();
-            processes.AddRange(GetRequiredProcesses(filterProvider, activator, factory, performer, stateChanger));
-            processes.AddRange(additionalProcesses.Select(static x => x.UseBackgroundPool(1)));
-
-            var properties = new Dictionary<string, object>
+            var overriddenTimeZoneResolver = options.TimeZoneResolver;
+            if (overriddenTimeZoneResolver != null)
             {
-                { "Queues", options.Queues },
-                { "WorkerCount", options.WorkerCount }
-            };
-
-            _logger.Info($"Starting Hangfire Server using job storage: '{storage}'");
-
-            storage.WriteOptionsToLog(_logger);
-
-            _logger.Info("Using the following options for Hangfire Server:\r\n" +
-                $"    Worker count: {options.WorkerCount}\r\n" +
-                $"    Listening queues: {String.Join(", ", options.Queues.Select(static x => "'" + x + "'"))}\r\n" +
-                $"    Shutdown timeout: {options.ShutdownTimeout}\r\n" +
-                $"    Schedule polling interval: {options.SchedulePollingInterval}");
-
-            var wrongQueues = new HashSet<string>(StringComparer.Ordinal);
-            foreach (var queue in options.Queues)
-            {
-                if (!EnqueuedState.TryValidateQueueName(queue))
-                {
-                    wrongQueues.Add(queue);
-                }
+                configuration = configuration.WithTimeZoneResolver(_ => overriddenTimeZoneResolver);
             }
 
-            if (wrongQueues.Count > 0)
+            var overriddenActivator = activator ?? options.Activator;
+            if (overriddenActivator != null)
             {
-                _logger.Warn($"These queues fail to match the naming format: {String.Join(", ", wrongQueues.Select(static x => $"'{x}'"))}. A queue name must consist of lowercase letters, digits, underscore, and dash characters only.");
+                configuration = configuration.WithJobActivator(_ => overriddenActivator);
             }
 
-            _processingServer = new BackgroundProcessingServer(
-                storage, 
-                processes, 
-                properties, 
-                GetProcessingServerOptions());
+            var overriddenFilterProvider = filterProvider ?? options.FilterProvider;
+            if (overriddenFilterProvider != null)
+            {
+                configuration = configuration.WithJobFilterProvider(_ => overriddenFilterProvider);
+            }
+
+            if (factory == null && performer == null && stateChanger == null)
+            {
+                configuration = configuration
+                    .WithJobFactory(static c => new BackgroundJobFactory(
+                        c.Resolve<IJobFilterProvider>()))
+                    .WithJobPerformer(c => new BackgroundJobPerformer(
+                        c.Resolve<IJobFilterProvider>(),
+                        c.Resolve<JobActivator>(),
+                        options.TaskScheduler))
+                    .WithStateChanger(static c => new BackgroundJobStateChanger(
+                        c.Resolve<IJobFilterProvider>()));
+            }
+            else
+            {
+                if (factory == null) throw new ArgumentNullException(nameof(factory));
+                if (performer == null) throw new ArgumentNullException(nameof(performer));
+                if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
+            }
+
+            _configuration = configuration;
+            _options = options ??  throw new ArgumentNullException(nameof(options));
+            _processingServer = InitializeProcessingServer(storage, additionalProcesses);
+        }
+
+        public BackgroundJobServer(
+            [NotNull] IBackgroundConfiguration configuration,
+            [NotNull] BackgroundJobServerOptions options,
+            [NotNull] JobStorage storage,
+            [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses)
+        {
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (additionalProcesses == null) throw new ArgumentNullException(nameof(additionalProcesses));
+
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
+            
+            var overriddenTimeZoneResolver = options.TimeZoneResolver;
+            if (overriddenTimeZoneResolver != null)
+            {
+                _configuration = _configuration.WithTimeZoneResolver(_ => overriddenTimeZoneResolver);
+            }
+
+            var overriddenActivator = options.Activator;
+            if (overriddenActivator != null)
+            {
+                _configuration = _configuration.WithJobActivator(_ => overriddenActivator);
+            }
+
+            var overriddenFilterProvider = options.FilterProvider;
+            if (overriddenFilterProvider != null)
+            {
+                _configuration = _configuration.WithJobFilterProvider(_ => overriddenFilterProvider);
+            }
+
+            _processingServer = InitializeProcessingServer(storage, additionalProcesses);
         }
 
         public void SendStop()
@@ -183,49 +220,69 @@ namespace Hangfire
             return _processingServer.WaitForShutdownAsync(cancellationToken);
         }
 
-        private IEnumerable<IBackgroundProcessDispatcherBuilder> GetRequiredProcesses(
-            IJobFilterProvider? filterProvider,
-            JobActivator? activator,
-            IBackgroundJobFactory? factory,
-            IBackgroundJobPerformer? performer,
-            IBackgroundJobStateChanger? stateChanger)
+        private BackgroundProcessingServer InitializeProcessingServer(JobStorage storage, IEnumerable<IBackgroundProcess> additionalProcesses)
         {
             var processes = new List<IBackgroundProcessDispatcherBuilder>();
-            var timeZoneResolver = _options.TimeZoneResolver ?? new DefaultTimeZoneResolver();
+            processes.AddRange(GetRequiredProcesses());
+            processes.AddRange(additionalProcesses.Select(static x => x.UseBackgroundPool(1)));
 
-            if (factory == null && performer == null && stateChanger == null)
+            var properties = new Dictionary<string, object>
             {
-                filterProvider = filterProvider ?? _options.FilterProvider ?? JobFilterProviders.Providers;
-                activator = activator ?? _options.Activator ?? JobActivator.Current;
+                { "Queues", _options.Queues },
+                { "WorkerCount", _options.WorkerCount }
+            };
 
-                factory = new BackgroundJobFactory(filterProvider);
-                performer = new BackgroundJobPerformer(filterProvider, activator, _options.TaskScheduler);
-                stateChanger = new BackgroundJobStateChanger(filterProvider);
-            }
-            else
+            _logger.Info($"Starting Hangfire Server using job storage: '{storage}'");
+
+            storage.WriteOptionsToLog(_logger);
+
+            _logger.Info("Using the following options for Hangfire Server:\r\n" +
+                         $"    Worker count: {_options.WorkerCount}\r\n" +
+                         $"    Listening queues: {String.Join(", ", _options.Queues.Select(static x => "'" + x + "'"))}\r\n" +
+                         $"    Shutdown timeout: {_options.ShutdownTimeout}\r\n" +
+                         $"    Schedule polling interval: {_options.SchedulePollingInterval}");
+
+            var wrongQueues = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var queue in _options.Queues)
             {
-                if (factory == null) throw new ArgumentNullException(nameof(factory));
-                if (performer == null) throw new ArgumentNullException(nameof(performer));
-                if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
+                if (!EnqueuedState.TryValidateQueueName(queue))
+                {
+                    wrongQueues.Add(queue);
+                }
             }
 
-            processes.Add(new Worker(_options.Queues, performer, stateChanger).UseBackgroundPool(_options.WorkerCount, _options.WorkerThreadConfigurationAction));
+            if (wrongQueues.Count > 0)
+            {
+                _logger.Warn($"These queues fail to match the naming format: {String.Join(", ", wrongQueues.Select(static x => $"'{x}'"))}. A queue name must consist of lowercase letters, digits, underscore, and dash characters only.");
+            }
+
+            return new BackgroundProcessingServer(
+                storage, 
+                processes, 
+                properties, 
+                GetProcessingServerOptions());
+        }
+
+        private IEnumerable<IBackgroundProcessDispatcherBuilder> GetRequiredProcesses()
+        {
+            var processes = new List<IBackgroundProcessDispatcherBuilder>();
+            processes.Add(new Worker(new WorkerOptions { Queues = _options.Queues }, _configuration).UseBackgroundPool(_options.WorkerCount, _options.WorkerThreadConfigurationAction));
 
             if (!_options.IsLightweightServer)
             {
                 processes.Add(
-                    new DelayedJobScheduler(_options.SchedulePollingInterval, stateChanger)
+                    new DelayedJobScheduler(new DelayedJobSchedulerOptions { PollingDelay = _options.SchedulePollingInterval }, _configuration)
                     {
                         TaskScheduler = _options.TaskScheduler,
-                        MaxDegreeOfParallelism = _options.MaxDegreeOfParallelismForSchedulers
+                        MaxDegreeOfParallelism = _options.MaxDegreeOfParallelismForSchedulers // TODO:
                     }
                     .UseBackgroundPool(1));
 
                 processes.Add(
-                    new RecurringJobScheduler(factory, _options.SchedulePollingInterval, timeZoneResolver)
+                    new RecurringJobScheduler(new RecurringJobSchedulerOptions { PollingDelay = _options.SchedulePollingInterval }, _configuration)
                         {
                             TaskScheduler = _options.TaskScheduler,
-                            MaxDegreeOfParallelism = _options.MaxDegreeOfParallelismForSchedulers
+                            MaxDegreeOfParallelism = _options.MaxDegreeOfParallelismForSchedulers // TODO:
                         }
                         .UseBackgroundPool(1));
             }

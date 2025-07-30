@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
@@ -56,9 +57,9 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenQueuesCollectionNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new Worker(null, _performer.Object, _stateChanger.Object));
+                () => new Worker((IEnumerable<string>)null, _performer.Object, _stateChanger.Object));
 
-            Assert.Equal("queues", exception.ParamName);
+            Assert.Equal("value", exception.ParamName);
         }
 
         [Fact]
@@ -395,7 +396,14 @@ namespace Hangfire.Core.Tests.Server
 
         private Worker CreateWorker(int maxStateChangeAttempts = 10)
         {
-            return new Worker(_queues, _performer.Object, _stateChanger.Object, TimeSpan.FromSeconds(5), maxStateChangeAttempts);
+            var options = new WorkerOptions
+            {
+                Queues = _queues,
+                JobInitializationWaitTimeout = TimeSpan.FromSeconds(5),
+                MaxStateChangeAttempts = maxStateChangeAttempts
+            };
+
+            return new Worker(options, _performer.Object, _stateChanger.Object);
         }
 
         [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]

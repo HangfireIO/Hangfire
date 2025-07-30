@@ -18,6 +18,7 @@ using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Profiling;
+using Hangfire.Server;
 using Hangfire.States;
 
 namespace Hangfire
@@ -59,6 +60,22 @@ namespace Hangfire
         public static IBackgroundConfiguration WithJobFilterProvider(
             [NotNull] this IBackgroundConfiguration configuration,
             [NotNull] Func<IBackgroundConfiguration, IJobFilterProvider> callback)
+        {
+            if (callback == null) throw new ArgumentNullException(nameof(callback));
+            return configuration.With(callback);
+        }
+
+        public static IBackgroundConfiguration WithJobPerformer(
+            [NotNull] this IBackgroundConfiguration configuration,
+            [NotNull] Func<IBackgroundConfiguration, IBackgroundJobPerformer> callback)
+        {
+            if (callback == null) throw new ArgumentNullException(nameof(callback));
+            return configuration.With(callback);
+        }
+
+        public static IBackgroundConfiguration WithJobActivator(
+            [NotNull] this IBackgroundConfiguration configuration,
+            [NotNull] Func<IBackgroundConfiguration, JobActivator> callback)
         {
             if (callback == null) throw new ArgumentNullException(nameof(callback));
             return configuration.With(callback);

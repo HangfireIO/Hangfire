@@ -26,6 +26,13 @@ using Hangfire.Storage;
 
 namespace Hangfire.Server
 {
+    public sealed class DelayedJobSchedulerOptions
+    {
+        public TimeSpan PollingDelay { get; init; } = DelayedJobScheduler.DefaultPollingDelay;
+        public int MaxDegreeOfParallelism { get; init; } = 1;
+        public Func<int, TimeSpan> RetryDelayFunc { get; init; } = attempt => TimeSpan.FromSeconds(attempt);
+    }
+
     /// <summary>
     /// Represents a background process responsible for <i>enqueueing delayed
     /// jobs</i>.
@@ -78,9 +85,10 @@ namespace Hangfire.Server
         private readonly ILog _logger = LogProvider.For<DelayedJobScheduler>();
         private readonly ConcurrentDictionary<Type, bool> _isBatchingAvailableCache = new ConcurrentDictionary<Type, bool>();
 
+        private readonly IBackgroundConfiguration _configuration;
+        private readonly DelayedJobSchedulerOptions _options;
         private readonly IBackgroundJobStateChanger _stateChanger;
-        private readonly IProfiler _profiler;
-        private readonly TimeSpan _pollingDelay;
+        private readonly IProfiler _profiler; // TODO: Not needed
         private bool _parallelismIssueLogged;
 
         /// <summary>
@@ -88,6 +96,7 @@ namespace Hangfire.Server
         /// class with the <see cref="DefaultPollingDelay"/> value as a
         /// delay between runs.
         /// </summary>
+        [Obsolete("Please use a constructor overload that takes IBackgroundConfiguration instead of specific services.")]
         public DelayedJobScheduler() 
             : this(DefaultPollingDelay)
         {
@@ -98,6 +107,7 @@ namespace Hangfire.Server
         /// class with a specified polling interval.
         /// </summary>
         /// <param name="pollingDelay">Delay between scheduler runs.</param>
+        [Obsolete("Please use a constructor overload that takes IBackgroundConfiguration instead of specific services.")]
         public DelayedJobScheduler(TimeSpan pollingDelay)
             : this(pollingDelay, new BackgroundJobStateChanger())
         {
@@ -111,11 +121,24 @@ namespace Hangfire.Server
         /// <param name="stateChanger">State changer to use for background jobs.</param>
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="stateChanger"/> is null.</exception>
+        [Obsolete("Please use a constructor overload that takes IBackgroundConfiguration instead of specific services.")]
         public DelayedJobScheduler(TimeSpan pollingDelay, [NotNull] IBackgroundJobStateChanger stateChanger)
         {
+            _options = new DelayedJobSchedulerOptions { PollingDelay = pollingDelay };
             _stateChanger = stateChanger ?? throw new ArgumentNullException(nameof(stateChanger));
-            _pollingDelay = pollingDelay;
             _profiler = new SlowLogProfiler(_logger);
+
+            _configuration = BackgroundConfiguration.Instance
+                .WithStateChanger(_ => _stateChanger)
+                .WithProfiler(_ => _profiler);
+        }
+
+        public DelayedJobScheduler([NotNull] DelayedJobSchedulerOptions options, [NotNull] IBackgroundConfiguration configuration)
+        {
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
+            _stateChanger = configuration.Resolve<IBackgroundJobStateChanger>();
+            _profiler = configuration.Resolve<IProfiler>(); // TODO: Should be SlowLogProfiler with Logger
         }
 
         /// <summary>
@@ -130,7 +153,7 @@ namespace Hangfire.Server
         /// Gets or sets a task scheduler that will be used when parallel scheduling
         /// is enabled via the <see cref="MaxDegreeOfParallelism"/> option.
         /// </summary>
-        public TaskScheduler? TaskScheduler { get; set; }
+        public TaskScheduler? TaskScheduler { get; set; } // TODO: What to do with this dependency?
 
         internal Func<int, TimeSpan> RetryDelayFunc { get; set; } = attempt => TimeSpan.FromSeconds(attempt);
 
@@ -151,7 +174,7 @@ namespace Hangfire.Server
                 }
             } while (jobsProcessed > 0 && !context.IsStopping);
 
-            context.Wait(_pollingDelay);
+            context.Wait(_options.PollingDelay);
         }
 
         /// <inheritdoc />
@@ -202,7 +225,7 @@ namespace Hangfire.Server
                                     CancellationToken = context.StoppingToken,
                                     TaskScheduler = TaskScheduler
                                 },
-                                (jobId, state) =>
+                                (jobId, _) =>
                                 {
                                     using (var dedicated = context.Storage.GetConnection())
                                     {
@@ -296,7 +319,7 @@ namespace Hangfire.Server
                 try
                 {
                     var appliedState = _stateChanger.ChangeState(new StateChangeContext(
-                        context.Configuration.WithProfiler(_ => _profiler),
+                        _configuration,
                         connection,
                         jobId,
                         new EnqueuedState { Reason = $"Triggered by {ToString()}" },
@@ -352,7 +375,7 @@ namespace Hangfire.Server
             // and will be unable to make any progress. Any successful state change will cause that identifier
             // to be removed from the schedule.
             _stateChanger.ChangeState(new StateChangeContext(
-                context.Configuration.WithProfiler(_ => _profiler),
+                _configuration,
                 connection,
                 jobId,
                 new FailedState(exception!, context.ServerId)
@@ -375,7 +398,7 @@ namespace Hangfire.Server
 
             return _isBatchingAvailableCache.GetOrAdd(
                 connection.GetType(),
-                type =>
+                _ =>
                 {
                     if (connection is JobStorageConnection storageConnection)
                     {
@@ -414,7 +437,7 @@ namespace Hangfire.Server
                 // It just means another Hangfire server did this work.
                 _logger.DebugException(
                     $@"An exception was thrown during acquiring distributed lock on the {resource} resource within {DefaultLockTimeout.TotalSeconds} seconds. The scheduled jobs have not been handled this time.
-It will be retried in {_pollingDelay.TotalSeconds} seconds", 
+It will be retried in {_options.PollingDelay.TotalSeconds} seconds", 
                     e);
                 return default(T);
             }

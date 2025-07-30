@@ -30,6 +30,7 @@ namespace Hangfire
     {
         private readonly BackgroundJobServerOptions _options;
         private readonly JobStorage _storage;
+        private readonly IBackgroundConfiguration _configuration;
         private readonly IEnumerable<IBackgroundProcess> _additionalProcesses;
 #if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
         private readonly IHostApplicationLifetime? _hostApplicationLifetime;
@@ -89,16 +90,47 @@ namespace Hangfire
             ,
             [CanBeNull] IHostApplicationLifetime? hostApplicationLifetime
 #endif
+        )
+            : this(storage, BackgroundConfiguration.Instance, options, additionalProcesses, factory, performer, stateChanger
+#if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
+                , hostApplicationLifetime
+#endif
+                )
+        {
+        }
+
+        [Obsolete("This constructor uses an obsolete constructor overload of the BackgroundJobServer type that will be removed in 2.0.0.")]
+        public BackgroundJobServerHostedService(
+            [NotNull] JobStorage storage,
+            [NotNull] IBackgroundConfiguration configuration,
+            [NotNull] BackgroundJobServerOptions options,
+            [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses,
+            [CanBeNull] IBackgroundJobFactory? factory,
+            [CanBeNull] IBackgroundJobPerformer? performer,
+            [CanBeNull] IBackgroundJobStateChanger? stateChanger
+#if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
+            ,
+            [CanBeNull] IHostApplicationLifetime? hostApplicationLifetime
+#endif
             )
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
             _additionalProcesses = additionalProcesses;
 
             _factory = factory;
             _performer = performer;
             _stateChanger = stateChanger;
+
+            if (_factory != null && _performer != null && _stateChanger != null)
+            {
+                _configuration = configuration
+                    .WithJobFactory(_ => _factory)
+                    .WithJobPerformer(_ => _performer)
+                    .WithStateChanger(_ => _stateChanger);
+            }
 
 #if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
             _hostApplicationLifetime = hostApplicationLifetime;
@@ -156,12 +188,7 @@ namespace Hangfire
         
         private void InitializeProcessingServer()
         {
-            _processingServer = _factory != null && _performer != null && _stateChanger != null
-#pragma warning disable 618
-                ? new BackgroundJobServer(_options, _storage, _additionalProcesses, null, null, _factory, _performer,
-                    _stateChanger)
-#pragma warning restore 618
-                : new BackgroundJobServer(_options, _storage, _additionalProcesses);
+            _processingServer = new BackgroundJobServer(_configuration, _options, _storage, _additionalProcesses);
         }
 
 #if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER

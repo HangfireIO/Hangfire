@@ -58,18 +58,17 @@ namespace Hangfire.Server
         private bool _awaited;
 
         public BackgroundProcessingServer([NotNull] IEnumerable<IBackgroundProcess> processes)
-            : this(BackgroundConfiguration.Instance, processes)
+            : this(BackgroundConfiguration.Instance.Resolve<JobStorage>(), processes) // TODO: Resolve??
         {
         }
 
         public BackgroundProcessingServer(
             [NotNull] IEnumerable<IBackgroundProcess> processes,
             [NotNull] IDictionary<string, object> properties)
-            : this(BackgroundConfiguration.Instance, processes, properties)
+            : this(BackgroundConfiguration.Instance.Resolve<JobStorage>(), processes, properties) // TODO: Resolve??
         {
         }
 
-        [Obsolete("Please use the overload that takes an IBackgroundConfiguration instead of JobStorage.")]
         public BackgroundProcessingServer(
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IBackgroundProcess> processes)
@@ -78,14 +77,6 @@ namespace Hangfire.Server
         }
 
         public BackgroundProcessingServer(
-            [NotNull] IBackgroundConfiguration configuration,
-            [NotNull] IEnumerable<IBackgroundProcess> processes)
-            : this(configuration, processes, new Dictionary<string, object>())
-        {
-        }
-
-        [Obsolete("Please use the overload that takes an IBackgroundConfiguration instead of JobStorage.")]
-        public BackgroundProcessingServer(
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IBackgroundProcess> processes,
             [NotNull] IDictionary<string, object> properties)
@@ -93,15 +84,6 @@ namespace Hangfire.Server
         {
         }
 
-        public BackgroundProcessingServer(
-            [NotNull] IBackgroundConfiguration configuration,
-            [NotNull] IEnumerable<IBackgroundProcess> processes,
-            [NotNull] IDictionary<string, object> properties)
-            : this(configuration, processes, properties, new BackgroundProcessingServerOptions())
-        {
-        }
-
-        [Obsolete("Please use the overload that takes an IBackgroundConfiguration instead of JobStorage.")]
         public BackgroundProcessingServer(
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IBackgroundProcess> processes,
@@ -112,30 +94,11 @@ namespace Hangfire.Server
         }
 
         public BackgroundProcessingServer(
-            [NotNull] IBackgroundConfiguration configuration,
-            [NotNull] IEnumerable<IBackgroundProcess> processes,
-            [NotNull] IDictionary<string, object> properties,
-            [NotNull] BackgroundProcessingServerOptions options)
-            : this(configuration, GetProcesses(processes), properties, options)
-        {
-        }
-
-        [Obsolete("Please use the overload that takes an IBackgroundConfiguration instead of JobStorage.")]
-        public BackgroundProcessingServer(
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IBackgroundProcessDispatcherBuilder> dispatcherBuilders,
             [NotNull] IDictionary<string, object> properties,
             [NotNull] BackgroundProcessingServerOptions options)
-            : this(new BackgroundServerProcess(BackgroundConfiguration.Instance.WithJobStorage(_ => storage), dispatcherBuilders, options, properties), options)
-        {
-        }
-
-        public BackgroundProcessingServer(
-            [NotNull] IBackgroundConfiguration configuration,
-            [NotNull] IEnumerable<IBackgroundProcessDispatcherBuilder> dispatcherBuilders,
-            [NotNull] IDictionary<string, object> properties,
-            [NotNull] BackgroundProcessingServerOptions options)
-            : this(new BackgroundServerProcess(configuration, dispatcherBuilders, options, properties), options)
+            : this(new BackgroundServerProcess(storage, dispatcherBuilders, options, properties), options)
         {
         }
 

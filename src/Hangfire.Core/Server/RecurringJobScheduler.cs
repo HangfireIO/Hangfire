@@ -27,6 +27,11 @@ using Hangfire.Storage;
 
 namespace Hangfire.Server
 {
+    public sealed class RecurringJobSchedulerOptions
+    {
+        public TimeSpan PollingDelay { get; init; } = TimeSpan.Zero;
+    }
+
     /// <summary>
     /// Represents a background process responsible for <i>enqueueing recurring 
     /// jobs</i>.
@@ -73,10 +78,11 @@ namespace Hangfire.Server
         private readonly ILog _logger = LogProvider.For<RecurringJobScheduler>();
         private readonly ConcurrentDictionary<Type, bool> _isBatchingAvailableCache = new ConcurrentDictionary<Type, bool>();
 
+        private readonly RecurringJobSchedulerOptions _options;
+        private readonly IBackgroundConfiguration _configuration;
         private readonly IBackgroundJobFactory _factory;
-        private readonly Func<DateTime> _nowFactory;
+        private readonly IBackgroundClock _clock;
         private readonly ITimeZoneResolver _timeZoneResolver;
-        private readonly TimeSpan _pollingDelay;
         private readonly IProfiler _profiler;
         private bool _parallelismIssueLogged;
 
@@ -84,6 +90,7 @@ namespace Hangfire.Server
         /// Initializes a new instance of the <see cref="RecurringJobScheduler"/>
         /// class with default background job factory.
         /// </summary>
+        [Obsolete("Please use a constructor overload that takes IBackgroundConfiguration.")]
         public RecurringJobScheduler()
             : this(new BackgroundJobFactory(JobFilterProviders.Providers))
         {
@@ -96,6 +103,7 @@ namespace Hangfire.Server
         /// <param name="factory">Factory that will be used to create background jobs.</param>
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="factory"/> is null.</exception>
+        [Obsolete("Please use a constructor overload that takes IBackgroundConfiguration instead of specific services.")]
         public RecurringJobScheduler(
             [NotNull] IBackgroundJobFactory factory)
             : this(factory, TimeSpan.Zero)
@@ -109,6 +117,7 @@ namespace Hangfire.Server
         /// <param name="factory">Factory that will be used to create background jobs.</param>
         /// <param name="pollingDelay">Delay before another polling attempt, when no jobs scheduled yet.</param>
         /// <exception cref="ArgumentNullException"><paramref name="factory"/> is null.</exception>
+        [Obsolete("Please use a constructor overload that takes IBackgroundConfiguration instead of specific services.")]
         public RecurringJobScheduler(
             [NotNull] IBackgroundJobFactory factory,
             TimeSpan pollingDelay)
@@ -125,6 +134,7 @@ namespace Hangfire.Server
         /// <param name="timeZoneResolver">Function that returns a time zone object by its identifier.</param>
         /// <exception cref="ArgumentNullException"><paramref name="factory"/> is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="timeZoneResolver"/> is null.</exception>
+        [Obsolete("Please use a constructor overload that takes IBackgroundConfiguration instead of specific services.")]
         public RecurringJobScheduler(
             [NotNull] IBackgroundJobFactory factory,
             TimeSpan pollingDelay,
@@ -133,17 +143,37 @@ namespace Hangfire.Server
         {
         }
 
+        [Obsolete("Please use a constructor overload that takes IBackgroundConfiguration instead of specific services.")]
         public RecurringJobScheduler(
-            [NotNull] IBackgroundJobFactory factory, // TODO: What to do with these services?????????????
+            [NotNull] IBackgroundJobFactory factory,
             TimeSpan pollingDelay,
             [NotNull] ITimeZoneResolver timeZoneResolver,
-            [NotNull] Func<DateTime> nowFactory) // TODO: Use from the context
+            [NotNull] Func<DateTime> nowFactory)
         {
+            if (nowFactory == null) throw new ArgumentNullException(nameof(nowFactory));
+
+            _options = new RecurringJobSchedulerOptions { PollingDelay = pollingDelay };
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
-            _nowFactory = nowFactory ?? throw new ArgumentNullException(nameof(nowFactory));
+            _clock = new CallbackBackgroundClock(nowFactory);
             _timeZoneResolver = timeZoneResolver ?? throw new ArgumentNullException(nameof(timeZoneResolver));
-            _pollingDelay = pollingDelay;
             _profiler = new SlowLogProfiler(_logger);
+
+            _configuration = BackgroundConfiguration.Instance
+                .WithJobFactory(_ => _factory)
+                .WithClock(_ => _clock)
+                .WithTimeZoneResolver(_ => _timeZoneResolver)
+                .WithProfiler(_ => _profiler);
+        }
+
+        public RecurringJobScheduler([NotNull] RecurringJobSchedulerOptions options, [NotNull] IBackgroundConfiguration configuration)
+        {
+            _options = options ?? throw new ArgumentNullException(nameof(options));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+
+            _factory = _configuration.Resolve<IBackgroundJobFactory>();
+            _clock = _configuration.Resolve<IBackgroundClock>();
+            _timeZoneResolver = _configuration.Resolve<ITimeZoneResolver>();
+            _profiler = _configuration.Resolve<IProfiler>(); // TODO: Should be SlowLogProfiler with Logger
         }
 
         /// <summary>
@@ -177,13 +207,15 @@ namespace Hangfire.Server
                 }
             } while (jobsProcessed > 0 && !context.IsStopping);
 
-            if (_pollingDelay > TimeSpan.Zero)
+            var pollingDelay = _options.PollingDelay;
+
+            if (pollingDelay > TimeSpan.Zero)
             {
-                context.Wait(_pollingDelay);
+                context.Wait(pollingDelay);
             }
             else
             {
-                var now = _nowFactory();
+                var now = _clock.GetCurrentTime();
                 context.Wait(now.AddMilliseconds(-now.Millisecond).AddSeconds(-now.Second).AddMinutes(1) - now);
             }
         }
@@ -202,7 +234,7 @@ namespace Hangfire.Server
 
                 var now = DateTime.SpecifyKind(
                     !context.Storage.HasFeature(JobStorageFeatures.Connection.GetUtcDateTime)
-                        ? _nowFactory()
+                        ? _clock.GetCurrentTime()
                         : ((JobStorageConnection)connection).GetUtcDateTime(),
                     DateTimeKind.Utc);
 
@@ -316,7 +348,8 @@ namespace Hangfire.Server
                     }
                     
                     var backgroundJobs = new List<BackgroundJob>();
-                    var precision = _pollingDelay + _pollingDelay;
+                    var pollingDelay = _options.PollingDelay;
+                    var precision = pollingDelay + pollingDelay;
 
                     var executions = recurringJob.ScheduleNext(
                         _timeZoneResolver,
@@ -327,7 +360,7 @@ namespace Hangfire.Server
                     foreach (var execution in executions)
                     {
                         var backgroundJob = _factory.TriggerRecurringJob(
-                            context.Configuration.WithProfiler(_ => _profiler),
+                            _configuration,
                             connection,
                             recurringJob,
                             execution);
@@ -345,7 +378,7 @@ namespace Hangfire.Server
                     foreach (var backgroundJob in backgroundJobs)
                     {
                         _factory.StateMachine.EnqueueBackgroundJob(
-                            context.Configuration.WithProfiler(_ => _profiler),
+                            _configuration,
                             connection,
                             transaction,
                             recurringJob,
@@ -382,7 +415,8 @@ namespace Hangfire.Server
 
             if (recurringJob.RetryAttempt < MaxRetryAttemptCount)
             {
-                var delay = _pollingDelay > TimeSpan.Zero ? _pollingDelay : TimeSpan.FromMinutes(1);
+                var pollingDelay = _options.PollingDelay;
+                var delay = pollingDelay > TimeSpan.Zero ? pollingDelay : TimeSpan.FromMinutes(1);
 
                 _logger.WarnException(
                     $"Recurring job '{recurringJobId}' can't be scheduled due to an error and will be retried in {delay}.",

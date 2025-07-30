@@ -119,7 +119,7 @@ namespace Hangfire.Server
         internal IProfiler Profiler { get; }
 
         [CanBeNull]
-        public IBackgroundJobPerformer? Performer { get; internal set; }
+        public IBackgroundJobPerformer? Performer { get; internal set; } // TODO
 
         [CanBeNull]
         public string? ServerId { get; }
