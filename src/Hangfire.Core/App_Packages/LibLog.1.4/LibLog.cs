@@ -377,7 +377,7 @@ namespace Hangfire.Logging
         /// Sets the current log provider.
         /// </summary>
         /// <param name="logProvider">The log provider.</param>
-        public static void SetCurrentLogProvider(ILogProvider logProvider)
+        public static void SetCurrentLogProvider(ILogProvider? logProvider)
         {
             Volatile.Write(ref _currentLogProvider, logProvider);
         }
