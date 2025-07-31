@@ -329,6 +329,7 @@ namespace Hangfire.Logging
     public static class LogProvider
     {
         private static ILogProvider? _currentLogProvider;
+        private static Lazy<ILogProvider?> _resolvedLogProvider = new Lazy<ILogProvider?>(ResolveLogProvider, LazyThreadSafetyMode.PublicationOnly);
 
         /// <summary>
         /// Gets a logger for the specified type.
@@ -369,7 +370,7 @@ namespace Hangfire.Logging
         /// <returns>An instance of <see cref="ILog"/></returns>
         public static ILog GetLogger(string name)
         {
-            ILogProvider? logProvider = Volatile.Read(ref _currentLogProvider) ?? ResolveLogProvider();
+            ILogProvider? logProvider = Volatile.Read(ref _currentLogProvider) ?? _resolvedLogProvider.Value;
             return logProvider == null ? new NoOpLogger() : (ILog)new LoggerExecutionWrapper(logProvider.GetLogger(name));
         }
 
