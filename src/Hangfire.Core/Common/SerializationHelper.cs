@@ -193,7 +193,7 @@ namespace Hangfire.Common
                     using (var jsonReader = new JsonTextReader(stringReader))
                     {
                         var serializer = JsonSerializer.Create(serializerSettings);
-                        return serializer.Deserialize(jsonReader, type)!;
+                        return serializer.Deserialize(jsonReader, type);
                     }
                 }
                 catch (Exception ex) when (ex.IsCatchableExceptionType())
@@ -208,7 +208,7 @@ namespace Hangfire.Common
 
             try
             {
-                return JsonConvert.DeserializeObject(value, type, GetSerializerSettings(SerializationOption.User))!;
+                return JsonConvert.DeserializeObject(value, type, GetSerializerSettings(SerializationOption.User));
             }
             catch (Exception ex) when (exception != null && ex.IsCatchableExceptionType())
             {
