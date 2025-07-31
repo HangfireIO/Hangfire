@@ -371,7 +371,7 @@ namespace Hangfire.Logging
         public static ILog GetLogger(string name)
         {
             ILogProvider? logProvider = Volatile.Read(ref _currentLogProvider) ?? _resolvedLogProvider.Value;
-            return logProvider == null ? new NoOpLogger() : (ILog)new LoggerExecutionWrapper(logProvider.GetLogger(name));
+            return logProvider == null ? NoOpLogger.Instance : (ILog)new LoggerExecutionWrapper(logProvider.GetLogger(name));
         }
 
         /// <summary>
@@ -424,6 +424,12 @@ namespace Hangfire.Logging
 
         internal sealed class NoOpLogger : ILog
         {
+            public static readonly NoOpLogger Instance = new NoOpLogger();
+
+            private NoOpLogger()
+            {
+            }
+
             public bool Log(LogLevel logLevel, Func<string>? messageFunc, Exception? exception)
             {
                 return false;
