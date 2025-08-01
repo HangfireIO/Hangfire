@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Hangfire.Annotations;
+using Hangfire.Logging;
 using Hangfire.Processing;
 
 namespace Hangfire.Server
@@ -63,12 +64,17 @@ namespace Hangfire.Server
         private static void ExecuteProcess(Guid executionId, object? state)
         {
             var tuple = (Tuple<IBackgroundProcess, BackgroundServerContext, BackgroundExecution>)state!;
+            var process = tuple.Item1;
             var serverContext = tuple.Item2;
+            var execution = tuple.Item3;
+
+            var processLogger = LogProvider.GetLogger(process.GetType());
 
             var context = new BackgroundProcessContext(
                 serverContext.ServerId,
                 serverContext.Storage,
                 serverContext.Properties.ToDictionary(static x => x.Key, static x => x.Value),
+                processLogger,
                 executionId,
                 serverContext.StoppingToken,
                 serverContext.StoppedToken,
@@ -76,8 +82,8 @@ namespace Hangfire.Server
 
             while (!context.IsStopping)
             {
-                tuple.Item1.Execute(context);
-                tuple.Item3.NotifySucceeded();
+                process.Execute(context);
+                execution.NotifySucceeded();
             }
         }
     }

@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Common;
+using Hangfire.Logging;
 
 namespace Hangfire.Server
 {
@@ -33,21 +34,34 @@ namespace Hangfire.Server
         {
         }
 
+        [Obsolete("This constructor overload is deprecated and will be removed in 2.0.0.")]
         public BackgroundProcessContext(
             [NotNull] string serverId,
-            [NotNull] JobStorage storage, 
-            [NotNull] IDictionary<string, object> properties, 
+            [NotNull] JobStorage storage,
+            [NotNull] IDictionary<string, object> properties,
+            Guid executionId,
+            CancellationToken stoppingToken,
+            CancellationToken stoppedToken,
+            CancellationToken shutdownToken)
+            : this(serverId, storage, properties, LogProvider.NoOpLogger.Instance, executionId, stoppingToken, stoppedToken, shutdownToken)
+        {
+        }
+
+        public BackgroundProcessContext(
+            [NotNull] string serverId,
+            [NotNull] JobStorage storage,
+            [NotNull] IDictionary<string, object> properties,
+            [NotNull] ILog logger,
             Guid executionId,
             CancellationToken stoppingToken,
             CancellationToken stoppedToken,
             CancellationToken shutdownToken)
         {
-            if (serverId == null) throw new ArgumentNullException(nameof(serverId));
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
             if (properties == null) throw new ArgumentNullException(nameof(properties));
 
-            ServerId = serverId;
-            Storage = storage;
+            ServerId = serverId ?? throw new ArgumentNullException(nameof(serverId));
+            Storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
             ExecutionId = executionId;
             Properties = new Dictionary<string, object>(properties, StringComparer.OrdinalIgnoreCase);
             StoppingToken = stoppingToken;
@@ -59,10 +73,13 @@ namespace Hangfire.Server
         public string ServerId { get; }
 
         [NotNull]
+        public JobStorage Storage { get; }
+
+        [NotNull]
         public IReadOnlyDictionary<string, object> Properties { get; }
 
         [NotNull]
-        public JobStorage Storage { get; }
+        public ILog Logger { get; }
 
         public Guid ExecutionId { get; }
 

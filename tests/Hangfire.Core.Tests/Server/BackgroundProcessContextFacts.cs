@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Hangfire.Logging;
 using Hangfire.Server;
 using Moq;
 using Xunit;
@@ -15,13 +16,17 @@ namespace Hangfire.Core.Tests.Server
     {
         private readonly string _serverId = "server";
         private readonly Mock<JobStorage> _storage;
-        private readonly CancellationTokenSource _cts;
         private readonly Dictionary<string, object> _properties;
+        private readonly Mock<ILog> _logger;
+        private readonly Guid _executionId;
+        private readonly CancellationTokenSource _cts;
 
         public BackgroundProcessContextFacts()
         {
             _storage = new Mock<JobStorage>();
             _properties = new Dictionary<string, object> {{"key", "value"}};
+            _logger = new Mock<ILog>();
+            _executionId = Guid.NewGuid();
             _cts = new CancellationTokenSource();
         }
 
@@ -53,14 +58,33 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
+        public void Ctor_ThrowsAnException_WhenLoggerIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new BackgroundProcessContext(_serverId, _storage.Object, _properties, null, _executionId, _cts.Token, _cts.Token, _cts.Token));
+
+            Assert.Equal("logger", exception.ParamName);
+        }
+
+        [Fact]
         public void Ctor_CorrectlyInitializes_AllTheProperties()
         {
-            var context = new BackgroundProcessContext(_serverId, _storage.Object, _properties, _cts.Token);
+            var stoppingCts = new CancellationTokenSource();
+            var stoppedCts = new CancellationTokenSource();
+            var shutdownCts = new CancellationTokenSource();
+
+            var context = new BackgroundProcessContext(_serverId, _storage.Object, _properties, _logger.Object, _executionId, stoppingCts.Token, stoppedCts.Token, shutdownCts.Token);
 
             Assert.Equal(_serverId, context.ServerId);
-            Assert.True(_properties.SequenceEqual(context.Properties));
             Assert.Same(_storage.Object, context.Storage);
-            Assert.Equal(_cts.Token, context.CancellationToken);
+            Assert.True(_properties.SequenceEqual(context.Properties));
+            Assert.Same(_logger.Object, context.Logger);
+            Assert.Equal(_executionId, context.ExecutionId);
+            Assert.Equal(stoppingCts.Token, context.CancellationToken);
+            Assert.Equal(stoppingCts.Token, context.CancellationToken);
+            Assert.Equal(stoppingCts.Token, context.StoppingToken);
+            Assert.Equal(stoppedCts.Token, context.StoppedToken);
+            Assert.Equal(shutdownCts.Token, context.ShutdownToken);
         }
     }
 }

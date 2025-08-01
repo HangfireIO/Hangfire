@@ -17,6 +17,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
+using Hangfire.Logging;
 using Hangfire.Processing;
 
 namespace Hangfire.Server
@@ -74,21 +75,26 @@ namespace Hangfire.Server
         private static async Task ExecuteProcess(Guid executionId, object? state)
         {
             var tuple = (Tuple<IBackgroundProcessAsync, BackgroundServerContext, BackgroundExecution>)state!;
+            var process = tuple.Item1;
             var serverContext = tuple.Item2;
+            var execution = tuple.Item3;
+
+            var processLogger = LogProvider.GetLogger(process.GetType());
 
             var context = new BackgroundProcessContext(
-                serverContext.ServerId, 
+                serverContext.ServerId,
                 serverContext.Storage,
-                serverContext.Properties.ToDictionary(static x => x.Key, static x => x.Value), 
-                executionId, 
-                serverContext.StoppingToken, 
+                serverContext.Properties.ToDictionary(static x => x.Key, static x => x.Value),
+                processLogger,
+                executionId,
+                serverContext.StoppingToken,
                 serverContext.StoppedToken,
                 serverContext.ShutdownToken);
 
             while (!context.IsStopping)
             {
-                await tuple.Item1.ExecuteAsync(context).ConfigureAwait(true);
-                tuple.Item3.NotifySucceeded();
+                await process.ExecuteAsync(context).ConfigureAwait(true);
+                execution.NotifySucceeded();
             }
         }
     }

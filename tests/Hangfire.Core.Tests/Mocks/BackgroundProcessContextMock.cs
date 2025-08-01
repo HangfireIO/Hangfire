@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using Hangfire.Logging;
 using Hangfire.Server;
 using Moq;
 
@@ -15,13 +16,14 @@ namespace Hangfire.Core.Tests
             ServerId = "server";
             Storage = new Mock<JobStorage>();
             Properties = new Dictionary<string, object>();
+            Logger = new Mock<ILog>();
             ExecutionId = Guid.NewGuid();
             StoppingTokenSource = new CancellationTokenSource();
             StoppedTokenSource = new CancellationTokenSource();
             ShutdownTokenSource = new CancellationTokenSource();
 
             _context = new Lazy<BackgroundProcessContext>(
-                () => new BackgroundProcessContext(ServerId, Storage.Object, Properties, ExecutionId,
+                () => new BackgroundProcessContext(ServerId, Storage.Object, Properties, Logger.Object, ExecutionId,
                     StoppingTokenSource.Token, StoppedTokenSource.Token, ShutdownTokenSource.Token));
         }
 
@@ -31,6 +33,7 @@ namespace Hangfire.Core.Tests
         public Mock<JobStorage> Storage { get; set; }
         public IDictionary<string, object> Properties { get; set; } 
         public Guid ExecutionId { get; set; }
+        public Mock<ILog> Logger { get; set; }
         public CancellationTokenSource StoppingTokenSource { get; set; }
         public CancellationTokenSource StoppedTokenSource { get; set; }
         public CancellationTokenSource ShutdownTokenSource { get; set; }
