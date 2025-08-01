@@ -20,7 +20,6 @@ using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Logging;
-using Hangfire.Profiling;
 using Hangfire.States;
 using Hangfire.Storage;
 
@@ -63,6 +62,8 @@ namespace Hangfire.Server
     /// <seealso cref="ScheduledState"/>
     public class DelayedJobScheduler : IBackgroundProcess
     {
+        private static readonly IEnumerable<string> ExpectedScheduledState = [ScheduledState.StateName];
+
         /// <summary>
         /// Represents a default polling interval for delayed job scheduler. 
         /// This field is read-only.
@@ -75,11 +76,9 @@ namespace Hangfire.Server
         private static readonly int BatchSize = 1000;
         private static readonly int MaxStateChangeAttempts = 5;
 
-        private readonly ILog _logger = LogProvider.For<DelayedJobScheduler>();
         private readonly ConcurrentDictionary<Type, bool> _isBatchingAvailableCache = new ConcurrentDictionary<Type, bool>();
 
         private readonly IBackgroundJobStateChanger _stateChanger;
-        private readonly IProfiler _profiler;
         private readonly TimeSpan _pollingDelay;
         private bool _parallelismIssueLogged;
 
@@ -115,7 +114,6 @@ namespace Hangfire.Server
         {
             _stateChanger = stateChanger ?? throw new ArgumentNullException(nameof(stateChanger));
             _pollingDelay = pollingDelay;
-            _profiler = new SlowLogProfiler(_logger);
         }
 
         /// <summary>
@@ -147,7 +145,7 @@ namespace Hangfire.Server
 
                 if (jobsProcessed != 0)
                 {
-                    _logger.Debug($"{jobsProcessed} scheduled job(s) processed by scheduler.");
+                    context.Logger.Debug($"{jobsProcessed} scheduled job(s) processed by scheduler.");
                 }
             } while (jobsProcessed > 0 && !context.IsStopping);
 
@@ -162,7 +160,7 @@ namespace Hangfire.Server
 
         private int EnqueueNextScheduledJobs(BackgroundProcessContext context)
         {
-            return UseConnectionDistributedLock(context.Storage, connection =>
+            return UseConnectionDistributedLock(context, connection =>
             {
                 var jobsProcessed = 0;
 
@@ -202,12 +200,10 @@ namespace Hangfire.Server
                                     CancellationToken = context.StoppingToken,
                                     TaskScheduler = TaskScheduler
                                 },
-                                (jobId, state) =>
+                                (jobId, _) =>
                                 {
-                                    using (var dedicated = context.Storage.GetConnection())
-                                    {
-                                        EnqueueBackgroundJob(context, dedicated, jobId);
-                                    }
+                                    using var dedicated = context.Storage.GetConnection();
+                                    EnqueueBackgroundJob(context, dedicated, jobId);
                                 });
                         }
                         else
@@ -221,15 +217,14 @@ namespace Hangfire.Server
 
                         if (toBeTransactionallyEnqueued.Count > 0)
                         {
-                            using (var transaction = connection.CreateWriteTransaction())
-                            {
-                                foreach (var tuple in toBeTransactionallyEnqueued)
-                                {
-                                    EnqueueEntry(tuple.Item1, tuple.Item2, transaction);
-                                }
+                            using var transaction = connection.CreateWriteTransaction();
 
-                                transaction.Commit();
+                            foreach (var tuple in toBeTransactionallyEnqueued)
+                            {
+                                EnqueueEntry(tuple.Item1, tuple.Item2, transaction);
                             }
+
+                            transaction.Commit();
                         }
                     }
                 }
@@ -237,7 +232,7 @@ namespace Hangfire.Server
                 {
                     if (MaxDegreeOfParallelism > 1 && !_parallelismIssueLogged)
                     {
-                        _logger.Warn("Parallel execution is configured but can't be used, because current storage implementation doesn't support batching.");
+                        context.Logger.Warn("Parallel execution is configured but can't be used, because current storage implementation doesn't support batching.");
                         _parallelismIssueLogged = true;
                     }
 
@@ -258,11 +253,10 @@ namespace Hangfire.Server
                         }
                         else
                         {
-                            using (var transaction = connection.CreateWriteTransaction())
-                            {
-                                EnqueueEntry(entry, colonIndex, transaction);
-                                transaction.Commit();
-                            }
+                            using var transaction = connection.CreateWriteTransaction();
+
+                            EnqueueEntry(entry, colonIndex, transaction);
+                            transaction.Commit();
                         }
 
                         jobsProcessed++;
@@ -300,15 +294,15 @@ namespace Hangfire.Server
                         connection,
                         jobId,
                         new EnqueuedState { Reason = $"Triggered by {ToString()}" },
-                        new [] { ScheduledState.StateName },
+                        ExpectedScheduledState,
                         disableFilters: false,
                         context.StoppingToken,
-                        _profiler,
+                        context.Profiler,
                         context.ServerId));
 
                     if (appliedState == null)
                     {
-                        _logger.Debug($"Failed to change state of a scheduled background job '{jobId}'");
+                        context.Logger.Debug($"Failed to change state of a scheduled background job '{jobId}'");
 
                         // When a background job with the given id does not exist, or its state
                         // does not equal to the Scheduled one, we should remove its id manually
@@ -325,7 +319,7 @@ namespace Hangfire.Server
                                     transaction.Commit();
                                 }
 
-                                _logger.Warn($"Background job '{jobId}' removed from the schedule, because it's expired or its state was changed");
+                                context.Logger.Warn($"Background job '{jobId}' removed from the schedule, because it's expired or its state was changed");
                             }
                         }
                     }
@@ -334,7 +328,7 @@ namespace Hangfire.Server
                 }
                 catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
-                    _logger.DebugException(
+                    context.Logger.DebugException(
                         $"State change attempt {retryAttempt + 1} of {MaxStateChangeAttempts} failed due to an error, see inner exception for details", 
                         ex);
                     
@@ -344,7 +338,7 @@ namespace Hangfire.Server
                 context.Wait(RetryDelayFunc(retryAttempt));
             }
 
-            _logger.ErrorException(
+            context.Logger.ErrorException(
                 $"{MaxStateChangeAttempts} state change attempt(s) failed due to an exception, moving job to the FailedState",
                 exception);
             
@@ -360,10 +354,10 @@ namespace Hangfire.Server
                 {
                     Reason = $"Failed to change state to the '{EnqueuedState.StateName}' one due to an exception after {MaxStateChangeAttempts} retry attempts"
                 },
-                new[] { ScheduledState.StateName },
+                ExpectedScheduledState,
                 disableFilters: true,
                 context.StoppingToken,
-                _profiler,
+                context.Profiler,
                 context.ServerId));
         }
 
@@ -375,36 +369,34 @@ namespace Hangfire.Server
                 return true;
             }
 
-            return _isBatchingAvailableCache.GetOrAdd(
-                connection.GetType(),
-                type =>
+            return _isBatchingAvailableCache.GetOrAdd(connection.GetType(), _ =>
+            {
+                if (connection is JobStorageConnection storageConnection)
                 {
-                    if (connection is JobStorageConnection storageConnection)
+                    try
                     {
-                        try
-                        {
-                            storageConnection.GetFirstByLowestScoreFromSet(null!, 0, 0, 1);
-                        }
-                        catch (ArgumentNullException ex) when (ex.ParamName == "key")
-                        {
-                            return true;
-                        }
-                        catch (Exception ex) when (ex.IsCatchableExceptionType())
-                        {
-                            //
-                        }
+                        storageConnection.GetFirstByLowestScoreFromSet(null!, 0, 0, 1);
                     }
+                    catch (ArgumentNullException ex) when (ex.ParamName == "key")
+                    {
+                        return true;
+                    }
+                    catch (Exception ex) when (ex.IsCatchableExceptionType())
+                    {
+                        //
+                    }
+                }
 
-                    return false;
-                });
+                return false;
+            });
         }
 
-        private T? UseConnectionDistributedLock<T>(JobStorage storage, Func<IStorageConnection, T> action)
+        private T? UseConnectionDistributedLock<T>(BackgroundProcessContext context, Func<IStorageConnection, T> action)
         {
             const string resource = "locks:schedulepoller";
             try
             {
-                using (var connection = storage.GetConnection())
+                using (var connection = context.Storage.GetConnection())
                 using (connection.AcquireDistributedLock(resource, DefaultLockTimeout))
                 {
                     return action(connection);
@@ -414,7 +406,7 @@ namespace Hangfire.Server
             {
                 // DistributedLockTimeoutException here doesn't mean that delayed jobs weren't enqueued.
                 // It just means another Hangfire server did this work.
-                _logger.DebugException(
+                context.Logger.DebugException(
                     $@"An exception was thrown during acquiring distributed lock on the {resource} resource within {DefaultLockTimeout.TotalSeconds} seconds. The scheduled jobs have not been handled this time.
 It will be retried in {_pollingDelay.TotalSeconds} seconds", 
                     e);

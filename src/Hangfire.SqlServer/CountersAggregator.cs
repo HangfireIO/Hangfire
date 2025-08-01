@@ -32,15 +32,12 @@ namespace Hangfire.SqlServer
         private const int NumberOfRecordsInSinglePass = 1000;
         private static readonly TimeSpan DelayBetweenPasses = TimeSpan.FromMilliseconds(500);
 
-        private readonly ILog _logger = LogProvider.For<CountersAggregator>();
         private readonly SqlServerStorage _storage;
         private readonly TimeSpan _interval;
 
         public CountersAggregator(SqlServerStorage storage, TimeSpan interval)
         {
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
-
-            _storage = storage;
+            _storage = storage ?? throw new ArgumentNullException(nameof(storage));
             _interval = interval;
         }
 
@@ -51,17 +48,18 @@ namespace Hangfire.SqlServer
                 return;
             }
 
-            ExecuteCore(storage, context.StoppingToken);
+            ExecuteCore(storage, context.Logger, context.StoppingToken);
         }
 
+        [Obsolete("Please use the `Execute(BackgroundProcessContext)` method overload instead. Will be removed in 2.0.0.")]
         public void Execute(CancellationToken cancellationToken)
         {
-            ExecuteCore(_storage, cancellationToken);
+            ExecuteCore(_storage, LogProvider.For<CountersAggregator>(), cancellationToken);
         }
 
-        private void ExecuteCore(SqlServerStorage storage, CancellationToken cancellationToken)
+        private void ExecuteCore(SqlServerStorage storage, ILog logger, CancellationToken cancellationToken)
         {
-            _logger.Debug("Aggregating records in 'Counter' table...");
+            logger.Debug("Aggregating records in 'Counter' table...");
 
             int removedCount;
 
@@ -84,7 +82,7 @@ namespace Hangfire.SqlServer
                 // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
             } while (removedCount >= NumberOfRecordsInSinglePass);
 
-            _logger.Trace("Records from the 'Counter' table aggregated.");
+            logger.Trace("Records from the 'Counter' table aggregated.");
 
             cancellationToken.Wait(_interval);
         }

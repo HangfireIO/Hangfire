@@ -26,8 +26,6 @@ namespace Hangfire.Server
         public static readonly TimeSpan MaxServerCheckInterval = TimeSpan.FromHours(24);
         public static readonly TimeSpan MaxHeartbeatInterval = TimeSpan.FromHours(24);
 
-        private readonly ILog _logger = LogProvider.For<ServerWatchdog>();
-
         private readonly TimeSpan _checkInterval;
         private readonly TimeSpan _serverTimeout;
 
@@ -44,7 +42,7 @@ namespace Hangfire.Server
                 var serversRemoved = connection.RemoveTimedOutServers(_serverTimeout);
                 if (serversRemoved != 0)
                 {
-                    _logger.Info($"{serversRemoved} servers were removed due to timeout");
+                    context.Logger.Info($"{serversRemoved} servers were removed due to timeout");
                 }
             }
 

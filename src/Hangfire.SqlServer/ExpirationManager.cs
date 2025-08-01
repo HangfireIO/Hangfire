@@ -48,7 +48,6 @@ namespace Hangfire.SqlServer
             "Hash",
         };
 
-        private readonly ILog _logger = LogProvider.For<ExpirationManager>();
         private readonly SqlServerStorage _storage;
         private readonly TimeSpan _stateExpirationTimeout;
         private readonly TimeSpan _checkInterval;
@@ -66,7 +65,7 @@ namespace Hangfire.SqlServer
 
         public void Execute(CancellationToken cancellationToken)
         {
-            ExecuteCore(_storage, cancellationToken);
+            ExecuteCore(_storage, LogProvider.For<ExpirationManager>(), cancellationToken);
         }
 
         public void Execute(BackgroundProcessContext context)
@@ -76,10 +75,10 @@ namespace Hangfire.SqlServer
                 return;
             }
 
-            ExecuteCore(storage, context.StoppingToken);
+            ExecuteCore(storage, context.Logger, context.StoppingToken);
         }
         
-        private void ExecuteCore(SqlServerStorage storage, CancellationToken cancellationToken)
+        private void ExecuteCore(SqlServerStorage storage, ILog logger, CancellationToken cancellationToken)
         {
             var numberOfRecordsInSinglePass = storage.Options.DeleteExpiredBatchSize;
             if (numberOfRecordsInSinglePass <= 0 || numberOfRecordsInSinglePass > 100_000)
@@ -91,11 +90,11 @@ namespace Hangfire.SqlServer
             {
                 try
                 {
-                    CleanupTable(storage, GetExpireQuery(storage, table), table, numberOfRecordsInSinglePass, cancellationToken);
+                    CleanupTable(storage, logger, GetExpireQuery(storage, table), table, numberOfRecordsInSinglePass, cancellationToken);
                 }
                 catch (DbException ex)
                 {
-                    _logger.ErrorException($"Error occurred while cleaning up the '{table}' table: {ex.Message}", ex);
+                    logger.ErrorException($"Error occurred while cleaning up the '{table}' table: {ex.Message}", ex);
                 }
             }
 
@@ -103,13 +102,13 @@ namespace Hangfire.SqlServer
             {
                 try
                 {
-                    CleanupTable(storage, GetStateCleanupQuery(storage), "State", numberOfRecordsInSinglePass,
+                    CleanupTable(storage, logger, GetStateCleanupQuery(storage), "State", numberOfRecordsInSinglePass,
                         cancellationToken,
                         command => command.AddParameter("@expireMin", (long)_stateExpirationTimeout.Negate().TotalMinutes, DbType.Int64));
                 }
                 catch (DbException ex)
                 {
-                    _logger.ErrorException($"Error occurred while cleaning up the 'State' table: {ex.Message}", ex);
+                    logger.ErrorException($"Error occurred while cleaning up the 'State' table: {ex.Message}", ex);
                 }
             }
 
@@ -121,11 +120,11 @@ namespace Hangfire.SqlServer
             return GetType().ToString();
         }
 
-        private void CleanupTable(SqlServerStorage storage, string query, string table, int numberOfRecordsInSinglePass, CancellationToken cancellationToken, Action<DbCommand>? additionalActions = null)
+        private void CleanupTable(SqlServerStorage storage, ILog logger, string query, string table, int numberOfRecordsInSinglePass, CancellationToken cancellationToken, Action<DbCommand>? additionalActions = null)
         {
-            _logger.Debug($"Removing outdated records from the '{table}' table...");
+            logger.Debug($"Removing outdated records from the '{table}' table...");
 
-            UseConnectionDistributedLock(storage, connection =>
+            UseConnectionDistributedLock(storage, logger, connection =>
             {
                 int affected;
 
@@ -142,10 +141,10 @@ namespace Hangfire.SqlServer
                 return affected;
             });
 
-            _logger.Trace($"Outdated records removed from the '{table}' table.");
+            logger.Trace($"Outdated records removed from the '{table}' table.");
         }
 
-        private T? UseConnectionDistributedLock<T>(SqlServerStorage storage, Func<DbConnection, T> action)
+        private T? UseConnectionDistributedLock<T>(SqlServerStorage storage, ILog logger, Func<DbConnection, T> action)
         {
             try
             {
@@ -167,7 +166,7 @@ namespace Hangfire.SqlServer
             {
                 // DistributedLockTimeoutException here doesn't mean that outdated records weren't removed.
                 // It just means another Hangfire server did this work.
-                _logger.Log(
+                logger.Log(
                     LogLevel.Debug,
                     () => $@"An exception was thrown during acquiring distributed lock on the {DistributedLockKey} resource within {DefaultLockTimeout.TotalSeconds} seconds. Outdated records were not removed.
 It will be retried in {_checkInterval.TotalSeconds} seconds.",

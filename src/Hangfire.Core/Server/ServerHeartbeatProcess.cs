@@ -23,8 +23,6 @@ namespace Hangfire.Server
 {
     internal sealed class ServerHeartbeatProcess : IBackgroundProcess
     {
-        private readonly ILog _logger = LogProvider.GetLogger(typeof(ServerHeartbeatProcess));
-
         private readonly TimeSpan _interval;
         private readonly TimeSpan _serverTimeout;
         private readonly Action _requestRestart;
@@ -39,7 +37,7 @@ namespace Hangfire.Server
 
         public void Execute(BackgroundProcessContext context)
         {
-            _logger.Trace($"{BackgroundServerProcess.GetServerTemplate(context.ServerId)} waiting for {_interval} delay before sending a heartbeat");
+            context.Logger.Trace($"{BackgroundServerProcess.GetServerTemplate(context.ServerId)} waiting for {_interval} delay before sending a heartbeat");
 
             context.ShutdownToken.WaitOrThrow(_interval);
 
@@ -52,11 +50,11 @@ namespace Hangfire.Server
 
                 if (_faultedSince == null)
                 {
-                    _logger.Debug($"{BackgroundServerProcess.GetServerTemplate(context.ServerId)} heartbeat successfully sent");
+                    context.Logger.Debug($"{BackgroundServerProcess.GetServerTemplate(context.ServerId)} heartbeat successfully sent");
                 }
                 else
                 {
-                    _logger.Info($"{BackgroundServerProcess.GetServerTemplate(context.ServerId)} is now able to continue sending heartbeats");
+                    context.Logger.Info($"{BackgroundServerProcess.GetServerTemplate(context.ServerId)} is now able to continue sending heartbeats");
                     _faultedSince = null;
                 }
             }
@@ -64,7 +62,7 @@ namespace Hangfire.Server
             {
                 if (!context.ShutdownToken.IsCancellationRequested)
                 {
-                    _logger.Warn($"{BackgroundServerProcess.GetServerTemplate(context.ServerId)} was considered dead by other servers, restarting...");
+                    context.Logger.Warn($"{BackgroundServerProcess.GetServerTemplate(context.ServerId)} was considered dead by other servers, restarting...");
                     _requestRestart();
                 }
 
@@ -72,12 +70,12 @@ namespace Hangfire.Server
             }
             catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
-                _logger.WarnException($"{BackgroundServerProcess.GetServerTemplate(context.ServerId)} encountered an exception while sending heartbeat", ex);
+                context.Logger.WarnException($"{BackgroundServerProcess.GetServerTemplate(context.ServerId)} encountered an exception while sending heartbeat", ex);
 
                 if (_faultedSince == null) _faultedSince = Stopwatch.StartNew();
                 if (_faultedSince.Elapsed >= _serverTimeout)
                 {
-                    _logger.Error($"{BackgroundServerProcess.GetServerTemplate(context.ServerId)} will be restarted due to server time out");
+                    context.Logger.Error($"{BackgroundServerProcess.GetServerTemplate(context.ServerId)} will be restarted due to server time out");
 
                     _requestRestart();
                     return;

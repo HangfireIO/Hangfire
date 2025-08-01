@@ -22,7 +22,6 @@ using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Logging;
-using Hangfire.Profiling;
 using Hangfire.Storage;
 
 namespace Hangfire.Server
@@ -70,14 +69,12 @@ namespace Hangfire.Server
         private static readonly int MaxRetryAttemptCount = 5;
         private static readonly int MaxSupportedVersion = 2;
 
-        private readonly ILog _logger = LogProvider.For<RecurringJobScheduler>();
         private readonly ConcurrentDictionary<Type, bool> _isBatchingAvailableCache = new ConcurrentDictionary<Type, bool>();
 
         private readonly IBackgroundJobFactory _factory;
         private readonly Func<DateTime> _nowFactory;
         private readonly ITimeZoneResolver _timeZoneResolver;
         private readonly TimeSpan _pollingDelay;
-        private readonly IProfiler _profiler;
         private bool _parallelismIssueLogged;
 
         /// <summary>
@@ -143,7 +140,6 @@ namespace Hangfire.Server
             _nowFactory = nowFactory ?? throw new ArgumentNullException(nameof(nowFactory));
             _timeZoneResolver = timeZoneResolver ?? throw new ArgumentNullException(nameof(timeZoneResolver));
             _pollingDelay = pollingDelay;
-            _profiler = new SlowLogProfiler(_logger);
         }
 
         /// <summary>
@@ -173,7 +169,7 @@ namespace Hangfire.Server
 
                 if (jobsProcessed != 0)
                 {
-                    _logger.Debug($"{jobsProcessed} recurring job(s) processed by scheduler.");
+                    context.Logger.Debug($"{jobsProcessed} recurring job(s) processed by scheduler.");
                 }
             } while (jobsProcessed > 0 && !context.IsStopping);
 
@@ -196,7 +192,7 @@ namespace Hangfire.Server
 
         private int EnqueueNextRecurringJobs(BackgroundProcessContext context)
         {
-            return UseConnectionDistributedLock(context.Storage, connection =>
+            return UseConnectionDistributedLock(context, connection =>
             {
                 var jobsProcessed = 0;
 
@@ -251,7 +247,7 @@ namespace Hangfire.Server
                 {
                     if (MaxDegreeOfParallelism > 1 && !_parallelismIssueLogged)
                     {
-                        _logger.Warn("Parallel execution is configured but can't be used, because current storage implementation doesn't support batching.");
+                        context.Logger.Warn("Parallel execution is configured but can't be used, because current storage implementation doesn't support batching.");
                         _parallelismIssueLogged = true;
                     }
 
@@ -285,7 +281,7 @@ namespace Hangfire.Server
 
                 if (recurringJob == null)
                 {
-                    RemoveRecurringJob(connection, recurringJobId);
+                    RemoveRecurringJob(connection, recurringJobId, context.Logger);
                     return;
                 }
 
@@ -329,7 +325,7 @@ namespace Hangfire.Server
                         var backgroundJob = _factory.TriggerRecurringJob(
                             context.Storage,
                             connection,
-                            _profiler,
+                            context.Profiler,
                             recurringJob,
                             execution);
 
@@ -339,7 +335,7 @@ namespace Hangfire.Server
                         }
                         else
                         {
-                            _logger.Debug($"Recurring job '{recurringJobId}' execution at '{execution}' has been canceled.");
+                            context.Logger.Debug($"Recurring job '{recurringJobId}' execution at '{execution}' has been canceled.");
                         }
                     }
 
@@ -352,7 +348,7 @@ namespace Hangfire.Server
                             recurringJob,
                             backgroundJob,
                             "Triggered by recurring job scheduler",
-                            _profiler);
+                            context.Profiler);
                     }
 
                     recurringJob.RetryAttempt = 0;
@@ -364,11 +360,11 @@ namespace Hangfire.Server
 
                 if (exception != null)
                 {
-                    RetryRecurringJob(recurringJobId, recurringJob, now, exception);
+                    RetryRecurringJob(recurringJobId, recurringJob, now, exception, context.Logger);
                 }
 
                 recurringJob.IsChanged(now, out var changedFields);
-                transaction.UpdateRecurringJob(recurringJob, changedFields, _logger);
+                transaction.UpdateRecurringJob(recurringJob, changedFields, context.Logger);
 
                 // We should commit transaction outside of the internal try/catch block, because these
                 // exceptions are always due to network issues, and in case of a timeout exception we
@@ -378,7 +374,7 @@ namespace Hangfire.Server
             }
         }
 
-        private void RetryRecurringJob(string recurringJobId, RecurringJobEntity recurringJob, DateTime now, Exception error)
+        private void RetryRecurringJob(string recurringJobId, RecurringJobEntity recurringJob, DateTime now, Exception error, ILog logger)
         {
             var errorString = error.ToStringWithOriginalStackTrace(States.FailedState.MaxLinesInExceptionDetails);
 
@@ -386,22 +382,22 @@ namespace Hangfire.Server
             {
                 var delay = _pollingDelay > TimeSpan.Zero ? _pollingDelay : TimeSpan.FromMinutes(1);
 
-                _logger.WarnException(
+                logger.WarnException(
                     $"Recurring job '{recurringJobId}' can't be scheduled due to an error and will be retried in {delay}.",
                     error);
                 recurringJob.ScheduleRetry(now.Add(delay), errorString);
             }
             else
             {
-                _logger.ErrorException(
+                logger.ErrorException(
                     $"Recurring job '{recurringJobId}' can't be scheduled due to an error and will be disabled.", error);
                 recurringJob.Disable(errorString);
             }
         }
 
-        private void RemoveRecurringJob(IStorageConnection connection, string recurringJobId)
+        private static void RemoveRecurringJob(IStorageConnection connection, string recurringJobId, ILog logger)
         {
-            _logger.Debug($"Recurring job '{recurringJobId}' doesn't exist and will be removed from schedule.");
+            logger.Debug($"Recurring job '{recurringJobId}' doesn't exist and will be removed from schedule.");
 
             using (var transaction = connection.CreateWriteTransaction())
             {
@@ -410,12 +406,12 @@ namespace Hangfire.Server
             }
         }
 
-        private T? UseConnectionDistributedLock<T>(JobStorage storage, Func<IStorageConnection, T> action)
+        private static T? UseConnectionDistributedLock<T>(BackgroundProcessContext context, Func<IStorageConnection, T> action)
         {
             var resource = "recurring-jobs:lock";
             try
             {
-                using (var connection = storage.GetConnection())
+                using (var connection = context.Storage.GetConnection())
                 using (connection.AcquireDistributedLock(resource, LockTimeout))
                 {
                     return action(connection);
@@ -425,7 +421,7 @@ namespace Hangfire.Server
             {
                 // DistributedLockTimeoutException here doesn't mean that recurring jobs weren't scheduled.
                 // It just means another Hangfire server did this work.
-                _logger.Log(
+                context.Logger.Log(
                     LogLevel.Debug,
                     () => $@"An exception was thrown during acquiring distributed lock the {resource} resource within {LockTimeout.TotalSeconds} seconds. The recurring jobs have not been handled this time.",
                     e);
@@ -442,28 +438,26 @@ namespace Hangfire.Server
                 return true;
             }
 
-            return _isBatchingAvailableCache.GetOrAdd(
-                connection.GetType(),
-                _ =>
+            return _isBatchingAvailableCache.GetOrAdd(connection.GetType(), _ =>
+            {
+                if (connection is JobStorageConnection storageConnection)
                 {
-                    if (connection is JobStorageConnection storageConnection)
+                    try
                     {
-                        try
-                        {
-                            storageConnection.GetFirstByLowestScoreFromSet(null!, 0, 0, 1);
-                        }
-                        catch (ArgumentNullException ex) when (ex.ParamName == "key")
-                        {
-                            return true;
-                        }
-                        catch (Exception ex) when (ex.IsCatchableExceptionType())
-                        {
-                            //
-                        }
+                        storageConnection.GetFirstByLowestScoreFromSet(null!, 0, 0, 1);
                     }
+                    catch (ArgumentNullException ex) when (ex.ParamName == "key")
+                    {
+                        return true;
+                    }
+                    catch (Exception ex) when (ex.IsCatchableExceptionType())
+                    {
+                        //
+                    }
+                }
 
-                    return false;
-                });
+                return false;
+            });
         }
     }
 }
