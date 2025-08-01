@@ -14,6 +14,8 @@ namespace Hangfire.Core.Tests.Server
 {
     public class DelayedJobSchedulerFacts
     {
+        private const int Sequential = 1;
+        private const int Parallel = 4;
         private const string JobId = "id";
         private readonly Mock<JobStorageConnection> _connection;
         private readonly Mock<IBackgroundJobStateChanger> _stateChanger;
@@ -67,10 +69,16 @@ namespace Hangfire.Core.Tests.Server
             Assert.Equal("stateChanger", exception.ParamName);
         }
 
-        [Fact]
-        public void Execute_MovesJobStateToEnqueued()
+        [Theory]
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_MovesJobStateToEnqueued(bool batching, int maxParallelism)
         {
-            var scheduler = CreateScheduler();
+            EnableBatching(batching);
+
+            var scheduler = CreateScheduler(maxParallelism);
             _schedule.Add(JobId);
             
             scheduler.Execute(_context.Object);
@@ -84,14 +92,20 @@ namespace Hangfire.Core.Tests.Server
             _connection.Verify(x => x.Dispose());
         }
 
-        [Fact]
-        public void Execute_EnqueuesJobIdDirectly_AndRemovesItFromSchedule_WhenTargetQueueIsEncodedIntoTheSetEntry()
+        [Theory]
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_EnqueuesJobIdDirectly_AndRemovesItFromSchedule_WhenTargetQueueIsEncodedIntoTheSetEntry(bool batching, int maxParallelism)
         {
+            EnableBatching(batching);
+
             // Arrange
             _schedule.Add("default:some-id");
             _schedule.Add("critical:another-id");
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -102,21 +116,22 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.AddToQueue("critical", "another-id"));
             _transaction.Verify(x => x.RemoveFromSet("schedule", "critical:another-id"));
 
-            _transaction.Verify(x => x.Commit(), Times.Exactly(2));
+            _transaction.Verify(x => x.Commit(), Times.Exactly(batching ? 1 : 2));
 
             _stateChanger.Verify(x => x.ChangeState(It.IsAny<StateChangeContext>()), Times.Never);
         }
 
-        [Fact]
-        public void Execute_MovesJobStateToEnqueued_UsingBatching_WhenAvailable()
+        [Theory]
+        [InlineData(Sequential)][InlineData(Parallel)]
+        public void Execute_MovesJobStateToEnqueued_UsingBatching_WhenAvailable(int maxParallelism)
         {
             // Arrange
-            EnableBatching();
+            EnableBatching(true);
 
             _schedule.Add("job-1");
             _schedule.Add("job-2");
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -131,16 +146,17 @@ namespace Hangfire.Core.Tests.Server
                 ctx.NewState is EnqueuedState)));
         }
 
-        [Fact]
-        public void Execute_WithBatching_EnqueuesJobIdDirectly_AndRemovesItFromSchedule_WhenTargetQueueIsEncodedIntoTheSetEntry()
+        [Theory]
+        [InlineData(Sequential)][InlineData(Parallel)]
+        public void Execute_WithBatching_EnqueuesJobIdDirectly_AndRemovesItFromSchedule_WhenTargetQueueIsEncodedIntoTheSetEntry(int maxParallelism)
         {
             // Arrange
-            EnableBatching();
+            EnableBatching(true);
 
             _schedule.Add("default:some-id");
             _schedule.Add("critical:another-id");
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -156,8 +172,9 @@ namespace Hangfire.Core.Tests.Server
             _stateChanger.Verify(x => x.ChangeState(It.IsAny<StateChangeContext>()), Times.Never);
         }
 
-        [Fact]
-        public void Execute_DoesNotUseBatching_WhenConnectionMethod_ThrowsAnException()
+        [Theory]
+        [InlineData(Sequential)][InlineData(Parallel)]
+        public void Execute_DoesNotUseBatching_WhenConnectionMethod_ThrowsAnException(int maxParallelism)
         {
             // Arrange
             _connection
@@ -170,7 +187,7 @@ namespace Hangfire.Core.Tests.Server
                 .Setup(x => x.GetFirstByLowestScoreFromSet("schedule", 0, It.Is<double>(time => time > 0)))
                 .Returns(_schedule.FirstOrDefault);
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -182,11 +199,14 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_DoesNotCallStateChanger_IfThereAreNoJobsToEnqueue(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_DoesNotCallStateChanger_IfThereAreNoJobsToEnqueue(bool batching, int maxParallelism)
         {
-            if (batching) EnableBatching();
-            var scheduler = CreateScheduler();
+            EnableBatching(batching);
+            var scheduler = CreateScheduler(maxParallelism);
 
             scheduler.Execute(_context.Object);
 
@@ -196,16 +216,19 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_RemovesAJobIdentifierFromTheSet_WhenStateChangeFails(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_RemovesAJobIdentifierFromTheSet_WhenStateChangeFails(bool batching, int maxParallelism)
         {
-            if (batching) EnableBatching();
+            EnableBatching(batching);
             _stateChanger
                 .Setup(x => x.ChangeState(It.IsAny<StateChangeContext>()))
                 .Returns<IState>(null);
             _schedule.Add(JobId);
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
             
             scheduler.Execute(_context.Object);
 
@@ -214,18 +237,21 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_MovesJobToTheFailedState_WithFiltersDisabled_WhenStateChangerThrowsAnException(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_MovesJobToTheFailedState_WithFiltersDisabled_WhenStateChangerThrowsAnException(bool batching, int maxParallelism)
         {
             // Arrange
-            if (batching) EnableBatching();
+            EnableBatching(batching);
 
             _schedule.Add(JobId);
             _stateChanger
                 .Setup(x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.NewState is EnqueuedState)))
                 .Throws<InvalidOperationException>();
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
             scheduler.RetryDelayFunc = _ => TimeSpan.FromMilliseconds(50);
 
             // Act
@@ -247,11 +273,14 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_AbleToProcessFurtherJobs_WhenStateChangerThrowsAnException_ForPreviousOnes(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_AbleToProcessFurtherJobs_WhenStateChangerThrowsAnException_ForPreviousOnes(bool batching, int maxParallelism)
         {
             // Arrange
-            if (batching) EnableBatching();
+            EnableBatching(batching);
 
             _schedule.Add(JobId);
             _schedule.Add("AnotherId");
@@ -260,7 +289,7 @@ namespace Hangfire.Core.Tests.Server
                 .Setup(x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.BackgroundJobId == JobId && ctx.NewState is ScheduledState)))
                 .Throws<InvalidOperationException>();
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
             
             // Act
             scheduler.Execute(_context.Object);
@@ -272,11 +301,14 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_ActsWithinADistributedLock(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_ActsWithinADistributedLock(bool batching, int maxParallelism)
         {
-            if (batching) EnableBatching();
-            var scheduler = CreateScheduler();
+            EnableBatching(batching);
+            var scheduler = CreateScheduler(maxParallelism);
 
             scheduler.Execute(_context.Object);
 
@@ -285,25 +317,31 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_DoesNotThrowDistributedLockTimeoutException(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_DoesNotThrowDistributedLockTimeoutException(bool batching, int maxParallelism)
         {
-            if (batching) EnableBatching();
+            EnableBatching(batching);
             _connection
                 .Setup(x => x.AcquireDistributedLock("locks:schedulepoller", It.IsAny<TimeSpan>()))
                 .Throws(new DistributedLockTimeoutException("locks:schedulepoller"));
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             scheduler.Execute(_context.Object);
         }
 
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_RemovesJobFromSchedule_WhenIdDoesNotExists(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_RemovesJobFromSchedule_WhenIdDoesNotExists(bool batching, int maxParallelism)
         {
             // Arrange
-            if (batching) EnableBatching();
+            EnableBatching(batching);
             _schedule.Add(JobId);
 
             _connection.Setup(x => x.GetJobData(JobId)).Returns<JobData>(null);
@@ -312,7 +350,7 @@ namespace Hangfire.Core.Tests.Server
                 .Setup(x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.NewState is EnqueuedState)))
                 .Returns<IState>(null);
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -324,11 +362,14 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_RemovesJobFromSchedule_WhenJobIsNotInScheduledState(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_RemovesJobFromSchedule_WhenJobIsNotInScheduledState(bool batching, int maxParallelism)
         {
             // Arrange
-            if (batching) EnableBatching();
+            EnableBatching(batching);
             _schedule.Add(JobId);
 
             _connection.Setup(x => x.GetJobData(JobId))
@@ -338,7 +379,7 @@ namespace Hangfire.Core.Tests.Server
                 .Setup(x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.NewState is EnqueuedState)))
                 .Returns<IState>(null);
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -350,11 +391,14 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_DoesNotRemoveJobFromSchedule_WhenJobIsInTheScheduledState(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_DoesNotRemoveJobFromSchedule_WhenJobIsInTheScheduledState(bool batching, int maxParallelism)
         {
             // Arrange
-            if (batching) EnableBatching();
+            EnableBatching(batching);
             _schedule.Add(JobId);
 
             _connection.Setup(x => x.GetJobData(JobId))
@@ -365,7 +409,7 @@ namespace Hangfire.Core.Tests.Server
                 .Returns((IState)null)
                 .Returns(() => { _schedule.Remove(JobId); return new EnqueuedState(); });
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -375,16 +419,23 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.Commit(), Times.Never);
         }
 
-        private DelayedJobScheduler CreateScheduler()
+        private DelayedJobScheduler CreateScheduler(int maxParallelism)
         {
-            return new DelayedJobScheduler(TimeSpan.Zero, _stateChanger.Object);
+            return new DelayedJobScheduler(TimeSpan.Zero, _stateChanger.Object)
+            {
+                MaxDegreeOfParallelism = maxParallelism
+            };
         }
         
-        private void EnableBatching()
+        private void EnableBatching(bool value)
         {
-            _connection
-                .Setup(x => x.GetFirstByLowestScoreFromSet(null, It.IsAny<double>(), It.IsAny<double>(), It.IsAny<int>()))
-                .Throws(new ArgumentNullException("key"));
+            if (value)
+            {
+                _connection
+                    .Setup(x => x.GetFirstByLowestScoreFromSet(null, It.IsAny<double>(), It.IsAny<double>(),
+                        It.IsAny<int>()))
+                    .Throws(new ArgumentNullException("key"));
+            }
         }
     }
 }
