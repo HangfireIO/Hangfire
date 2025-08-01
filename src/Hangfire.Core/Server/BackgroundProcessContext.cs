@@ -19,6 +19,7 @@ using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Logging;
+using Hangfire.Profiling;
 
 namespace Hangfire.Server
 {
@@ -62,6 +63,7 @@ namespace Hangfire.Server
             ServerId = serverId ?? throw new ArgumentNullException(nameof(serverId));
             Storage = storage ?? throw new ArgumentNullException(nameof(storage));
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            Profiler = new SlowLogProfiler(Logger);
             ExecutionId = executionId;
             Properties = new Dictionary<string, object>(properties, StringComparer.OrdinalIgnoreCase);
             StoppingToken = stoppingToken;
@@ -80,6 +82,9 @@ namespace Hangfire.Server
 
         [NotNull]
         public ILog Logger { get; }
+
+        [NotNull]
+        internal IProfiler Profiler { get; }
 
         public Guid ExecutionId { get; }
 

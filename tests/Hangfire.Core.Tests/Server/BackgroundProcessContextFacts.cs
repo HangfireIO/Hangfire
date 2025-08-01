@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Hangfire.Logging;
+using Hangfire.Profiling;
 using Hangfire.Server;
 using Moq;
 using Xunit;
@@ -85,6 +86,7 @@ namespace Hangfire.Core.Tests.Server
             Assert.Equal(stoppingCts.Token, context.StoppingToken);
             Assert.Equal(stoppedCts.Token, context.StoppedToken);
             Assert.Equal(shutdownCts.Token, context.ShutdownToken);
+            Assert.IsType<SlowLogProfiler>(context.Profiler);
         }
     }
 }
