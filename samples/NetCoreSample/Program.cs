@@ -53,7 +53,7 @@ namespace NetCoreSample
                         .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
                         .UseSimpleAssemblyNameTypeSerializer()
                         .UseSqlServerStorage(
-                            @"Server=.\;Database=Hangfire.Sample;Trusted_Connection=True;", 
+                            @"Server=.\;Database=Hangfire.NetCoreSample;Trusted_Connection=True;TrustServerCertificate=True;", 
                             provider.GetRequiredService<SqlServerStorageOptions>()));
 
                     services.AddHostedService<RecurringJobsService>();
