@@ -2,9 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Threading;
 using ReferencedCronos::Cronos;
 using Hangfire.Client;
 using Hangfire.Common;
@@ -19,6 +17,8 @@ namespace Hangfire.Core.Tests.Server
     public class RecurringJobSchedulerFacts
     {
         private const string RecurringJobId = "recurring-job-id";
+        private const int Sequential = 1;
+        private const int Parallel = 4;
 
         private readonly Mock<JobStorageConnection> _connection;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
@@ -135,12 +135,14 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Execute_EnqueuesAJob_WhenItIsTimeToRunIt(bool useJobStorageConnection)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_EnqueuesAJob_WhenItIsTimeToRunIt(bool batching, int maxParallelism)
         {
-            SetupConnection(useJobStorageConnection);
-            var scheduler = CreateScheduler();
+            EnableBatching(batching);
+            var scheduler = CreateScheduler(maxParallelism);
 
             scheduler.Execute(_context.Object);
 
@@ -150,13 +152,15 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Execute_DoesNotHandleRecurringJobs_CreatedByNewerVersion(bool useJobStorageConnection)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_DoesNotHandleRecurringJobs_CreatedByNewerVersion(bool batching, int maxParallelism)
         {
-            SetupConnection(useJobStorageConnection);
+            EnableBatching(batching);
             _recurringJob["V"] = "3";
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             scheduler.Execute(_context.Object);
 
@@ -164,13 +168,16 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_ReschedulesRecurringJobs_WithUnsupportedVersions_WhenSomeRetriesLeft(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_ReschedulesRecurringJobs_WithUnsupportedVersions_WhenSomeRetriesLeft(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(batching);
+            EnableBatching(batching);
             _recurringJob["V"] = "3";
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
             
             // Act
             scheduler.Execute(_context.Object);
@@ -184,14 +191,17 @@ namespace Hangfire.Core.Tests.Server
         }
         
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_DisablesRecurringJobs_WithUnsupportedVersions_WhenRetryAttemptsExceeded(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_DisablesRecurringJobs_WithUnsupportedVersions_WhenRetryAttemptsExceeded(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(batching);
+            EnableBatching(batching);
             _recurringJob["V"] = "3";
             _recurringJob["RetryAttempt"] = "10";
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
             
             // Act
             scheduler.Execute(_context.Object);
@@ -205,13 +215,15 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Execute_EnqueuesAJobToAGivenQueue_WhenItIsTimeToRunIt(bool useJobStorageConnection)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_EnqueuesAJobToAGivenQueue_WhenItIsTimeToRunIt(bool batching, int maxParallelism)
         {
-            SetupConnection(useJobStorageConnection);
+            EnableBatching(batching);
             _recurringJob["Queue"] = "critical";
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             scheduler.Execute(_context.Object);
 
@@ -220,13 +232,15 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Execute_UpdatesRecurringJobParameters_OnCompletion(bool useJobStorageConnection)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_UpdatesRecurringJobParameters_OnCompletion(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(useJobStorageConnection);
-            var scheduler = CreateScheduler();
+            EnableBatching(batching);
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -259,18 +273,20 @@ namespace Hangfire.Core.Tests.Server
         }
         
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Execute_DoesNotUpdateRetryAttempt_WhenItWasNotModified(bool useJobStorageConnection)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_DoesNotUpdateRetryAttempt_WhenItWasNotModified(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(useJobStorageConnection);
+            EnableBatching(batching);
             _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant);
             _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant);
             _recurringJob["V"] = "2";
             _recurringJob["RetryAttempt"] = "0";
             
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -288,14 +304,16 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
         public void Execute_DoesNotEnqueueRecurringJob_AndDoesNotUpdateIt_ButNextExecution_WhenItIsNotATimeToRunIt(
-            bool useJobStorageConnection)
+            bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(useJobStorageConnection);
-            var scheduler = CreateScheduler(_nowInstant);
+            EnableBatching(batching);
+            var scheduler = CreateScheduler(maxParallelism, _nowInstant);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -314,16 +332,18 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Execute_TakesIntoConsideration_LastExecutionTime_ConvertedToLocalTimezone(bool useJobStorageConnection)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_TakesIntoConsideration_LastExecutionTime_ConvertedToLocalTimezone(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(useJobStorageConnection);
+            EnableBatching(batching);
             var time = _nowInstant;
             _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(time);
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -334,17 +354,19 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Execute_RemovesRecurringJobFromSchedule_WhenHashDoesNotExist(bool useJobStorageConnection)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_RemovesRecurringJobFromSchedule_WhenHashDoesNotExist(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(useJobStorageConnection);
+            EnableBatching(batching);
             
             _schedule.Clear();
             _schedule.Add("non-existing-job");
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -355,46 +377,52 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Execute_HandlesJobLoadException(bool useJobStorageConnection)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_HandlesJobLoadException(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(useJobStorageConnection);
+            EnableBatching(batching);
             _recurringJob["Job"] = JobHelper.ToJson(new InvocationData("SomeType", "SomeMethod", "Parameters", "arguments"));
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act & Assert does not throw
             scheduler.Execute(_context.Object);
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Execute_GetsInstance_InAGivenTimeZone(bool useJobStorageConnection)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_GetsInstance_InAGivenTimeZone(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(useJobStorageConnection);
+            EnableBatching(batching);
 
             var timeZoneId = PlatformHelper.IsRunningOnWindows() ? "Hawaiian Standard Time" : "Pacific/Honolulu";
             var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
             _recurringJob["TimeZoneId"] = timeZone.Id;
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act & Assert does not throw
             scheduler.Execute(_context.Object);
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Execute_GetInstance_DoesNotCreateAJob_WhenGivenOneIsNotFound(bool useJobStorageConnection)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_GetInstance_DoesNotCreateAJob_WhenGivenOneIsNotFound(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(useJobStorageConnection);
+            EnableBatching(batching);
             _recurringJob["TimeZoneId"] = "Some garbage";
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -404,16 +432,18 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Execute_UsesGivenCreatedAtTime(bool useJobStorageConnection)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_UsesGivenCreatedAtTime(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(useJobStorageConnection);
+            EnableBatching(batching);
             var createdAt = _nowInstant.AddHours(-3);
             _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(createdAt);
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -422,14 +452,16 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Execute_DoesNotFixCreatedAtField_IfItExists(bool useJobStorageConnection)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_DoesNotFixCreatedAtField_IfItExists(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(useJobStorageConnection);
+            EnableBatching(batching);
             _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(DateTime.UtcNow);
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -443,14 +475,16 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Execute_FixedMissingCreatedAtField(bool useJobStorageConnection)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_FixedMissingCreatedAtField(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(useJobStorageConnection);
+            EnableBatching(batching);
             _recurringJob.Remove("CreatedAt");
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -466,18 +500,20 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Execute_UsesNextExecutionTime_WhenBothLastExecutionAndCreatedAtAreNotAvailable(bool useJobStorageConnection)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_UsesNextExecutionTime_WhenBothLastExecutionAndCreatedAtAreNotAvailable(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(useJobStorageConnection);
+            EnableBatching(batching);
             var nextExecution = _nowInstant.AddHours(-10);
             _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(nextExecution);
             _recurringJob.Remove("CreatedAt");
             _recurringJob.Remove("LastExecution");
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -493,35 +529,39 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Execute_DoesNotThrowDistributedLockTimeoutException(bool useJobStorageConnection)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_DoesNotThrowDistributedLockTimeoutException(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(useJobStorageConnection);
+            EnableBatching(batching);
             _connection
                 .Setup(x => x.AcquireDistributedLock("recurring-jobs:lock", It.IsAny<TimeSpan>()))
                 .Throws(new DistributedLockTimeoutException("recurring-jobs:lock"));
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act & Assert (Does Not Throw)
             scheduler.Execute(_context.Object);
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Execute_DoesNotEnqueueRecurringJob_WhenItIsCorrectAndItWasNotTriggered(bool useJobStorageConnection)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_DoesNotEnqueueRecurringJob_WhenItIsCorrectAndItWasNotTriggered(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(useJobStorageConnection);
+            EnableBatching(batching);
 
             _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddMinutes(1));
             _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant);
             _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant);
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -531,13 +571,15 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Execute_AcquiresDistributedLock_ForEachRecurringJob(bool useJobStorageConnection)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_AcquiresDistributedLock_ForEachRecurringJob(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(useJobStorageConnection);
-            var scheduler = CreateScheduler();
+            EnableBatching(batching);
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -547,13 +589,15 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Execute_SchedulesNextExecution_AfterCreatingAJob(bool useJobStorageConnection)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_SchedulesNextExecution_AfterCreatingAJob(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(useJobStorageConnection);
-            var scheduler = CreateScheduler();
+            EnableBatching(batching);
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -576,14 +620,16 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Execute_FixesNextExecution_WhenItsNotATimeToRunAJob(bool useJobStorageConnection)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_FixesNextExecution_WhenItsNotATimeToRunAJob(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(useJobStorageConnection);
+            EnableBatching(batching);
             _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant);
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -606,16 +652,18 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Execute_DoesNotCycleImmediately_WhenItCantDeserializeEverything(bool useJobStorageConnection)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_DoesNotCycleImmediately_WhenItCantDeserializeEverything(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(useJobStorageConnection);
+            EnableBatching(batching);
 
             _factory.Setup(x => x.Create(It.IsAny<CreateContext>())).Throws<InvalidOperationException>();
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -625,11 +673,14 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_UsesTimeZoneResolver_WhenCalculatingNextExecution(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_UsesTimeZoneResolver_WhenCalculatingNextExecution(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(batching);
+            EnableBatching(batching);
 
             var timeZone = TimeZoneInfo.FindSystemTimeZoneById(PlatformHelper.IsRunningOnWindows()
                 ? "Hawaiian Standard Time"
@@ -644,7 +695,7 @@ namespace Hangfire.Core.Tests.Server
             _recurringJob["TimeZoneId"] = PlatformHelper.IsRunningOnWindows() ? "Pacific/Honolulu" : "Hawaiian Standard Time";
             _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddHours(18).AddMinutes(30));
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -657,15 +708,18 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_DoesNotScheduleRecurringJob_ToThePast(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_DoesNotScheduleRecurringJob_ToThePast(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(batching);
+            EnableBatching(batching);
 
             _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddMinutes(-2));
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -678,16 +732,19 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_CanHandleRecurringJob_WithCronThatNeverFires(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_CanHandleRecurringJob_WithCronThatNeverFires(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(batching);
+            EnableBatching(batching);
 
             _recurringJob["Cron"] = "0 0 31 2 *";
             _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant);
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -707,16 +764,19 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_TriggersRecurringJobOnce_WithMissedScheduleByDefault(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_TriggersRecurringJobOnce_WithMissedScheduleByDefault(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(batching);
+            EnableBatching(batching);
 
             _recurringJob["Cron"] = "0 * * * *";
             _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
 
-            var scheduler = CreateScheduler(delay: TimeSpan.FromMilliseconds(100));
+            var scheduler = CreateScheduler(maxParallelism, delay: TimeSpan.FromMilliseconds(100));
 
             // Act
             scheduler.Execute(_context.Object);
@@ -737,17 +797,20 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_TriggersRecurringJobMultipleTimes_WithMissedScheduleWhenStrictModeIsUsed(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_TriggersRecurringJobMultipleTimes_WithMissedScheduleWhenStrictModeIsUsed(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(batching);
+            EnableBatching(batching);
 
             _recurringJob["Cron"] = "0 * * * *";
             _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddHours(-3));
             _recurringJob["Misfire"] = MisfireHandlingMode.Strict.ToString("D");
 
-            var scheduler = CreateScheduler(delay: TimeSpan.FromMilliseconds(100));
+            var scheduler = CreateScheduler(maxParallelism, delay: TimeSpan.FromMilliseconds(100));
 
             // Act
             scheduler.Execute(_context.Object);
@@ -776,17 +839,20 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_DoesNotTriggerRecurringJob_WithMissedScheduleWhenIgnorableModeIsUsed(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_DoesNotTriggerRecurringJob_WithMissedScheduleWhenIgnorableModeIsUsed(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(batching);
+            EnableBatching(batching);
 
             _recurringJob["Cron"] = "0 * * * *";
             _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddHours(-3));
             _recurringJob["Misfire"] = MisfireHandlingMode.Ignorable.ToString("D");
 
-            var scheduler = CreateScheduler(delay: TimeSpan.FromMilliseconds(100));
+            var scheduler = CreateScheduler(maxParallelism, delay: TimeSpan.FromMilliseconds(100));
 
             // Act
             scheduler.Execute(_context.Object);
@@ -805,18 +871,21 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_TriggersRecurringJob_WhenIgnorableModeIsUsed_AndErrorIsSlight(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_TriggersRecurringJob_WhenIgnorableModeIsUsed_AndErrorIsSlight(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(batching);
+            EnableBatching(batching);
 
             _nowInstantFactory = () => _nowInstant.AddMilliseconds(123);
             _recurringJob["Cron"] = "30 * * * *";
             _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddHours(-3));
             _recurringJob["Misfire"] = MisfireHandlingMode.Ignorable.ToString("D");
 
-            var scheduler = CreateScheduler(delay: TimeSpan.FromMilliseconds(100));
+            var scheduler = CreateScheduler(maxParallelism, delay: TimeSpan.FromMilliseconds(100));
 
             // Act
             scheduler.Execute(_context.Object);
@@ -835,19 +904,28 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false, MisfireHandlingMode.Relaxed), InlineData(true, MisfireHandlingMode.Relaxed)]
-        [InlineData(false, MisfireHandlingMode.Strict), InlineData(true, MisfireHandlingMode.Strict)]
-        [InlineData(false, MisfireHandlingMode.Ignorable), InlineData(true, MisfireHandlingMode.Ignorable)]
-        public void Execute_DoesNotMissCurrentExecution_ForAnyMisfireHandlingMode(bool batching, MisfireHandlingMode mode)
+        [InlineData(false, Sequential, MisfireHandlingMode.Relaxed)]
+        [InlineData(true,  Sequential, MisfireHandlingMode.Relaxed)]
+        [InlineData(false, Parallel,   MisfireHandlingMode.Relaxed)]
+        [InlineData(true,  Parallel,   MisfireHandlingMode.Relaxed)]
+        [InlineData(false, Sequential, MisfireHandlingMode.Strict)]
+        [InlineData(true,  Sequential, MisfireHandlingMode.Strict)]
+        [InlineData(false, Parallel,   MisfireHandlingMode.Strict)]
+        [InlineData(true,  Parallel,   MisfireHandlingMode.Strict)]
+        [InlineData(false, Sequential, MisfireHandlingMode.Ignorable)]
+        [InlineData(true,  Sequential, MisfireHandlingMode.Ignorable)]
+        [InlineData(false, Parallel,   MisfireHandlingMode.Ignorable)]
+        [InlineData(true,  Parallel,   MisfireHandlingMode.Ignorable)]
+        public void Execute_DoesNotMissCurrentExecution_ForAnyMisfireHandlingMode(bool batching, int maxParallelism, MisfireHandlingMode mode)
         {
             // Arrange
-            SetupConnection(batching);
+            EnableBatching(batching);
 
             _recurringJob["Cron"] = "30 * * * *";
             _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddHours(-3));
             _recurringJob["Misfire"] = mode.ToString("D");
 
-            var scheduler = CreateScheduler(delay: TimeSpan.FromMilliseconds(100));
+            var scheduler = CreateScheduler(maxParallelism, delay: TimeSpan.FromMilliseconds(100));
 
             // Act
             scheduler.Execute(_context.Object);
@@ -865,16 +943,18 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.Commit());
         }
 
-        [Fact]
-        public void Execute_DoesNotUseBatchedMethod_WhenStorageConnectionThrowsAnException()
+        [Theory]
+        [InlineData(1)]
+        [InlineData(4)]
+        public void Execute_DoesNotUseBatchedMethod_WhenStorageConnectionThrowsAnException(int maxParallelism)
         {
             // Arrange
-            SetupConnection(true);
+            EnableBatching(true);
             _connection
                 .Setup(x => x.GetFirstByLowestScoreFromSet(It.IsAny<string>(), It.IsAny<double>(), It.IsAny<double>(), It.IsAny<int>()))
                 .Throws<NotSupportedException>();
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -886,18 +966,21 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_AlwaysUpdatesScoreForTheSetItem_EvenIfRecurringJobWasNotChanged(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_AlwaysUpdatesScoreForTheSetItem_EvenIfRecurringJobWasNotChanged(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(batching);
+            EnableBatching(batching);
 
             _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddMinutes(-1));
             _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant);
             _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddMinutes(1));
             _recurringJob["V"] = "2";
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -910,16 +993,19 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_UsesUtcTimeZone_WhenCorrespondingFieldIsNullOrEmpty(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_UsesUtcTimeZone_WhenCorrespondingFieldIsNullOrEmpty(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(batching);
+            EnableBatching(batching);
 
             _recurringJob["TimeZoneId"] = null;
             _recurringJob["Cron"] = "0 30 15 30 03 *";
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -929,17 +1015,20 @@ namespace Hangfire.Core.Tests.Server
         }
         
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_ReschedulesRecurringJob_WhenCronExpressionIsInvalid_AndRetryAttemptsAreNotExceeded(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_ReschedulesRecurringJob_WhenCronExpressionIsInvalid_AndRetryAttemptsAreNotExceeded(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(batching);
+            EnableBatching(batching);
 
             _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
             _recurringJob["Cron"] = "some garbage";
             _recurringJob["V"] = "2";
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -957,16 +1046,19 @@ namespace Hangfire.Core.Tests.Server
         }
         
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_DoesNotFailOnInvalidCronExpression_AndSimplySetsNextExecutionToNull_WhenRetryAttemptsExceeded(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_DoesNotFailOnInvalidCronExpression_AndSimplySetsNextExecutionToNull_WhenRetryAttemptsExceeded(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(batching);
+            EnableBatching(batching);
 
             _recurringJob["Cron"] = "some garbage";
             _recurringJob["RetryAttempt"] = "10";
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -978,13 +1070,16 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_ClearsLastError_AndRetryAttempts_AfterSuccessfulScheduling(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_ClearsLastError_AndRetryAttempts_AfterSuccessfulScheduling(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(batching);
+            EnableBatching(batching);
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             _recurringJob["Error"] = "Some error that previously happened";
             _recurringJob["RetryAttempt"] = "10";
@@ -1000,17 +1095,20 @@ namespace Hangfire.Core.Tests.Server
         }
         
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_ReschedulesRecurringJob_WhenThereAreIssuesWithJobLoading_AndRetryAttemptsAreNotExceeded(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_ReschedulesRecurringJob_WhenThereAreIssuesWithJobLoading_AndRetryAttemptsAreNotExceeded(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(batching);
+            EnableBatching(batching);
 
             _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
             _recurringJob["Job"] = null;
             _recurringJob["V"] = "2";
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -1035,16 +1133,19 @@ namespace Hangfire.Core.Tests.Server
         }
         
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_ReschedulesRecurringJob_WithIncreasedAttemptNumber_WhenThereAreIssuesWithJobLoading_AndRetryAttemptsAreNotExceeded(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_ReschedulesRecurringJob_WithIncreasedAttemptNumber_WhenThereAreIssuesWithJobLoading_AndRetryAttemptsAreNotExceeded(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(batching);
+            EnableBatching(batching);
 
             _recurringJob["Job"] = null;
             _recurringJob["RetryAttempt"] = "1";
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -1057,11 +1158,14 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_HidesRecurringJob_FromScheduler_WhenJobCanNotBeLoaded_AndRetryAttemptsExceeded(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_HidesRecurringJob_FromScheduler_WhenJobCanNotBeLoaded_AndRetryAttemptsExceeded(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(batching);
+            EnableBatching(batching);
 
             _recurringJob["RetryAttempt"] = "10";
             _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
@@ -1069,7 +1173,7 @@ namespace Hangfire.Core.Tests.Server
             _recurringJob["Job"] = InvocationData.SerializeJob(
                 Job.Create(() => Console.WriteLine())).SerializePayload().Replace("Console", "SomeNonExistingClass");
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -1085,18 +1189,21 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_HidesRecurringJob_FromScheduler_WhenJobCanNotBeDeserialized_AndRetryAttemptsExceeded(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_HidesRecurringJob_FromScheduler_WhenJobCanNotBeDeserialized_AndRetryAttemptsExceeded(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(batching);
+            EnableBatching(batching);
 
             _recurringJob["RetryAttempt"] = "10";
             _recurringJob["Job"] = "Some garbage";
             _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
             _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant);
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -1112,18 +1219,21 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_HidesRecurringJob_FromScheduler_WhenJobIsNull_AndRetryAttemptsExceeded(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_HidesRecurringJob_FromScheduler_WhenJobIsNull_AndRetryAttemptsExceeded(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(batching);
+            EnableBatching(batching);
 
             _recurringJob["RetryAttempt"] = "10";
             _recurringJob["Job"] = null;
             _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
             _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant);
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -1139,18 +1249,21 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_HidesRecurringJob_FromScheduler_WhenTimeZoneCanNotBeResolved_AndRetryAttemptsExceeded(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_HidesRecurringJob_FromScheduler_WhenTimeZoneCanNotBeResolved_AndRetryAttemptsExceeded(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(batching);
+            EnableBatching(batching);
 
             _recurringJob["RetryAttempt"] = "10";
             _recurringJob["TimeZoneId"] = "Non-existing time zone";
             _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
             _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant);
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -1166,16 +1279,19 @@ namespace Hangfire.Core.Tests.Server
         }
         
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_ReschedulesRecurringJob_WhenFactoryThrowsAnException_AndRetryAttemptsAreNotExceeded(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_ReschedulesRecurringJob_WhenFactoryThrowsAnException_AndRetryAttemptsAreNotExceeded(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(batching);
+            EnableBatching(batching);
             _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
             _recurringJob["V"] = "2";
             _factory.Setup(x => x.Create(It.IsAny<CreateContext>())).Throws<InvalidOperationException>();
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -1200,17 +1316,20 @@ namespace Hangfire.Core.Tests.Server
         }
         
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_HidesRecurringJob_FromScheduler_WhenFactoryThrowsAnException_AndRetryAttemptsExceeded(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_HidesRecurringJob_FromScheduler_WhenFactoryThrowsAnException_AndRetryAttemptsExceeded(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(batching);
+            EnableBatching(batching);
             _factory.Setup(x => x.Create(It.IsAny<CreateContext>())).Throws(new InvalidOperationException("Invalid operation"));
             _recurringJob["RetryAttempt"] = "10";
             _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
             _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant);
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
 
             // Act
             scheduler.Execute(_context.Object);
@@ -1226,11 +1345,14 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_AbleToProcessFurtherJobs_WhenStateChangerThrowsAnException_ForPreviousOnes(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_AbleToProcessFurtherJobs_WhenStateChangerThrowsAnException_ForPreviousOnes(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(batching);
+            EnableBatching(batching);
             _schedule.Add("AnotherId");
             _connection.Setup(x => x.GetAllEntriesFromHash("recurring-job:AnotherId"))
                 .Returns(_recurringJob);
@@ -1239,7 +1361,7 @@ namespace Hangfire.Core.Tests.Server
                 .Setup(x => x.Create(It.Is<CreateContext>(ctx => (string)ctx.Parameters["RecurringJobId"] == RecurringJobId)))
                 .Throws<InvalidOperationException>();
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
             
             // Act
             scheduler.Execute(_context.Object);
@@ -1251,16 +1373,19 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_RemovesNonExistingRecurringJobFromSet_AndDoesNotStopPipelineImmediatelyInThisCase(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_RemovesNonExistingRecurringJobFromSet_AndDoesNotStopPipelineImmediatelyInThisCase(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(batching);
+            EnableBatching(batching);
             _schedule.Add("AnotherId");
             _connection.Setup(x => x.GetAllEntriesFromHash("recurring-job:AnotherId")).Returns(_recurringJob);
             _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{RecurringJobId}")).Returns<Dictionary<string, string>>(null);
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(maxParallelism);
             
             // Act
             scheduler.Execute(_context.Object);
@@ -1273,21 +1398,25 @@ namespace Hangfire.Core.Tests.Server
         }
         
         [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_DoesNotRescheduleRecurringJob_WhenExceptionRaisedFromTransactionCommit(bool batching)
+        [InlineData(false, Sequential)]
+        [InlineData(false, Parallel)]
+        [InlineData(true,  Sequential)]
+        [InlineData(true,  Parallel)]
+        public void Execute_DoesNotRescheduleRecurringJob_WhenExceptionRaisedFromTransactionCommit(bool batching, int maxParallelism)
         {
             // Arrange
-            SetupConnection(batching);
+            EnableBatching(batching);
             _recurringJob["RetryAttempt"] = "10";
             _transaction.SetupSequence(x => x.Commit())
                 .Throws<InvalidOperationException>()
                 .Pass();
 
-            var scheduler = CreateScheduler();
-            
+            var scheduler = CreateScheduler(maxParallelism);
+
             // Act
-            Assert.Throws<InvalidOperationException>(() => scheduler.Execute(_context.Object));
-            
+            var exception = Assert.ThrowsAny<Exception>(() => scheduler.Execute(_context.Object));
+            Assert.True(exception.GetType() == typeof(InvalidOperationException) || exception.GetType() == typeof(AggregateException), exception.GetType().FullName);
+
             // Assert
             _transaction.Verify(
                 x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict => 
@@ -1298,25 +1427,27 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.Commit(), Times.Once);
         }
 
-        private void SetupConnection(bool useJobStorageConnection)
+        private void EnableBatching(bool value)
         {
-            if (useJobStorageConnection) EnableBatching();
-        }
-        
-        private void EnableBatching()
-        {
-            _connection
-                .Setup(x => x.GetFirstByLowestScoreFromSet(null, It.IsAny<double>(), It.IsAny<double>(), It.IsAny<int>()))
-                .Throws(new ArgumentNullException("key"));
+            if (value)
+            {
+                _connection
+                    .Setup(x => x.GetFirstByLowestScoreFromSet(null, It.IsAny<double>(), It.IsAny<double>(),
+                        It.IsAny<int>()))
+                    .Throws(new ArgumentNullException("key"));
+            }
         }
 
-        private RecurringJobScheduler CreateScheduler(DateTime? lastExecution = null, TimeSpan? delay = null)
+        private RecurringJobScheduler CreateScheduler(int maxParallelism = 1, DateTime? lastExecution = null, TimeSpan? delay = null)
         {
             var scheduler = new RecurringJobScheduler(
                 _factory.Object,
                 delay ?? _delay,
                 _timeZoneResolver.Object,
-                _nowInstantFactory);
+                _nowInstantFactory)
+            {
+                MaxDegreeOfParallelism = maxParallelism
+            };
 
             if (lastExecution.HasValue)
             {
