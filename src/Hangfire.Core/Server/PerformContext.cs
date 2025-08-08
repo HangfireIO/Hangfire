@@ -110,15 +110,17 @@ namespace Hangfire.Server
         [CanBeNull]
         public string? ServerId { get; }
 
-        public void SetJobParameter([NotNull] string name, object? value)
+        public void SetJobParameter([NotNull] string name, [CanBeNull] object? value)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
             Connection.SetJobParameter(BackgroundJob.Id, name, SerializationHelper.Serialize(value, SerializationOption.User));
         }
 
+        [CanBeNull]
         public T? GetJobParameter<T>([NotNull] string name) => GetJobParameter<T>(name, allowStale: false);
 
+        [CanBeNull]
         public T? GetJobParameter<T>([NotNull] string name, bool allowStale)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
