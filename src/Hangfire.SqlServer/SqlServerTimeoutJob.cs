@@ -23,8 +23,6 @@ namespace Hangfire.SqlServer
 {
     internal sealed class SqlServerTimeoutJob : IFetchedJob
     {
-        private readonly ILog _logger = LogProvider.GetLogger(typeof(SqlServerTimeoutJob));
-
         private readonly object _syncRoot = new object();
         private readonly SqlServerStorage _storage;
         private bool _disposed;
@@ -146,7 +144,7 @@ namespace Hangfire.SqlServer
             _storage.HeartbeatProcess.Untrack(this);
         }
 
-        internal void ExecuteKeepAliveQueryIfRequired()
+        internal void ExecuteKeepAliveQueryIfRequired(ILog logger)
         {
             var now = TimestampHelper.GetTimestamp();
 
@@ -178,16 +176,16 @@ namespace Hangfire.SqlServer
 
                         if (!FetchedAt.HasValue)
                         {
-                            _logger.Warn(
+                            logger.Warn(
                                 $"Background job identifier '{JobId}' was fetched by another worker, will not execute keep alive.");
                         }
 
-                        _logger.Trace($"Keep-alive query for message {Id} sent");
+                        logger.Trace($"Keep-alive query for message {Id} sent");
                         Interlocked.Exchange(ref _lastHeartbeat, now);
                     }
                     catch (Exception ex) when (ex.IsCatchableExceptionType())
                     {
-                        _logger.DebugException($"Unable to execute keep-alive query for message {Id}", ex);
+                        logger.DebugException($"Unable to execute keep-alive query for message {Id}", ex);
                     }
                 }
             }

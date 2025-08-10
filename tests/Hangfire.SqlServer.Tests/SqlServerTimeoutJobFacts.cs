@@ -4,6 +4,8 @@ using System;
 using System.Data;
 using System.Linq;
 using System.Threading;
+using Hangfire.Logging;
+using Moq;
 using ReferencedDapper::Dapper;
 using Xunit;
 // ReSharper disable AssignNullToNotNullAttribute
@@ -15,6 +17,7 @@ namespace Hangfire.SqlServer.Tests
         private const string JobId = "id";
         private const string Queue = "queue";
         private static readonly DateTime FetchedAt = DateTime.UtcNow;
+        private Mock<ILog> _logger = new Mock<ILog>();
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
@@ -148,7 +151,7 @@ namespace Hangfire.SqlServer.Tests
                 {
                     processingJob.DisposeTimer();
                     Thread.Sleep(TimeSpan.FromSeconds(2));
-                    processingJob.ExecuteKeepAliveQueryIfRequired();
+                    processingJob.ExecuteKeepAliveQueryIfRequired(_logger.Object);
 
                     var record = sql.Query($"select * from [{Constants.DefaultSchema}].JobQueue").Single();
 
@@ -171,7 +174,7 @@ namespace Hangfire.SqlServer.Tests
                 {
                     processingJob.DisposeTimer();
                     Thread.Sleep(TimeSpan.FromSeconds(2));
-                    processingJob.ExecuteKeepAliveQueryIfRequired();
+                    processingJob.ExecuteKeepAliveQueryIfRequired(_logger.Object);
                     
                     Assert.Null(processingJob.FetchedAt);
                 }

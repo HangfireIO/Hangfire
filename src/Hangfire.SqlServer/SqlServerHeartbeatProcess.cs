@@ -17,6 +17,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using Hangfire.Common;
+using Hangfire.Logging;
 using Hangfire.Server;
 
 namespace Hangfire.SqlServer
@@ -40,14 +41,19 @@ namespace Hangfire.SqlServer
 
         public void Execute(BackgroundProcessContext context)
         {
-            Execute(context.ShutdownToken);
+            ExecuteCore(context.Logger, context.ShutdownToken);
         }
 
         public void Execute(CancellationToken cancellationToken)
         {
+            ExecuteCore(LogProvider.For<SqlServerHeartbeatProcess>(), cancellationToken);
+        }
+
+        private void ExecuteCore(ILog logger, CancellationToken cancellationToken)
+        {
             foreach (var item in _items)
             {
-                item.Key.ExecuteKeepAliveQueryIfRequired();
+                item.Key.ExecuteKeepAliveQueryIfRequired(logger);
             }
 
             cancellationToken.Wait(TimeSpan.FromSeconds(1));
