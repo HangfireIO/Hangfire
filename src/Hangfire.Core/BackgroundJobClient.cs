@@ -95,6 +95,11 @@ namespace Hangfire
         {
         }
 
+        public BackgroundJobClient([NotNull] JobStorage storage, [NotNull] IJobFilterProvider filterProvider, [NotNull] ILog logger)
+            : this(storage, new BackgroundJobFactory(filterProvider), new BackgroundJobStateChanger(filterProvider), logger)
+        {
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobClient"/> class
         /// with the specified storage, background job factory and state changer.

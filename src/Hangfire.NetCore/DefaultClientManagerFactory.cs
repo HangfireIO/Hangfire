@@ -16,6 +16,7 @@
 using System;
 using Hangfire.Annotations;
 using Hangfire.Common;
+using Hangfire.Logging;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Hangfire
@@ -31,14 +32,18 @@ namespace Hangfire
 
         public IBackgroundJobClientV2 GetClientV2(JobStorage storage)
         {
+            var logProvider = _serviceProvider.GetRequiredService<ILogProvider>();
+            var logger = logProvider.GetLogger(typeof(BackgroundJobClient).FullName!); // TODO: Ensure logger is wrapped
+
             if (HangfireServiceCollectionExtensions.GetInternalServices(_serviceProvider, out var factory, out var stateChanger, out _))
             {
-                return new BackgroundJobClient(storage, factory, stateChanger);
+                return new BackgroundJobClient(storage, factory, stateChanger, logger);
             }
 
             return new BackgroundJobClient(
                 storage,
-                _serviceProvider.GetRequiredService<IJobFilterProvider>());
+                _serviceProvider.GetRequiredService<IJobFilterProvider>(),
+                logger);
         }
 
         public IBackgroundJobClient GetClient(JobStorage storage)
@@ -48,18 +53,23 @@ namespace Hangfire
 
         public IRecurringJobManagerV2 GetManagerV2(JobStorage storage)
         {
+            var logProvider = _serviceProvider.GetRequiredService<ILogProvider>();
+            var logger = logProvider.GetLogger(typeof(BackgroundJobClient).FullName!); // TODO: Ensure logger is wrapped
+
             if (HangfireServiceCollectionExtensions.GetInternalServices(_serviceProvider, out var factory, out _, out _))
             {
                 return new RecurringJobManager(
                     storage,
                     factory,
-                    _serviceProvider.GetRequiredService<ITimeZoneResolver>());
+                    _serviceProvider.GetRequiredService<ITimeZoneResolver>(),
+                    logger);
             }
 
             return new RecurringJobManager(
                 storage,
                 _serviceProvider.GetRequiredService<IJobFilterProvider>(),
-                _serviceProvider.GetRequiredService<ITimeZoneResolver>());
+                _serviceProvider.GetRequiredService<ITimeZoneResolver>(),
+                logger);
         }
 
         public IRecurringJobManager GetManager(JobStorage storage)

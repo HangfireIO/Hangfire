@@ -20,6 +20,7 @@ using Hangfire.AspNetCore;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Dashboard;
+using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.States;
 using Microsoft.Extensions.DependencyInjection;
@@ -48,11 +49,12 @@ namespace Hangfire
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
             services.TryAddSingletonChecked(static _ => JobStorage.Current);
-            services.TryAddSingletonChecked(static _ => JobActivator.Current);
 
             services.TryAddSingleton(static _ => DashboardRoutes.Routes);
             services.TryAddSingleton<IJobFilterProvider>(static _ => JobFilterProviders.Providers);
             services.TryAddSingleton<ITimeZoneResolver>(static _ => new DefaultTimeZoneResolver());
+            services.TryAddSingleton<ILogProvider>(static x => new AspNetCoreLogProvider(x.GetRequiredService<ILoggerFactory>()));
+            services.TryAddSingleton<JobActivator>(static x => new AspNetCoreJobActivator(x.GetRequiredService<IServiceScopeFactory>()));
             
             services.TryAddSingleton(static x => new DefaultClientManagerFactory(x));
             services.TryAddSingletonChecked<IBackgroundJobClientFactory>(static x => x.GetRequiredService<DefaultClientManagerFactory>());
@@ -81,25 +83,13 @@ namespace Hangfire
 
             services.AddSingleton<IGlobalConfiguration>(serviceProvider =>
             {
-                var configurationInstance = GlobalConfiguration.Configuration;
-
                 // init defaults for log provider and job activator
                 // they may be overwritten by the configuration callback later
-
-                var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
-                if (loggerFactory != null)
-                {
-                    configurationInstance.UseLogProvider(new AspNetCoreLogProvider(loggerFactory));
-                }
-
-                var scopeFactory = serviceProvider.GetService<IServiceScopeFactory>();
-                if (scopeFactory != null)
-                {
-                    configurationInstance.UseActivator(new AspNetCoreJobActivator(scopeFactory));
-                }
+                var configurationInstance = GlobalConfiguration.Configuration
+                    .UseLogProvider(serviceProvider.GetRequiredService<ILogProvider>())
+                    .UseActivator(serviceProvider.GetRequiredService<JobActivator>());
 
                 // do configuration inside callback
-
                 configuration(serviceProvider, configurationInstance);
                 
                 return configurationInstance;

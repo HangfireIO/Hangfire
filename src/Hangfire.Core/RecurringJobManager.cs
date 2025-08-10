@@ -53,11 +53,21 @@ namespace Hangfire
         {
         }
 
+        // TODO: Make obsolete?
         public RecurringJobManager(
-            [NotNull] JobStorage storage, 
+            [NotNull] JobStorage storage,
             [NotNull] IJobFilterProvider filterProvider,
             [NotNull] ITimeZoneResolver timeZoneResolver)
             : this(storage, filterProvider, timeZoneResolver, static () => DateTime.UtcNow)
+        {
+        }
+
+        public RecurringJobManager(
+            [NotNull] JobStorage storage, 
+            [NotNull] IJobFilterProvider filterProvider,
+            [NotNull] ITimeZoneResolver timeZoneResolver,
+            [NotNull] ILog logger)
+            : this(storage, new BackgroundJobFactory(filterProvider), timeZoneResolver, static () => DateTime.UtcNow, logger)
         {
         }
 
