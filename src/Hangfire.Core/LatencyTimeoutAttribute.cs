@@ -28,8 +28,6 @@ namespace Hangfire
     /// </summary>
     public sealed class LatencyTimeoutAttribute : JobFilterAttribute, IElectStateFilter
     {
-        private readonly ILog _logger = LogProvider.For<LatencyTimeoutAttribute>();
-
         /// <summary>
         /// Initializes a new instance of the <see cref="LatencyTimeoutAttribute"/>
         /// class with the given timeout value.
@@ -77,7 +75,7 @@ namespace Hangfire
                     Reason = $"Background job has exceeded latency timeout of {TimeoutInSeconds} second(s)"
                 };
 
-                _logger.Log(
+                context.Logger.Log(
                     LogLevel,
                     () => $"Background job '{context.BackgroundJob.Id}' has exceeded latency timeout of {TimeoutInSeconds} second(s) and will be deleted");
             }

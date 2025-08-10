@@ -34,8 +34,6 @@ namespace Hangfire
         private static readonly TimeSpan ContinuationStateFetchTimeout = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan ContinuationInvalidTimeout = TimeSpan.FromMinutes(15);
 
-        private readonly ILog _logger = LogProvider.For<ContinuationsSupportAttribute>();
-
         private readonly bool _pushResults;
         private readonly HashSet<string> _knownFinalStates;
         private readonly IBackgroundJobStateChanger _stateChanger;
@@ -300,7 +298,7 @@ namespace Hangfire
                 var continuationData = context.Connection.GetJobData(continuationJobId);
                 if (continuationData == null)
                 {
-                    _logger.Warn(
+                    context.Logger.Warn(
                         $"Can not start continuation '{continuationJobId}' for background job '{context.BackgroundJob.Id}': continuation does not exist.");
 
                     break;
@@ -314,7 +312,7 @@ namespace Hangfire
 
                 if (DateTime.UtcNow - continuationData.CreatedAt > ContinuationInvalidTimeout)
                 {
-                    _logger.Warn(
+                    context.Logger.Warn(
                         $"Continuation '{continuationJobId}' has been ignored: it was deemed to be aborted, because its state is still non-initialized.");
 
                     break;
@@ -322,7 +320,7 @@ namespace Hangfire
 
                 if (started.Elapsed >= timeout)
                 {
-                    _logger.Warn(
+                    context.Logger.Warn(
                         $"Can not start continuation '{continuationJobId}' for background job '{context.BackgroundJob.Id}': timeout expired while trying to fetch continuation state.");
 
                     break;

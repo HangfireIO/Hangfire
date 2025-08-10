@@ -92,9 +92,7 @@ namespace Hangfire
             return (int)Math.Round(
                 Math.Pow(attempt - 1, 4) + 15 + random.Next(30) * attempt);
         };
-        
-        private readonly ILog _logger = LogProvider.For<AutomaticRetryAttribute>();
-        
+
         private readonly object _lockObject = new object();
         private int _attempts;
         private int[]?  _delaysInSeconds;
@@ -291,7 +289,7 @@ namespace Hangfire
             {
                 if (LogEvents)
                 {
-                    _logger.ErrorException(
+                    context.Logger.ErrorException(
                         $"Failed to process the job '{context.BackgroundJob.Id}': an exception occurred.",
                         failedState.Exception);
                 }
@@ -360,7 +358,7 @@ namespace Hangfire
 
             if (LogEvents)
             {
-                _logger.WarnException(
+                context.Logger.WarnException(
                     $"Failed to process the job '{context.BackgroundJob.Id}': an exception occurred. Retry attempt {retryAttempt} of {Attempts} will be performed in {delay}.",
                     failedState.Exception);
             }
@@ -382,7 +380,7 @@ namespace Hangfire
 
             if (LogEvents)
             {
-                _logger.WarnException(
+                context.Logger.WarnException(
                     $"Failed to process the job '{context.BackgroundJob.Id}': an exception occured. Job was automatically deleted because the retry attempt count exceeded {Attempts}.",
                     failedState.Exception);
             }

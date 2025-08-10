@@ -25,8 +25,6 @@ namespace Hangfire
 {
     public sealed class CaptureCultureAttribute : JobFilterAttribute, IClientFilter, IServerFilter
     {
-        private readonly ILog _logger = LogProvider.GetLogger(typeof(CaptureCultureAttribute));
-
         public CaptureCultureAttribute() : this(null)
         {
         }
@@ -126,7 +124,7 @@ namespace Hangfire
             catch (CultureNotFoundException ex)
             {
                 // TODO: Make this overridable, and start with throwing an exception
-                _logger.WarnException($"Unable to set CurrentCulture for job {context.BackgroundJob.Id} due to an exception", ex);
+                context.Logger.WarnException($"Unable to set CurrentCulture for job {context.BackgroundJob.Id} due to an exception", ex);
             }
 
             try
@@ -140,7 +138,7 @@ namespace Hangfire
             catch (CultureNotFoundException ex)
             {
                 // TODO: Make this overridable, and start with throwing an exception
-                _logger.WarnException($"Unable to set CurrentUICulture for job {context.BackgroundJob.Id} due to an exception", ex);
+                context.Logger.WarnException($"Unable to set CurrentUICulture for job {context.BackgroundJob.Id} due to an exception", ex);
             }
         }
 
