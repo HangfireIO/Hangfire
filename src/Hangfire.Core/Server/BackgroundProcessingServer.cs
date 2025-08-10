@@ -43,8 +43,6 @@ namespace Hangfire.Server
         public static readonly TimeSpan DefaultShutdownTimeout = TimeSpan.FromSeconds(15);
         private static int _lastThreadId;
 
-        private readonly ILog _logger = LogProvider.GetLogger(typeof(BackgroundProcessingServer));
-
         private readonly CancellationTokenSource _stoppingCts = new CancellationTokenSource();
         private readonly CancellationTokenSource _stoppedCts = new CancellationTokenSource();
         private readonly CancellationTokenSource _shutdownCts = new CancellationTokenSource();
@@ -53,6 +51,7 @@ namespace Hangfire.Server
         private readonly IBackgroundServerProcess _process;
         private readonly BackgroundProcessingServerOptions _options;
         private readonly ILogProvider _logProvider;
+        private readonly ILog _logger;
         private readonly IBackgroundDispatcher _dispatcher;
 
         private int _disposed;
@@ -115,6 +114,7 @@ namespace Hangfire.Server
             _process = process ?? throw new ArgumentNullException(nameof(process));
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _logProvider = logProvider ?? throw new ArgumentNullException(nameof(logProvider));
+            _logger = _logProvider.GetLogger(GetType().FullName!); // TODO: Ensure logger is wrapped
 
             _dispatcher = CreateDispatcher();
 
