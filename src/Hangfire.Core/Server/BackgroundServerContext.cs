@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Hangfire.Annotations;
+using Hangfire.Logging;
 
 namespace Hangfire.Server
 {
@@ -25,6 +26,7 @@ namespace Hangfire.Server
         public BackgroundServerContext(
             [NotNull] string serverId,
             [NotNull] JobStorage storage,
+            [NotNull] ILogProvider logProvider,
             [NotNull] IDictionary<string, object> properties, 
             CancellationToken stoppingToken, 
             CancellationToken stoppedToken,
@@ -32,6 +34,7 @@ namespace Hangfire.Server
         {
             ServerId = serverId ?? throw new ArgumentNullException(nameof(serverId));
             Storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            LogProvider = logProvider ?? throw new ArgumentNullException(nameof(logProvider));
             Properties = properties ?? throw new ArgumentNullException(nameof(properties));
             StoppingToken = stoppingToken;
             StoppedToken = stoppedToken;
@@ -43,6 +46,9 @@ namespace Hangfire.Server
 
         [NotNull]
         public JobStorage Storage { get; }
+
+        [NotNull]
+        public ILogProvider LogProvider { get; }
 
         [NotNull]
         public IDictionary<string, object> Properties { get; }

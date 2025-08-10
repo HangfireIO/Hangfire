@@ -29,7 +29,6 @@ namespace Hangfire.Server
     {
         private static readonly char[] ColonSeparator = new [] { ':' };
 
-        private readonly ILog _logger = LogProvider.GetLogger(typeof(BackgroundServerProcess));
         private readonly JobStorage _storage;
         private readonly BackgroundProcessingServerOptions _options;
         private readonly IDictionary<string, object> _properties;
@@ -59,22 +58,22 @@ namespace Hangfire.Server
             _dispatcherBuilders = builders.ToArray();
         }
 
-        public void Execute(Guid executionId, BackgroundExecution execution, CancellationToken stoppingToken,
-            CancellationToken stoppedToken, CancellationToken shutdownToken)
+        public void Execute(Guid executionId, BackgroundExecution execution, ILogProvider logProvider, ILog logger,
+            CancellationToken stoppingToken, CancellationToken stoppedToken, CancellationToken shutdownToken)
         {
             var serverId = GetServerId();
             Stopwatch? stoppedAt = null;
 
             void HandleStopRestartSignal() => Interlocked.CompareExchange(ref stoppedAt, Stopwatch.StartNew(), null);
-            void HandleStoppingSignal() => _logger.Info($"{GetServerTemplate(serverId)} caught stopping signal...");
-            void HandleStoppedSignal() => _logger.Info($"{GetServerTemplate(serverId)} caught stopped signal...");
-            void HandleShutdownSignal() => _logger.Warn($"{GetServerTemplate(serverId)} caught shutdown signal...");
+            void HandleStoppingSignal() => logger.Info($"{GetServerTemplate(serverId)} caught stopping signal...");
+            void HandleStoppedSignal() => logger.Info($"{GetServerTemplate(serverId)} caught stopped signal...");
+            void HandleShutdownSignal() => logger.Warn($"{GetServerTemplate(serverId)} caught shutdown signal...");
 
             void HandleRestartSignal()
             {
                 if (!stoppingToken.IsCancellationRequested)
                 {
-                    _logger.Info($"{GetServerTemplate(serverId)} caught restart signal...");
+                    logger.Info($"{GetServerTemplate(serverId)} caught restart signal...");
                 }
             }
 
@@ -92,6 +91,7 @@ namespace Hangfire.Server
                 var context = new BackgroundServerContext(
                     serverId,
                     _storage,
+                    logProvider,
                     _properties,
                     restartStoppingCts.Token,
                     restartStoppedCts.Token,
@@ -99,17 +99,17 @@ namespace Hangfire.Server
 
                 var dispatchers = new List<IBackgroundDispatcher>();
 
-                CreateServer(context);
+                CreateServer(context, logger);
 
                 try
                 {
                     // ReSharper disable once AccessToDisposedClosure
                     using (var heartbeat = CreateHeartbeatProcess(context, () => restartCts.Cancel()))
                     {
-                        StartDispatchers(context, dispatchers);
+                        StartDispatchers(context, logger, dispatchers);
                         execution.NotifySucceeded();
 
-                        WaitForDispatchers(context, dispatchers);
+                        WaitForDispatchers(context, logger, dispatchers);
 
                         restartCts.Cancel();
 
@@ -122,7 +122,7 @@ namespace Hangfire.Server
                 finally
                 {
                     DisposeDispatchers(dispatchers);
-                    ServerDelete(context, stoppedAt);
+                    ServerDelete(context, logger, stoppedAt);
                 }
             }
         }
@@ -135,6 +135,7 @@ namespace Hangfire.Server
             var heartbeatContext = new BackgroundServerContext(
                 context.ServerId,
                 context.Storage,
+                context.LogProvider,
                 context.Properties,
                 context.ShutdownToken,
                 context.ShutdownToken,
@@ -198,9 +199,9 @@ namespace Hangfire.Server
             return !String.IsNullOrWhiteSpace(serverName) ? $"{serverName.ToLowerInvariant()}:{guid}" : guid;
         }
 
-        private void CreateServer(BackgroundServerContext context)
+        private void CreateServer(BackgroundServerContext context, ILog logger)
         {
-            _logger.Trace($"{GetServerTemplate(context.ServerId)} is announcing itself...");
+            logger.Trace($"{GetServerTemplate(context.ServerId)} is announcing itself...");
 
             var stopwatch = Stopwatch.StartNew();
 
@@ -212,14 +213,14 @@ namespace Hangfire.Server
             stopwatch.Stop();
 
             ServerJobCancellationToken.AddServer(context.ServerId);
-            _logger.Info($"{GetServerTemplate(context.ServerId)} successfully announced in {stopwatch.Elapsed.TotalMilliseconds} ms");
+            logger.Info($"{GetServerTemplate(context.ServerId)} successfully announced in {stopwatch.Elapsed.TotalMilliseconds} ms");
         }
 
-        private void ServerDelete(BackgroundServerContext context, Stopwatch? stoppedAt)
+        private void ServerDelete(BackgroundServerContext context, ILog logger, Stopwatch? stoppedAt)
         {
             try
             {
-                _logger.Trace($"{GetServerTemplate(context.ServerId)} is reporting itself as stopped...");
+                logger.Trace($"{GetServerTemplate(context.ServerId)} is reporting itself as stopped...");
                 ServerJobCancellationToken.RemoveServer(context.ServerId);
 
                 var stopwatch = Stopwatch.StartNew();
@@ -231,34 +232,35 @@ namespace Hangfire.Server
 
                 stopwatch.Stop();
 
-                _logger.Info($"{GetServerTemplate(context.ServerId)} successfully reported itself as stopped in {stopwatch.Elapsed.TotalMilliseconds} ms");
-                _logger.Info($"{GetServerTemplate(context.ServerId)} has been stopped in total {stoppedAt?.Elapsed.TotalMilliseconds ?? 0} ms");
+                logger.Info($"{GetServerTemplate(context.ServerId)} successfully reported itself as stopped in {stopwatch.Elapsed.TotalMilliseconds} ms");
+                logger.Info($"{GetServerTemplate(context.ServerId)} has been stopped in total {stoppedAt?.Elapsed.TotalMilliseconds ?? 0} ms");
             }
             catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
-                _logger.WarnException($"{GetServerTemplate(context.ServerId)} there was an exception, server may not be removed", ex);
+                logger.WarnException($"{GetServerTemplate(context.ServerId)} there was an exception, server may not be removed", ex);
             }
         }
 
-        private void StartDispatchers(BackgroundServerContext context, ICollection<IBackgroundDispatcher> dispatchers)
+        private void StartDispatchers(BackgroundServerContext context, ILog logger, ICollection<IBackgroundDispatcher> dispatchers)
         {
             if (_dispatcherBuilders.Length == 0)
             {
                 throw new InvalidOperationException("No dispatchers registered for the processing server.");
             }
 
-            _logger.Info($"{GetServerTemplate(context.ServerId)} is starting the registered dispatchers: {String.Join(", ", _dispatcherBuilders.Select(static builder => $"{builder}"))}...");
+            logger.Info($"{GetServerTemplate(context.ServerId)} is starting the registered dispatchers: {String.Join(", ", _dispatcherBuilders.Select(static builder => $"{builder}"))}...");
 
             foreach (var dispatcherBuilder in _dispatcherBuilders)
             {
                 dispatchers.Add(dispatcherBuilder.Create(context, _options));
             }
 
-            _logger.Info($"{GetServerTemplate(context.ServerId)} all the dispatchers started");
+            logger.Info($"{GetServerTemplate(context.ServerId)} all the dispatchers started");
         }
 
         private void WaitForDispatchers(
             BackgroundServerContext context,
+            ILog logger,
             IReadOnlyList<IBackgroundDispatcher> dispatchers)
         {
             if (dispatchers.Count == 0) return;
@@ -290,11 +292,11 @@ namespace Hangfire.Server
             if (nonStopped.Count > 0)
             {
                 var nonStoppedNames = nonStopped.Select(static dispatcher => $"{dispatcher}").ToArray();
-                _logger.Warn($"{GetServerTemplate(context.ServerId)} stopped non-gracefully due to {String.Join(", ", nonStoppedNames)}. Outstanding work on those dispatchers could be aborted, and there can be delays in background processing. This server instance will be incorrectly shown as active for a while. To avoid non-graceful shutdowns, investigate what prevents from stopping gracefully and add CancellationToken support for those methods.");
+                logger.Warn($"{GetServerTemplate(context.ServerId)} stopped non-gracefully due to {String.Join(", ", nonStoppedNames)}. Outstanding work on those dispatchers could be aborted, and there can be delays in background processing. This server instance will be incorrectly shown as active for a while. To avoid non-graceful shutdowns, investigate what prevents from stopping gracefully and add CancellationToken support for those methods.");
             }
             else
             {
-                _logger.Info($"{GetServerTemplate(context.ServerId)} All dispatchers stopped");
+                logger.Info($"{GetServerTemplate(context.ServerId)} All dispatchers stopped");
             }
         }
 

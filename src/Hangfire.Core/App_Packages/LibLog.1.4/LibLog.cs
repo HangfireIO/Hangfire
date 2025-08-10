@@ -375,6 +375,15 @@ namespace Hangfire.Logging
         }
 
         /// <summary>
+        /// Gets the current log provider.
+        /// </summary>
+        /// <returns>An instance of <see cref="ILogProvider"/>, or <see langword="null" /> when it is not registered.</returns>
+        public static ILogProvider GetCurrentLogProvider()
+        {
+            return Volatile.Read(ref _currentLogProvider) ?? _resolvedLogProvider.Value ?? NoOpLogProvider.Instance;
+        }
+
+        /// <summary>
         /// Sets the current log provider.
         /// </summary>
         /// <param name="logProvider">The log provider.</param>
@@ -420,6 +429,16 @@ namespace Hangfire.Logging
                     ex);
             }
             return null;
+        }
+
+        internal sealed class NoOpLogProvider : ILogProvider
+        {
+            public static readonly NoOpLogProvider Instance = new NoOpLogProvider();
+
+            public ILog GetLogger(string name)
+            {
+                return NoOpLogger.Instance;
+            }
         }
 
         internal sealed class NoOpLogger : ILog

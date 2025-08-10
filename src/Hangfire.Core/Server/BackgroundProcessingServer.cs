@@ -52,6 +52,7 @@ namespace Hangfire.Server
 
         private readonly IBackgroundServerProcess _process;
         private readonly BackgroundProcessingServerOptions _options;
+        private readonly ILogProvider _logProvider;
         private readonly IBackgroundDispatcher _dispatcher;
 
         private int _disposed;
@@ -98,7 +99,7 @@ namespace Hangfire.Server
             [NotNull] IEnumerable<IBackgroundProcessDispatcherBuilder> dispatcherBuilders,
             [NotNull] IDictionary<string, object> properties,
             [NotNull] BackgroundProcessingServerOptions options)
-            : this(new BackgroundServerProcess(storage, dispatcherBuilders, options, properties), options)
+            : this(new BackgroundServerProcess(storage, dispatcherBuilders, options, properties), options, LogProvider.GetCurrentLogProvider())
         {
         }
 
@@ -108,10 +109,12 @@ namespace Hangfire.Server
         /// </summary>
         internal BackgroundProcessingServer(
             [NotNull] BackgroundServerProcess process,
-            [NotNull] BackgroundProcessingServerOptions options)
+            [NotNull] BackgroundProcessingServerOptions options,
+            [NotNull] ILogProvider logProvider)
         {
             _process = process ?? throw new ArgumentNullException(nameof(process));
             _options = options ?? throw new ArgumentNullException(nameof(options));
+            _logProvider = logProvider ?? throw new ArgumentNullException(nameof(logProvider));
 
             _dispatcher = CreateDispatcher();
 
@@ -227,6 +230,8 @@ namespace Hangfire.Server
 
         private IBackgroundDispatcher CreateDispatcher()
         {
+            var serverLogger = _logProvider.GetLogger(GetType().FullName!); // TODO: Ensure logger is wrapped
+
             var execution = new BackgroundExecution(
                 new BackgroundExecutionOptions
                 {
@@ -240,13 +245,18 @@ namespace Hangfire.Server
             return new BackgroundDispatcher(
                 execution,
                 RunServer,
-                execution,
+                Tuple.Create(execution, _logProvider, serverLogger),
                 ThreadFactory);
         }
 
         private void RunServer(Guid executionId, object? state)
         {
-            _process.Execute(executionId, (BackgroundExecution)state!, _stoppingCts.Token, _stoppedCts.Token, _shutdownCts.Token);
+            var tuple = (Tuple<BackgroundExecution, ILogProvider, ILog>)state!;
+            var execution = tuple.Item1;
+            var logProvider = tuple.Item2;
+            var logger = tuple.Item3;
+
+            _process.Execute(executionId, execution, logProvider, logger, _stoppingCts.Token, _stoppedCts.Token, _shutdownCts.Token);
         }
 
         private static IEnumerable<Thread> ThreadFactory(ThreadStart threadStart)

@@ -15,6 +15,7 @@
 
 using System;
 using System.Threading;
+using Hangfire.Logging;
 using Hangfire.Processing;
 
 namespace Hangfire.Server
@@ -23,8 +24,10 @@ namespace Hangfire.Server
     {
         void Execute(
             Guid executionId, 
-            BackgroundExecution execution, 
-            CancellationToken stoppingToken, 
+            BackgroundExecution execution,
+            ILogProvider logProvider,
+            ILog logger,
+            CancellationToken stoppingToken,
             CancellationToken stoppedToken,
             CancellationToken shutdownToken);
     }
