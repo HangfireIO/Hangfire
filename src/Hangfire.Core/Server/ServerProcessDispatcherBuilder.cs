@@ -41,12 +41,15 @@ namespace Hangfire.Server
             if (context == null) throw new ArgumentNullException(nameof(context));
             if (options == null) throw new ArgumentNullException(nameof(options));
 
+            var componentLogger = context.LogProvider.GetLogger(_component.GetType().FullName!); // TODO: Ensure logger is wrapped
+
             return new BackgroundDispatcher(
                 new BackgroundExecution(new BackgroundExecutionOptions
                 {
                     Name = _component.GetType().Name,
                     RetryDelay = options.RetryDelay
-                }, context.StoppingToken),
+                }, componentLogger, context.StoppingToken),
+                componentLogger,
                 ExecuteComponent,
                 Tuple.Create(_component, context),
                 _threadFactory);

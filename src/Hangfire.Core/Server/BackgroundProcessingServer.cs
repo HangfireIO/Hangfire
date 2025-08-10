@@ -240,10 +240,12 @@ namespace Hangfire.Server
                     StillErrorThreshold = TimeSpan.Zero,
                     RetryDelay = _ => _options.RestartDelay
                 },
+                serverLogger,
                 _stoppingCts.Token);
 
             return new BackgroundDispatcher(
                 execution,
+                serverLogger,
                 RunServer,
                 Tuple.Create(execution, _logProvider, serverLogger),
                 ThreadFactory);

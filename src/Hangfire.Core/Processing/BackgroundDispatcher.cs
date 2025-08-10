@@ -28,15 +28,16 @@ namespace Hangfire.Processing
 {
     internal sealed class BackgroundDispatcher : IBackgroundDispatcher
     {
-        private readonly ILog _logger = LogProvider.GetLogger(typeof(BackgroundDispatcher));
         private readonly CountdownEvent _stopped;
 
         private readonly IBackgroundExecution _execution;
+        private readonly ILog _logger;
         private readonly Action<Guid, object?> _action;
         private readonly object? _state;
 
         public BackgroundDispatcher(
             IBackgroundExecution execution,
+            ILog logger,
             Action<Guid, object?> action,
             object? state,
             Func<ThreadStart, IEnumerable<Thread>> threadFactory)
@@ -44,6 +45,7 @@ namespace Hangfire.Processing
             if (threadFactory == null) throw new ArgumentNullException(nameof(threadFactory));
 
             _execution = execution ?? throw new ArgumentNullException(nameof(execution));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _action = action ?? throw new ArgumentNullException(nameof(action));
             _state = state;
 

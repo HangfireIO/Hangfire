@@ -51,11 +51,11 @@ namespace Hangfire.Processing
 
         private volatile bool _disposed;
 
-        public BackgroundExecution(BackgroundExecutionOptions options, CancellationToken stopToken)
+        public BackgroundExecution(BackgroundExecutionOptions options, ILog logger, CancellationToken stopToken)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            _logger = LogProvider.GetLogger(GetType());
             _createdAt = Stopwatch.StartNew();
 
             _stopToken = stopToken;

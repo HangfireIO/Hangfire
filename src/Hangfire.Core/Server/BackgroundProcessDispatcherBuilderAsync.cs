@@ -50,18 +50,22 @@ namespace Hangfire.Server
             if (context == null) throw new ArgumentNullException(nameof(context));
             if (options == null) throw new ArgumentNullException(nameof(options));
 
+            var processLogger = context.LogProvider.GetLogger(_process.GetType().FullName!); // TODO: Ensure logger is wrapped
+
             var execution = new BackgroundExecution(
                 new BackgroundExecutionOptions
                 {
                     Name = _process.GetType().Name,
                     RetryDelay = options.RetryDelay
                 },
+                processLogger,
                 context.StoppingToken);
 
             return new BackgroundDispatcherAsync(
                 execution,
+                processLogger,
                 ExecuteProcess,
-                Tuple.Create(_process, context, execution),
+                Tuple.Create(_process, context, execution, processLogger),
                 _taskScheduler(),
                 _maxConcurrency,
                 _ownsScheduler);
@@ -74,12 +78,11 @@ namespace Hangfire.Server
 
         private static async Task ExecuteProcess(Guid executionId, object? state)
         {
-            var tuple = (Tuple<IBackgroundProcessAsync, BackgroundServerContext, BackgroundExecution>)state!;
+            var tuple = (Tuple<IBackgroundProcessAsync, BackgroundServerContext, BackgroundExecution, ILog>)state!;
             var process = tuple.Item1;
             var serverContext = tuple.Item2;
             var execution = tuple.Item3;
-
-            var processLogger = LogProvider.GetLogger(process.GetType());
+            var processLogger = tuple.Item4;
 
             var context = new BackgroundProcessContext(
                 serverContext.ServerId,

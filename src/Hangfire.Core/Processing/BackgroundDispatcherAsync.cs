@@ -25,7 +25,7 @@ namespace Hangfire.Processing
 {
     internal sealed class BackgroundDispatcherAsync : IBackgroundDispatcher
     {
-        private readonly ILog _logger = LogProvider.GetLogger(typeof(BackgroundDispatcherAsync));
+        private readonly ILog _logger;
         private readonly CountdownEvent _stopped;
 
         private readonly IBackgroundExecution _execution;
@@ -37,6 +37,7 @@ namespace Hangfire.Processing
 
         public BackgroundDispatcherAsync(
             IBackgroundExecution execution,
+            ILog logger,
             Func<Guid, object?, Task> action,
             object? state,
             TaskScheduler taskScheduler,
@@ -46,6 +47,7 @@ namespace Hangfire.Processing
             if (maxConcurrency <= 0) throw new ArgumentOutOfRangeException(nameof(maxConcurrency));
 
             _execution = execution ?? throw new ArgumentNullException(nameof(execution));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _action = action ?? throw new ArgumentNullException(nameof(action));
             _state = state;
             _taskScheduler = taskScheduler ?? throw new ArgumentNullException(nameof(taskScheduler));
