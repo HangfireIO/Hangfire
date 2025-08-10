@@ -29,7 +29,7 @@ namespace Hangfire.Processing
         private static readonly Type[] EmptyTypes = Type.EmptyTypes;
         private static readonly WaitHandle InvalidWaitHandleInstance = new InvalidWaitHandle();
 
-        public static bool WaitOne(this WaitHandle waitHandle, TimeSpan timeout, CancellationToken token)
+        public static bool WaitOne(this WaitHandle waitHandle, ILog logger, TimeSpan timeout, CancellationToken token)
         {
             if (waitHandle == null) throw new ArgumentNullException(nameof(waitHandle));
             if (timeout < Timeout.InfiniteTimeSpan) throw new ArgumentOutOfRangeException(nameof(timeout));
@@ -59,7 +59,6 @@ namespace Hangfire.Processing
             {
                 try
                 {
-                    var logger = LogProvider.GetLogger(typeof(TaskExtensions));
                     logger.Error($"Actual wait time for non-canceled token was '{stopwatch.Elapsed.TotalMilliseconds}' ms instead of '{timeout.TotalMilliseconds}' ms, wait result: {waitResult}, using protective wait. Please report this to Hangfire developers.");
                 }
                 finally

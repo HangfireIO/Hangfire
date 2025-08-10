@@ -39,7 +39,7 @@ namespace Hangfire.Server
         {
             context.Logger.Trace($"{BackgroundServerProcess.GetServerTemplate(context.ServerId)} waiting for {_interval} delay before sending a heartbeat");
 
-            context.ShutdownToken.WaitOrThrow(_interval);
+            context.ShutdownToken.WaitOrThrow(context.Logger, _interval);
 
             try
             {

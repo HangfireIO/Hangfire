@@ -237,7 +237,7 @@ namespace Hangfire.Server
                     exception = ex;
                 }
 
-                abortToken.WaitOrThrow(TimeSpan.FromSeconds(retryAttempt));
+                abortToken.WaitOrThrow(context.Logger, TimeSpan.FromSeconds(retryAttempt));
             }
 
             context.Logger.ErrorException(

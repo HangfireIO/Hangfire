@@ -40,9 +40,22 @@ namespace Hangfire.Common
         /// wait handle to avoid using the <see cref="CancellationToken.WaitHandle"/> property
         /// that may lead to high CPU issues.
         /// </summary>
+        [Obsolete("Please use overload with `ILog` parameter instead. Will be removed in 2.0.0.")]
         public static void WaitOrThrow(this CancellationToken cancellationToken, TimeSpan timeout)
         {
-            if (Wait(cancellationToken, timeout))
+            WaitOrThrow(cancellationToken, LogProvider.GetLogger(typeof(CancellationTokenExtentions)), timeout);
+        }
+
+        /// <summary>
+        /// Performs a wait until the specified <paramref name="timeout"/> is elapsed or the
+        /// given cancellation token is canceled and throw <see cref="OperationCanceledException"/>
+        /// exception if wait succeeded. The wait is performed on a dedicated event
+        /// wait handle to avoid using the <see cref="CancellationToken.WaitHandle"/> property
+        /// that may lead to high CPU issues.
+        /// </summary>
+        public static void WaitOrThrow(this CancellationToken cancellationToken, ILog logger, TimeSpan timeout)
+        {
+            if (Wait(cancellationToken, logger, timeout))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -54,7 +67,19 @@ namespace Hangfire.Common
         /// wait handle to avoid using the <see cref="CancellationToken.WaitHandle"/> property
         /// that may lead to high CPU issues.
         /// </summary>
+        [Obsolete("Please use the overload with `ILog` parameter instead. Will be removed in 2.0.0.")]
         public static bool Wait(this CancellationToken cancellationToken, TimeSpan timeout)
+        {
+            return Wait(cancellationToken, LogProvider.GetLogger(typeof(CancellationTokenExtentions)), timeout);
+        }
+
+        /// <summary>
+        /// Performs a wait until the specified <paramref name="timeout"/> is elapsed or the
+        /// given cancellation token is canceled. The wait is performed on a dedicated event
+        /// wait handle to avoid using the <see cref="CancellationToken.WaitHandle"/> property
+        /// that may lead to high CPU issues.
+        /// </summary>
+        public static bool Wait(this CancellationToken cancellationToken, ILog logger, TimeSpan timeout)
         {
             using var cancellationEvent = GetCancellationEvent(cancellationToken);
 
@@ -75,7 +100,6 @@ namespace Hangfire.Common
             {
                 try
                 {
-                    var logger = LogProvider.GetLogger(typeof(CancellationTokenExtentions));
                     logger.Error($"Actual wait time for non-canceled token was '{stopwatch.Elapsed.TotalMilliseconds}' ms instead of '{timeout.TotalMilliseconds}' ms, wait result: {waitResult}, using protective wait. Please report this to Hangfire developers.");
                 }
                 finally

@@ -291,7 +291,7 @@ namespace Hangfire.Processing
             try
             {
                 LogRetry(executionId, delay);
-                return !_stopped.WaitOne(delay, _stopToken);
+                return !_stopped.WaitOne(_logger, delay, _stopToken);
             }
             catch (OperationCanceledException ex) when (ex.CancellationToken.Equals(_stopToken) || StopRequested)
             {

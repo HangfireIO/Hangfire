@@ -2,6 +2,8 @@
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Hangfire.Logging;
+using Moq;
 using Xunit;
 using TaskExtensions = Hangfire.Processing.TaskExtensions;
 
@@ -13,11 +15,13 @@ namespace Hangfire.Core.Tests.Processing
     {
         private readonly ManualResetEvent _mre;
         private readonly CancellationTokenSource _cts;
+        private readonly Mock<ILog> _logger;
 
         public TaskExtensionsFacts()
         {
             _mre = new ManualResetEvent(false);
             _cts = new CancellationTokenSource();
+            _logger = new Mock<ILog>();
         }
 
         [Fact]
@@ -117,7 +121,7 @@ namespace Hangfire.Core.Tests.Processing
         public void WaitOne_ThrowsArgNullException_WhenWaitHandleIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => TaskExtensions.WaitOne(null, TimeSpan.Zero, CancellationToken.None));
+                () => TaskExtensions.WaitOne(null, _logger.Object, TimeSpan.Zero, CancellationToken.None));
 
             Assert.Equal("waitHandle", exception.ParamName);
         }
@@ -128,7 +132,7 @@ namespace Hangfire.Core.Tests.Processing
             _cts.Cancel();
 
             var exception = Assert.Throws<OperationCanceledException>(
-                () => TaskExtensions.WaitOne(_mre, TimeSpan.Zero, _cts.Token));
+                () => TaskExtensions.WaitOne(_mre, _logger.Object, TimeSpan.Zero, _cts.Token));
 
             Assert.Equal(_cts.Token, exception.CancellationToken);
         }
@@ -140,7 +144,7 @@ namespace Hangfire.Core.Tests.Processing
             _mre.Set();
 
             var exception = Assert.Throws<OperationCanceledException>(
-                () => TaskExtensions.WaitOne(_mre, Timeout.InfiniteTimeSpan, _cts.Token));
+                () => TaskExtensions.WaitOne(_mre, _logger.Object, Timeout.InfiniteTimeSpan, _cts.Token));
 
             Assert.Equal(_cts.Token, exception.CancellationToken);
         }
@@ -150,7 +154,7 @@ namespace Hangfire.Core.Tests.Processing
         {
             _mre.Set();
 
-            var result = TaskExtensions.WaitOne(_mre, Timeout.InfiniteTimeSpan, _cts.Token);
+            var result = TaskExtensions.WaitOne(_mre, _logger.Object, Timeout.InfiniteTimeSpan, _cts.Token);
 
             Assert.True(result);
         }
@@ -160,7 +164,7 @@ namespace Hangfire.Core.Tests.Processing
         {
             _mre.Set();
 
-            var result = TaskExtensions.WaitOne(_mre, TimeSpan.Zero, _cts.Token);
+            var result = TaskExtensions.WaitOne(_mre, _logger.Object, TimeSpan.Zero, _cts.Token);
 
             Assert.True(result);
         }
@@ -168,7 +172,7 @@ namespace Hangfire.Core.Tests.Processing
         [Fact]
         public void WaitOne_ReturnsFalseImmediately_WhenNotSignaled_AndTimeoutIsZero()
         {
-             var result = TaskExtensions.WaitOne(_mre, TimeSpan.Zero, CancellationToken.None);
+             var result = TaskExtensions.WaitOne(_mre, _logger.Object, TimeSpan.Zero, CancellationToken.None);
 
              Assert.False(result);
         }
@@ -179,7 +183,7 @@ namespace Hangfire.Core.Tests.Processing
             using (var mre = new ManualResetEvent(false))
             {
                 var sw = Stopwatch.StartNew();
-                var result = TaskExtensions.WaitOne(mre, TimeSpan.FromMilliseconds(500), CancellationToken.None);
+                var result = TaskExtensions.WaitOne(mre, _logger.Object, TimeSpan.FromMilliseconds(500), CancellationToken.None);
                 sw.Stop();
 
                 Assert.False(result, "result != false");
@@ -195,7 +199,7 @@ namespace Hangfire.Core.Tests.Processing
             _cts.CancelAfter(TimeSpan.FromMilliseconds(500));
 
             var exception = Assert.ThrowsAny<OperationCanceledException>(
-                () => TaskExtensions.WaitOne(_mre, Timeout.InfiniteTimeSpan, _cts.Token));
+                () => TaskExtensions.WaitOne(_mre, _logger.Object, Timeout.InfiniteTimeSpan, _cts.Token));
             sw.Stop();
 
 #if !NET452

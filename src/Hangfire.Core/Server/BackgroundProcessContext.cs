@@ -103,7 +103,7 @@ namespace Hangfire.Server
 
         public void Wait(TimeSpan timeout)
         {
-            StoppingToken.WaitOrThrow(timeout);
+            StoppingToken.WaitOrThrow(Logger, timeout);
         }
     }
 }

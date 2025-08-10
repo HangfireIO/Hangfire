@@ -56,7 +56,7 @@ namespace Hangfire.SqlServer
                 item.Key.ExecuteKeepAliveQueryIfRequired(logger);
             }
 
-            cancellationToken.Wait(TimeSpan.FromSeconds(1));
+            cancellationToken.Wait(logger, TimeSpan.FromSeconds(1));
         }
     }
 }

@@ -112,7 +112,7 @@ namespace Hangfire.SqlServer
                 }
             }
 
-            cancellationToken.Wait(_checkInterval);
+            cancellationToken.Wait(logger, _checkInterval);
         }
 
         public override string ToString()

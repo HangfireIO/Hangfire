@@ -246,7 +246,7 @@ namespace Hangfire.States
                     return null;
                 }
 
-                context.CancellationToken.Wait(TimeSpan.FromSeconds(retryAttempt));
+                context.CancellationToken.Wait(context.Logger, TimeSpan.FromSeconds(retryAttempt));
             }
 
             return null;
