@@ -28,7 +28,6 @@ namespace Hangfire.Client
 {
     internal sealed class CoreBackgroundJobFactory : IBackgroundJobFactory
     {
-        private readonly ILog _logger = LogProvider.GetLogger(typeof(CoreBackgroundJobFactory));
         private readonly object _syncRoot = new object();
         private int _retryAttempts;
         private Func<int, TimeSpan> _retryDelayFunc;
@@ -86,6 +85,7 @@ namespace Hangfire.Client
             // number.
             var jobId = RetryOnException(
                 ref attemptsLeft,
+                context.Logger,
                 static (_, ctx) => ctx.Context.Connection.CreateExpiredJob(
                     ctx.Context.Job,
                     ctx.Parameters,
@@ -102,7 +102,7 @@ namespace Hangfire.Client
 
             if (context.InitialState != null)
             {
-                RetryOnException(ref attemptsLeft, static (attempt, ctx) =>
+                RetryOnException(ref attemptsLeft, context.Logger, static (attempt, ctx) =>
                 {
                     if (attempt > 0)
                     {
@@ -141,16 +141,16 @@ namespace Hangfire.Client
             return backgroundJob;
         }
 
-        private void RetryOnException<TContext>(ref int attemptsLeft, Action<int, TContext> action, TContext context)
+        private void RetryOnException<TContext>(ref int attemptsLeft, ILog logger, Action<int, TContext> action, TContext context)
         {
-            RetryOnException(ref attemptsLeft, static (attempt, ctx) =>
+            RetryOnException(ref attemptsLeft, logger, static (attempt, ctx) =>
             {
                 ctx.Key(attempt, ctx.Value);
                 return true;
             }, new KeyValuePair<Action<int, TContext>, TContext>(action, context));
         }
 
-        private TResult RetryOnException<TContext, TResult>(ref int attemptsLeft, Func<int, TContext, TResult> action, TContext context)
+        private TResult RetryOnException<TContext, TResult>(ref int attemptsLeft, ILog logger, Func<int, TContext, TResult> action, TContext context)
         {
             List<Exception>? exceptions = null;
             var attempt = 0;
@@ -170,7 +170,7 @@ namespace Hangfire.Client
                 catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     (exceptions ??= new List<Exception>()).Add(ex);
-                    _logger.DebugException("An exception occurred while creating a background job, see inner exception for details.", ex);
+                    logger.DebugException("An exception occurred while creating a background job, see inner exception for details.", ex);
                     delay = RetryDelayFunc(attempt);
                 }
             } while (attemptsLeft-- > 0);
