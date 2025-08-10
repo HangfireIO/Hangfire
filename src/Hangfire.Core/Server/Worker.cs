@@ -218,6 +218,7 @@ namespace Hangfire.Server
                         disableFilters: false,
                         completeJob,
                         initializeToken,
+                        context.Logger,
                         context.Profiler,
                         context.ServerId,
                         customData);
@@ -253,6 +254,7 @@ namespace Hangfire.Server
                 disableFilters: true,
                 completeJob,
                 initializeToken,
+                context.Logger,
                 context.Profiler,
                 context.ServerId);
 
@@ -302,7 +304,7 @@ namespace Hangfire.Server
 
                 using (var jobToken = new ServerJobCancellationToken(connection, backgroundJob.Id, context.ServerId, WorkerGuidCache.GetOrAdd(context.ExecutionId, static guid => guid.ToString()), context.StoppedToken))
                 {
-                    var performContext = new PerformContext(context.Storage, connection, backgroundJob, jobToken, context.Profiler, context.ServerId, null);
+                    var performContext = new PerformContext(context.Storage, connection, backgroundJob, jobToken, context.Logger, context.Profiler, context.ServerId, null);
 
                     var latency = (DateTime.UtcNow - backgroundJob.CreatedAt).TotalMilliseconds;
                     var duration = Stopwatch.StartNew();

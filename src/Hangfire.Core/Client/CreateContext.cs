@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Common;
+using Hangfire.Logging;
 using Hangfire.Profiling;
 using Hangfire.States;
 using Hangfire.Storage;
@@ -29,11 +30,12 @@ namespace Hangfire.Client
     public class CreateContext
     {
         public CreateContext([NotNull] CreateContext context)
-            : this(context.Storage, context.Connection, context.Job, context.InitialState, context.Parameters, context.Profiler, context.Items)
+            : this(context.Storage, context.Connection, context.Job, context.InitialState, context.Parameters, context.Logger, context.Profiler, context.Items)
         {
             Factory = context.Factory;
         }
 
+        [Obsolete("Please use a non-obsolete overload instead. Will be removed in 2.0.0.")]
         public CreateContext(
             [NotNull] JobStorage storage,
             [NotNull] IStorageConnection connection,
@@ -43,13 +45,25 @@ namespace Hangfire.Client
         {
         }
 
+        [Obsolete("Please use an overload with the `ILog` parameter added instead. Will be removed in 2.0.0.")]
         public CreateContext(
             [NotNull] JobStorage storage,
             [NotNull] IStorageConnection connection,
             [NotNull] Job job,
             [CanBeNull] IState? initialState,
             [CanBeNull] IDictionary<string, object?>? parameters)
-            : this(storage, connection, job, initialState, parameters, EmptyProfiler.Instance, null)
+            : this(storage, connection, job, initialState, parameters, LogProvider.NoOpLogger.Instance)
+        {
+        }
+
+        public CreateContext(
+            [NotNull] JobStorage storage,
+            [NotNull] IStorageConnection connection,
+            [NotNull] Job job,
+            [CanBeNull] IState? initialState,
+            [CanBeNull] IDictionary<string, object?>? parameters,
+            [NotNull] ILog logger)
+            : this(storage, connection, job, initialState, parameters, logger, EmptyProfiler.Instance, null)
         {
         }
 
@@ -59,6 +73,7 @@ namespace Hangfire.Client
             [NotNull] Job job, 
             [CanBeNull] IState? initialState,
             [CanBeNull] IDictionary<string, object?>? parameters,
+            [NotNull] ILog logger,
             [NotNull] IProfiler profiler,
             [CanBeNull] IDictionary<string, object?>? items)
         {
@@ -66,7 +81,8 @@ namespace Hangfire.Client
             Connection = connection ?? throw new ArgumentNullException(nameof(connection));
             Job = job ?? throw new ArgumentNullException(nameof(job));
             InitialState = initialState;
-            Profiler = profiler;
+            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            Profiler = profiler ?? throw new ArgumentNullException(nameof(profiler));
 
             Items = items ?? new Dictionary<string, object?>();
             Parameters = parameters ?? new Dictionary<string, object?>();
@@ -100,6 +116,9 @@ namespace Hangfire.Client
         /// </summary>
         [CanBeNull]
         public IState? InitialState { get; }
+
+        [NotNull]
+        public ILog Logger { get; }
 
         [NotNull]
         internal IProfiler Profiler { get; }

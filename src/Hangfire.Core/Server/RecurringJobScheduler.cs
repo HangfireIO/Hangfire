@@ -325,6 +325,7 @@ namespace Hangfire.Server
                         var backgroundJob = _factory.TriggerRecurringJob(
                             context.Storage,
                             connection,
+                            context.Logger,
                             context.Profiler,
                             recurringJob,
                             execution);
@@ -348,6 +349,7 @@ namespace Hangfire.Server
                             recurringJob,
                             backgroundJob,
                             "Triggered by recurring job scheduler",
+                            context.Logger,
                             context.Profiler);
                     }
 

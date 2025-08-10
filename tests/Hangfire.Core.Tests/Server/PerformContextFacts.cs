@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Hangfire.Logging;
+using Hangfire.Profiling;
 using Hangfire.Server;
 using Hangfire.Storage;
 using Moq;
@@ -15,6 +18,10 @@ namespace Hangfire.Core.Tests.Server
         private readonly Mock<IStorageConnection> _connection;
         private readonly Mock<IJobCancellationToken> _cancellationToken;
         private readonly BackgroundJobMock _backgroundJob;
+        private readonly Mock<ILog> _logger;
+        private readonly Mock<IProfiler> _profiler;
+        private readonly string _serverId;
+        private readonly Dictionary<string, object> _items;
 
         public PerformContextFacts()
         {
@@ -22,6 +29,10 @@ namespace Hangfire.Core.Tests.Server
             _connection = new Mock<IStorageConnection>();
             _backgroundJob = new BackgroundJobMock();
             _cancellationToken = new Mock<IJobCancellationToken>();
+            _logger = new Mock<ILog>();
+            _profiler = new Mock<IProfiler>();
+            _serverId = Guid.NewGuid().ToString();
+            _items = new Dictionary<string, object>();
         }
 
         [Fact]
@@ -59,22 +70,54 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
+        public void Ctor_ThrowsAnException_WhenLoggerIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(() => new PerformContext(_storage.Object,
+                _connection.Object, _backgroundJob.Object, _cancellationToken.Object, null));
+
+            Assert.Equal("logger", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenProfilerIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(() => new PerformContext(
+                _storage.Object, _connection.Object, _backgroundJob.Object, _cancellationToken.Object, _logger.Object,
+                null, _serverId, _items));
+
+            Assert.Equal("profiler", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_SetsEmptyDictionary_WhenItemsIsNull()
+        {
+            var context = new PerformContext(
+                _storage.Object, _connection.Object, _backgroundJob.Object, _cancellationToken.Object, _logger.Object,
+                _profiler.Object, _serverId, null);
+
+            Assert.NotNull(context.Items);
+            Assert.Empty(context.Items);
+        }
+
+        [Fact]
         public void Ctor_CorrectlySets_AllInstanceProperties()
         {
             var context = CreateContext();
 
             Assert.Same(_storage.Object, context.Storage);
-            Assert.Equal(_backgroundJob.Object, context.BackgroundJob);
-            Assert.NotNull(context.Items);
             Assert.Same(_connection.Object, context.Connection);
+            Assert.Equal(_backgroundJob.Object, context.BackgroundJob);
             Assert.Same(_cancellationToken.Object, context.CancellationToken);
+            Assert.Same(_logger.Object, context.Logger);
+            Assert.Same(_profiler.Object, context.Profiler);
+            Assert.Same(_serverId, context.ServerId);
+            Assert.Same(_items, context.Items);
         }
 
         [Fact]
         public void CopyCtor_ThrowsAnException_WhenContextIsNull()
         {
-            Assert.Throws<NullReferenceException>(
-                () => new PerformContext(null));
+            Assert.Throws<NullReferenceException>(() => new PerformContext(null));
         }
 
         [Fact]
@@ -83,11 +126,14 @@ namespace Hangfire.Core.Tests.Server
             var context = CreateContext();
             var contextCopy = new PerformContext(context);
             
-            Assert.Same(context.Items, contextCopy.Items);
             Assert.Same(context.Storage, contextCopy.Storage);
             Assert.Same(context.Connection, contextCopy.Connection);
             Assert.Same(context.BackgroundJob, contextCopy.BackgroundJob);
             Assert.Same(context.CancellationToken, contextCopy.CancellationToken);
+            Assert.Same(context.Logger, contextCopy.Logger);
+            Assert.Same(context.Profiler, contextCopy.Profiler);
+            Assert.Same(context.ServerId, contextCopy.ServerId);
+            Assert.Same(context.Items, contextCopy.Items);
         }
 
         [Fact]
@@ -133,7 +179,7 @@ namespace Hangfire.Core.Tests.Server
         private PerformContext CreateContext()
         {
             return new PerformContext(
-                _storage.Object, _connection.Object, _backgroundJob.Object, _cancellationToken.Object);
+                _storage.Object, _connection.Object, _backgroundJob.Object, _cancellationToken.Object, _logger.Object, _profiler.Object, _serverId, _items);
         }
     }
 }

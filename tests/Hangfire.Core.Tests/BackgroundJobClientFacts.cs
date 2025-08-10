@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Hangfire.Client;
 using Hangfire.Common;
+using Hangfire.Logging;
 using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
@@ -20,6 +21,7 @@ namespace Hangfire.Core.Tests
         private readonly Mock<IState> _state;
         private readonly Job _job;
         private readonly Mock<IBackgroundJobStateChanger> _stateChanger;
+        private readonly Mock<ILog> _logger;
 
         public BackgroundJobClientFacts()
         {
@@ -36,6 +38,8 @@ namespace Hangfire.Core.Tests
             _factory = new Mock<IBackgroundJobFactory>();
             _factory.Setup(x => x.Create(It.IsAny<CreateContext>()))
                 .Returns(new BackgroundJob("some-job", _job, DateTime.UtcNow));
+
+            _logger = new Mock<ILog>();
         }
 
         [Fact]
@@ -63,6 +67,15 @@ namespace Hangfire.Core.Tests
                 () => new BackgroundJobClient(_storage.Object, _factory.Object, null));
 
             Assert.Equal("stateChanger", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenLoggerIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new BackgroundJobClient(_storage.Object, _factory.Object, _stateChanger.Object, null));
+
+            Assert.Equal("logger", exception.ParamName);
         }
 
         [Fact, GlobalLock(Reason = "Needs JobStorage.Current instance")]
@@ -198,7 +211,7 @@ namespace Hangfire.Core.Tests
 
         private BackgroundJobClient CreateClient()
         {
-            return new BackgroundJobClient(_storage.Object, _factory.Object, _stateChanger.Object);
+            return new BackgroundJobClient(_storage.Object, _factory.Object, _stateChanger.Object, _logger.Object);
         }
     }
 }

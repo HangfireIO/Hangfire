@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Hangfire.Logging;
 using Hangfire.Profiling;
 using Hangfire.States;
 using Hangfire.Storage;
@@ -19,6 +20,7 @@ namespace Hangfire.Core.Tests
             BackgroundJob = new BackgroundJobMock();
             NewState = new Mock<IState>();
             OldStateName = null;
+            Logger = new Mock<ILog>();
             JobExpirationTimeout = TimeSpan.FromMinutes(1);
             StateMachine = new Mock<IStateMachine>();
 
@@ -30,6 +32,7 @@ namespace Hangfire.Core.Tests
                     BackgroundJob.Object,
                     NewStateObject ?? NewState.Object,
                     OldStateName,
+                    Logger.Object,
                     EmptyProfiler.Instance,
                     StateMachine.Object,
                     CustomData)
@@ -45,6 +48,7 @@ namespace Hangfire.Core.Tests
         public IState NewStateObject { get; set; }
         public Mock<IState> NewState { get; set; }
         public string OldStateName { get; set; }
+        public Mock<ILog> Logger { get; set; } 
         public TimeSpan JobExpirationTimeout { get; set; }
         public Mock<IStateMachine> StateMachine { get; set; } 
         public IReadOnlyDictionary<string, object> CustomData { get; set; }

@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Common;
+using Hangfire.Logging;
 using Hangfire.Profiling;
 using Hangfire.Storage;
 
@@ -29,7 +30,7 @@ namespace Hangfire.Server
     public class PerformContext
     {
         public PerformContext([NotNull] PerformContext context)
-            : this(context.Storage, context.Connection, context.BackgroundJob, context.CancellationToken, context.Profiler, context.ServerId, context.Items)
+            : this(context.Storage, context.Connection, context.BackgroundJob, context.CancellationToken, context.Logger, context.Profiler, context.ServerId, context.Items)
         {
             Performer = context.Performer;
         }
@@ -43,12 +44,23 @@ namespace Hangfire.Server
         {
         }
 
+        [Obsolete("Please use the overload with `ILog` parameter added instead. Will be removed in 2.0.0.")]
+        public PerformContext(
+            [CanBeNull] JobStorage? storage,
+            [NotNull] IStorageConnection connection,
+            [NotNull] BackgroundJob backgroundJob,
+            [NotNull] IJobCancellationToken cancellationToken)
+            : this(storage, connection, backgroundJob, cancellationToken, LogProvider.NoOpLogger.Instance)
+        {
+        }
+
         public PerformContext(
             [CanBeNull] JobStorage? storage,
             [NotNull] IStorageConnection connection, 
             [NotNull] BackgroundJob backgroundJob,
-            [NotNull] IJobCancellationToken cancellationToken)
-            : this(storage, connection, backgroundJob, cancellationToken, EmptyProfiler.Instance, null, null)
+            [NotNull] IJobCancellationToken cancellationToken,
+            [NotNull] ILog logger)
+            : this(storage, connection, backgroundJob, cancellationToken, logger, EmptyProfiler.Instance, null, null)
         {
         }
 
@@ -57,6 +69,7 @@ namespace Hangfire.Server
             [NotNull] IStorageConnection connection, 
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IJobCancellationToken cancellationToken,
+            [NotNull] ILog logger,
             [NotNull] IProfiler profiler,
             [CanBeNull] string? serverId,
             [CanBeNull] IDictionary<string, object?>? items)
@@ -65,6 +78,7 @@ namespace Hangfire.Server
             Connection = connection ?? throw new ArgumentNullException(nameof(connection));
             BackgroundJob = backgroundJob ?? throw new ArgumentNullException(nameof(backgroundJob));
             CancellationToken = cancellationToken ?? throw new ArgumentNullException(nameof(cancellationToken));
+            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
             Profiler = profiler ?? throw new ArgumentNullException(nameof(profiler));
             ServerId = serverId;
 
@@ -100,7 +114,10 @@ namespace Hangfire.Server
 
         [NotNull]
         public IStorageConnection Connection { get; }
-        
+
+        [NotNull]
+        public ILog Logger { get; }
+
         [NotNull]
         internal IProfiler Profiler { get; }
 

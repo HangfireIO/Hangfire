@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Hangfire.Logging;
 using Hangfire.Profiling;
 using Hangfire.States;
 using Hangfire.Storage;
@@ -20,6 +21,7 @@ namespace Hangfire.Core.Tests.States
         private readonly BackgroundJobMock _backgroundJob;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
         private readonly Mock<IStorageConnection> _connection;
+        private readonly Mock<ILog> _logger;
         private readonly Mock<IProfiler> _profiler;
         private readonly Mock<IStateMachine> _stateMachine;
         private readonly Mock<IReadOnlyDictionary<string, object>> _customData;
@@ -32,6 +34,7 @@ namespace Hangfire.Core.Tests.States
             _backgroundJob = new BackgroundJobMock();
             _newState = new Mock<IState>();
             _newState.Setup(x => x.Name).Returns(NewState);
+            _logger = new Mock<ILog>();
             _profiler = new Mock<IProfiler>();
             _stateMachine = new Mock<IStateMachine>();
             _customData = new Mock<IReadOnlyDictionary<string, object>>();
@@ -86,6 +89,24 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
+        public void Ctor_ThrowsAnException_WhenLoggerIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new ApplyStateContext(
+                    _storage.Object,
+                    _connection.Object,
+                    _transaction.Object,
+                    _backgroundJob.Object,
+                    _newState.Object,
+                    OldState,
+                    null,
+                    _profiler.Object,
+                    _stateMachine.Object));
+
+            Assert.Equal("logger", exception.ParamName);
+        }
+
+        [Fact]
         public void Ctor_ThrowsAnException_WhenProfilerIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
@@ -96,6 +117,7 @@ namespace Hangfire.Core.Tests.States
                     _backgroundJob.Object,
                     _newState.Object,
                     OldState,
+                    _logger.Object,
                     null,
                     _stateMachine.Object));
 
@@ -120,6 +142,8 @@ namespace Hangfire.Core.Tests.States
             Assert.Equal(OldState, context.OldStateName);
             Assert.Same(_newState.Object, context.NewState);
             Assert.Equal(_storage.Object.JobExpirationTimeout, context.JobExpirationTimeout);
+            Assert.Same(LogProvider.NoOpLogger.Instance, context.Logger);
+            Assert.Same(EmptyProfiler.Instance, context.Profiler);
         }
 
         [Fact]
@@ -132,6 +156,7 @@ namespace Hangfire.Core.Tests.States
                 _backgroundJob.Object,
                 _newState.Object,
                 OldState,
+                _logger.Object,
                 _profiler.Object,
                 _stateMachine.Object,
                 _customData.Object);
@@ -145,6 +170,8 @@ namespace Hangfire.Core.Tests.States
             Assert.Equal(_storage.Object.JobExpirationTimeout, context.JobExpirationTimeout);
             Assert.Same(_stateMachine.Object, context.StateMachine);
             Assert.Same(_customData.Object, context.CustomData);
+            Assert.Same(_logger.Object, context.Logger);
+            Assert.Same(_profiler.Object, context.Profiler);
         }
 
         [Fact]
@@ -160,6 +187,8 @@ namespace Hangfire.Core.Tests.States
             Assert.Equal(electContext.Object.CurrentState, context.OldStateName);
             Assert.Same(electContext.Object.CandidateState, context.NewState);
             Assert.Null(context.CustomData);
+            Assert.Same(electContext.Object.Logger, context.Logger);
+            Assert.Same(electContext.Object.Profiler, context.Profiler);
         }
 
         [Fact]

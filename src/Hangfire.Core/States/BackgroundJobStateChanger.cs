@@ -134,6 +134,7 @@ namespace Hangfire.States
                         backgroundJob,
                         stateToApply,
                         jobData.State,
+                        context.Logger,
                         context.Profiler,
                         _stateMachine,
                         context.CustomData);

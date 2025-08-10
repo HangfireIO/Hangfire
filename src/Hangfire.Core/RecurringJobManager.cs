@@ -31,12 +31,12 @@ namespace Hangfire
     {
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
 
-        private readonly ILog _logger = LogProvider.GetLogger(typeof(RecurringJobManager));
-
         private readonly JobStorage _storage;
         private readonly IBackgroundJobFactory _factory;
         private readonly Func<DateTime> _nowFactory;
         private readonly ITimeZoneResolver _timeZoneResolver;
+        private readonly ILog _logger;
+        private readonly SlowLogProfiler _profiler;
 
         public RecurringJobManager()
             : this(JobStorage.Current)
@@ -66,7 +66,7 @@ namespace Hangfire
             [NotNull] IJobFilterProvider filterProvider, 
             [NotNull] ITimeZoneResolver timeZoneResolver,
             [NotNull] Func<DateTime> nowFactory)
-            : this(storage, new BackgroundJobFactory(filterProvider), timeZoneResolver, nowFactory)
+            : this(storage, new BackgroundJobFactory(filterProvider), timeZoneResolver, nowFactory, LogProvider.For<RecurringJobManager>())
         {
         }
 
@@ -76,7 +76,17 @@ namespace Hangfire
         }
 
         public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IBackgroundJobFactory factory, [NotNull] ITimeZoneResolver timeZoneResolver)
-            : this(storage, factory, timeZoneResolver, static () => DateTime.UtcNow)
+            : this(storage, factory, timeZoneResolver, static () => DateTime.UtcNow, LogProvider.For<RecurringJobManager>())
+        {
+        }
+
+        // TODO: Document, start using this overload, and make others obsolete (?)
+        public RecurringJobManager(
+            [NotNull] JobStorage storage,
+            [NotNull] IBackgroundJobFactory factory,
+            [NotNull] ITimeZoneResolver timeZoneResolver,
+            [NotNull] ILog logger)
+            : this(storage, factory, timeZoneResolver, static () => DateTime.UtcNow, logger)
         {
         }
 
@@ -84,12 +94,15 @@ namespace Hangfire
             [NotNull] JobStorage storage, 
             [NotNull] IBackgroundJobFactory factory,
             [NotNull] ITimeZoneResolver timeZoneResolver,
-            [NotNull] Func<DateTime> nowFactory)
+            [NotNull] Func<DateTime> nowFactory,
+            [NotNull] ILog logger)
         {
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
             _timeZoneResolver = timeZoneResolver ?? throw new ArgumentNullException(nameof(timeZoneResolver));
             _nowFactory = nowFactory ?? throw new ArgumentNullException(nameof(nowFactory));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _profiler = new SlowLogProfiler(_logger);
         }
 
         public JobStorage Storage => _storage;
@@ -187,7 +200,7 @@ namespace Hangfire
 
                 try
                 {
-                    backgroundJob = _factory.TriggerRecurringJob(_storage, connection, EmptyProfiler.Instance, recurringJob, now);
+                    backgroundJob = _factory.TriggerRecurringJob(_storage, connection, _logger, _profiler, recurringJob, now);
                     recurringJob.ScheduleNext(_timeZoneResolver, now);
                 }
                 catch (Exception ex) when (ex.IsCatchableExceptionType())
@@ -209,7 +222,8 @@ namespace Hangfire
                                 recurringJob,
                                 backgroundJob,
                                 "Triggered using recurring job manager",
-                                EmptyProfiler.Instance);
+                                _logger,
+                                _profiler);
                         }
 
                         transaction.UpdateRecurringJob(recurringJob, changedFields, _logger);

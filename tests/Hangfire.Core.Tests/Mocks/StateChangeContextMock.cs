@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using Hangfire.Logging;
 using Hangfire.Profiling;
 using Hangfire.States;
 using Hangfire.Storage;
@@ -21,6 +22,7 @@ namespace Hangfire.Core.Tests
             ExpectedStates = null;
             DisableFilters = false;
             CancellationToken = CancellationToken.None;
+            Logger = new Mock<ILog>();
 
             _context = new Lazy<StateChangeContext>(
                 () => new StateChangeContext(
@@ -33,6 +35,7 @@ namespace Hangfire.Core.Tests
                     DisableFilters,
                     CompleteJob?.Object,
                     CancellationToken,
+                    Logger.Object,
                     EmptyProfiler.Instance,
                     ServerId,
                     CustomData));
@@ -47,6 +50,7 @@ namespace Hangfire.Core.Tests
         public IEnumerable<string> ExpectedStates { get; set; }
         public bool DisableFilters { get; set; }
         public CancellationToken CancellationToken { get; set; }
+        public Mock<ILog> Logger { get; set; }
         public string ServerId { get; set; }
         public IReadOnlyDictionary<string, object> CustomData { get; set; }
         

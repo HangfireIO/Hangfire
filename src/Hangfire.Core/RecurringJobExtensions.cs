@@ -97,6 +97,7 @@ namespace Hangfire
             [NotNull] this IBackgroundJobFactory factory,
             [NotNull] JobStorage storage,
             [NotNull] IStorageConnection connection,
+            [NotNull] ILog logger,
             [NotNull] IProfiler profiler,
             [NotNull] RecurringJobEntity recurringJob,
             DateTime now)
@@ -104,6 +105,7 @@ namespace Hangfire
             if (factory == null) throw new ArgumentNullException(nameof(factory));
             if (storage == null) throw new ArgumentNullException(nameof(storage));
             if (connection == null) throw new ArgumentNullException(nameof(connection));
+            if (logger == null) throw new ArgumentNullException(nameof(logger));
             if (profiler == null) throw new ArgumentNullException(nameof(profiler));
             if (recurringJob == null) throw new ArgumentNullException(nameof(recurringJob));
 
@@ -114,7 +116,7 @@ namespace Hangfire
 
             var job = InvocationData.DeserializePayload(recurringJob.Job).DeserializeJob();
 
-            var context = new CreateContext(storage, connection, job, null, null, profiler, null);
+            var context = new CreateContext(storage, connection, job, null, null, logger, profiler, null);
             context.Parameters["RecurringJobId"] = recurringJob.RecurringJobId;
             context.Parameters["Time"] = JobHelper.ToTimestamp(now);
 
@@ -134,6 +136,7 @@ namespace Hangfire
             [NotNull] RecurringJobEntity recurringJob,
             [NotNull] BackgroundJob backgroundJob,
             [CanBeNull] string? reason,
+            [NotNull] ILog logger,
             [NotNull] IProfiler profiler)
         {
             if (stateMachine == null) throw new ArgumentNullException(nameof(stateMachine));
@@ -142,6 +145,7 @@ namespace Hangfire
             if (transaction == null) throw new ArgumentNullException(nameof(transaction));
             if (recurringJob == null) throw new ArgumentNullException(nameof(recurringJob));
             if (backgroundJob == null) throw new ArgumentNullException(nameof(backgroundJob));
+            if (logger == null) throw new ArgumentNullException(nameof(logger));
             if (profiler == null) throw new ArgumentNullException(nameof(profiler));
 
             var state = new EnqueuedState { Reason = reason };
@@ -158,6 +162,7 @@ namespace Hangfire
                 backgroundJob,
                 state,
                 null,
+                logger,
                 profiler,
                 stateMachine));
         }

@@ -297,6 +297,7 @@ namespace Hangfire.Server
                         ExpectedScheduledState,
                         disableFilters: false,
                         context.StoppingToken,
+                        context.Logger,
                         context.Profiler,
                         context.ServerId));
 
@@ -357,6 +358,7 @@ namespace Hangfire.Server
                 ExpectedScheduledState,
                 disableFilters: true,
                 context.StoppingToken,
+                context.Logger,
                 context.Profiler,
                 context.ServerId));
         }

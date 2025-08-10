@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Common;
+using Hangfire.Logging;
 using Hangfire.Profiling;
 using Hangfire.Storage;
 
@@ -29,9 +30,21 @@ namespace Hangfire.States
         public ApplyStateContext(
             [NotNull] IWriteOnlyTransaction transaction, 
             [NotNull] ElectStateContext context)
-            : this(context.Storage, context.Connection, transaction, context.BackgroundJob, context.CandidateState, context.CurrentState, context.Profiler, context.StateMachine, context.CustomData != null ? new Dictionary<string, object?>(context.CustomData) : null)
+            : this(context.Storage, context.Connection, transaction, context.BackgroundJob, context.CandidateState, context.CurrentState, context.Logger, context.Profiler, context.StateMachine, context.CustomData != null ? new Dictionary<string, object?>(context.CustomData) : null)
         {
             // TODO: Add explicit JobExpirationTimeout parameter in 2.0, because it's unclear it isn't preserved
+        }
+
+        [Obsolete("Please use an overload with the `ILog` parameter instead. Will be removed in 2.0.0.")]
+        public ApplyStateContext(
+            [NotNull] JobStorage storage,
+            [NotNull] IStorageConnection connection,
+            [NotNull] IWriteOnlyTransaction transaction,
+            [NotNull] BackgroundJob backgroundJob,
+            [NotNull] IState newState,
+            [CanBeNull] string? oldStateName)
+            : this(storage, connection, transaction, backgroundJob, newState, oldStateName, LogProvider.NoOpLogger.Instance)
+        {
         }
 
         public ApplyStateContext(
@@ -40,8 +53,9 @@ namespace Hangfire.States
             [NotNull] IWriteOnlyTransaction transaction,
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IState newState,
-            [CanBeNull] string? oldStateName)
-            : this(storage, connection, transaction, backgroundJob, newState, oldStateName, EmptyProfiler.Instance, null)
+            [CanBeNull] string? oldStateName,
+            [NotNull] ILog logger)
+            : this(storage, connection, transaction, backgroundJob, newState, oldStateName, logger, EmptyProfiler.Instance, null)
         {
         }
 
@@ -52,6 +66,7 @@ namespace Hangfire.States
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IState newState, 
             [CanBeNull] string? oldStateName,
+            [NotNull] ILog logger,
             [NotNull] IProfiler profiler,
             [CanBeNull] IStateMachine? stateMachine,
             [CanBeNull] IReadOnlyDictionary<string, object?>? customData = null)
@@ -62,6 +77,7 @@ namespace Hangfire.States
             Transaction = transaction ?? throw new ArgumentNullException(nameof(transaction));
             NewState = newState ?? throw new ArgumentNullException(nameof(newState));
             OldStateName = oldStateName;
+            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
             Profiler = profiler ?? throw new ArgumentNullException(nameof(profiler));
             StateMachine = stateMachine;
             CustomData = customData;
@@ -86,6 +102,9 @@ namespace Hangfire.States
         public IState NewState { get; }
         
         public TimeSpan JobExpirationTimeout { get; set; }
+
+        [NotNull]
+        public ILog Logger { get; }
 
         [NotNull]
         internal IProfiler Profiler { get; }

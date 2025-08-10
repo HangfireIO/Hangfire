@@ -127,6 +127,7 @@ namespace Hangfire.Client
                             ctx.BackgroundJob,
                             ctx.Context.InitialState!,
                             oldStateName: null,
+                            ctx.Context.Logger,
                             ctx.Context.Profiler,
                             ctx.StateMachine);
 

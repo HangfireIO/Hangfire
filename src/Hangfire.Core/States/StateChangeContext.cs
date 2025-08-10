@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Hangfire.Annotations;
+using Hangfire.Logging;
 using Hangfire.Profiling;
 using Hangfire.Storage;
 
@@ -25,6 +26,7 @@ namespace Hangfire.States
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1068:CancellationToken parameters must come last", Justification = "Cancellation tokens in this class are used only as a part of a general context and don't have usual meaning.")]
     public class StateChangeContext
     {
+        [Obsolete("Please use the overload that takes `ILog` instance instead. Will be removed in 2.0.0.")]
         public StateChangeContext(
             [NotNull] JobStorage storage,
             [NotNull] IStorageConnection connection,
@@ -34,6 +36,17 @@ namespace Hangfire.States
         {
         }
 
+        public StateChangeContext(
+            [NotNull] JobStorage storage,
+            [NotNull] ILog logger,
+            [NotNull] IStorageConnection connection,
+            [NotNull] string backgroundJobId, 
+            [NotNull] IState newState)
+            : this(storage, logger, connection, backgroundJobId, newState, null)
+        {
+        }
+
+        [Obsolete("Please use the overload that takes `ILog` instance instead. Will be removed in 2.0.0.")]
         public StateChangeContext(
             [NotNull] JobStorage storage,
             [NotNull] IStorageConnection connection,
@@ -46,15 +59,40 @@ namespace Hangfire.States
 
         public StateChangeContext(
             [NotNull] JobStorage storage,
+            [NotNull] ILog logger,
+            [NotNull] IStorageConnection connection,
+            [NotNull] string backgroundJobId, 
+            [NotNull] IState newState, 
+            [CanBeNull] params string[]? expectedStates)
+            : this(storage, logger, connection, backgroundJobId, newState, expectedStates, CancellationToken.None)
+        {
+        }
+
+        [Obsolete("Please use the overload that takes `ILog` instance instead. Will be removed in 2.0.0.")]
+        public StateChangeContext(
+            [NotNull] JobStorage storage,
             [NotNull] IStorageConnection connection,
             [NotNull] string backgroundJobId,
             [NotNull] IState newState,
             [CanBeNull] IEnumerable<string>? expectedStates,
             CancellationToken cancellationToken)
-        : this(storage, connection, null, backgroundJobId, newState, expectedStates, false, null, cancellationToken, EmptyProfiler.Instance, null)
+            : this(storage, connection, null, backgroundJobId, newState, expectedStates, cancellationToken)
         {
         }
 
+        public StateChangeContext(
+            [NotNull] JobStorage storage,
+            [NotNull] ILog logger,
+            [NotNull] IStorageConnection connection,
+            [NotNull] string backgroundJobId,
+            [NotNull] IState newState,
+            [CanBeNull] IEnumerable<string>? expectedStates,
+            CancellationToken cancellationToken)
+            : this(storage, logger, connection, null, backgroundJobId, newState, expectedStates, cancellationToken)
+        {
+        }
+
+        [Obsolete("Please use the overload that takes `ILog` instance instead. Will be removed in 2.0.0.")]
         public StateChangeContext(
             [NotNull] JobStorage storage,
             [NotNull] IStorageConnection connection,
@@ -63,7 +101,20 @@ namespace Hangfire.States
             [NotNull] IState newState,
             [CanBeNull] IEnumerable<string>? expectedStates,
             CancellationToken cancellationToken)
-            : this(storage, connection, transaction, backgroundJobId, newState, expectedStates, false, null, cancellationToken, EmptyProfiler.Instance, null)
+            : this(storage, LogProvider.NoOpLogger.Instance, connection, transaction, backgroundJobId, newState, expectedStates, cancellationToken)
+        {
+        }
+
+        public StateChangeContext(
+            [NotNull] JobStorage storage,
+            [NotNull] ILog logger,
+            [NotNull] IStorageConnection connection,
+            [CanBeNull] JobStorageTransaction? transaction,
+            [NotNull] string backgroundJobId,
+            [NotNull] IState newState,
+            [CanBeNull] IEnumerable<string>? expectedStates,
+            CancellationToken cancellationToken)
+            : this(storage, connection, transaction, backgroundJobId, newState, expectedStates, false, null, cancellationToken, logger, EmptyProfiler.Instance, null)
         {
         }
 
@@ -75,23 +126,25 @@ namespace Hangfire.States
             [CanBeNull] IEnumerable<string>? expectedStates,
             bool disableFilters,
             CancellationToken cancellationToken,
+            [NotNull] ILog logger,
             [NotNull] IProfiler profiler,
             [CanBeNull] string? serverId,
             [CanBeNull] IReadOnlyDictionary<string, object?>? customData = null) 
-            : this(storage, connection, null, backgroundJobId, newState, expectedStates, disableFilters, null, cancellationToken, profiler, serverId, customData)
+            : this(storage, connection, null, backgroundJobId, newState, expectedStates, disableFilters, null, cancellationToken, logger, profiler, serverId, customData)
         {
         }
 
         internal StateChangeContext(
-            [NotNull] JobStorage storage, 
+            [NotNull] JobStorage storage,
             [NotNull] IStorageConnection connection,
             [CanBeNull] JobStorageTransaction? transaction,
             [NotNull] string backgroundJobId, 
-            [NotNull] IState newState, 
+            [NotNull] IState newState,
             [CanBeNull] IEnumerable<string>? expectedStates,
             bool disableFilters,
             [CanBeNull] IFetchedJob? completeJob,
             CancellationToken cancellationToken,
+            [NotNull] ILog logger,
             [NotNull] IProfiler profiler,
             [CanBeNull] string? serverId,
             [CanBeNull] IReadOnlyDictionary<string, object?>? customData = null)
@@ -104,6 +157,7 @@ namespace Hangfire.States
             ExpectedStates = expectedStates;
             DisableFilters = disableFilters;
             CancellationToken = cancellationToken;
+            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
             Profiler = profiler ?? throw new ArgumentNullException(nameof(profiler));
             ServerId = serverId;
             CustomData = customData;
@@ -112,6 +166,9 @@ namespace Hangfire.States
 
         [NotNull]
         public JobStorage Storage { get; }
+
+        [NotNull]
+        public ILog Logger { get; }
 
         [NotNull]
         public IStorageConnection Connection { get; }

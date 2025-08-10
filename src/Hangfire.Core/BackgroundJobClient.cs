@@ -15,9 +15,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
+using Hangfire.Logging;
+using Hangfire.Profiling;
 using Hangfire.States;
 
 namespace Hangfire
@@ -49,6 +52,8 @@ namespace Hangfire
         private readonly JobStorage _storage;
         private readonly IBackgroundJobFactory _factory;
         private readonly IBackgroundJobStateChanger _stateChanger;
+        private readonly ILog _logger;
+        private readonly IProfiler _profiler;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobClient"/>
@@ -89,7 +94,7 @@ namespace Hangfire
             : this(storage, new BackgroundJobFactory(filterProvider), new BackgroundJobStateChanger(filterProvider))
         {
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobClient"/> class
         /// with the specified storage, background job factory and state changer.
@@ -106,10 +111,22 @@ namespace Hangfire
             [NotNull] JobStorage storage,
             [NotNull] IBackgroundJobFactory factory,
             [NotNull] IBackgroundJobStateChanger stateChanger)
+            : this(storage, factory, stateChanger, LogProvider.For<BackgroundJobClient>())
+        {
+        }
+
+        // TODO: Document, start using this overload, and make others obsolete (?)
+        public BackgroundJobClient(
+            [NotNull] JobStorage storage,
+            [NotNull] IBackgroundJobFactory factory,
+            [NotNull] IBackgroundJobStateChanger stateChanger,
+            [NotNull] ILog logger)
         {
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
             _stateChanger = stateChanger ?? throw new ArgumentNullException(nameof(stateChanger));
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _profiler = new SlowLogProfiler(_logger);
         }
 
         /// <inheritdoc />
@@ -148,7 +165,7 @@ namespace Hangfire
             {
                 using (var connection = _storage.GetConnection())
                 {
-                    var context = new CreateContext(_storage, connection, job, state, parameters);
+                    var context = new CreateContext(_storage, connection, job, state, parameters, _logger, _profiler, null);
                     var backgroundJob = _factory.Create(context);
 
                     return backgroundJob?.Id;
@@ -175,7 +192,13 @@ namespace Hangfire
                         connection,
                         jobId,
                         state,
-                        expectedState != null ? new[] { expectedState } : null));
+                        expectedState != null ? new[] { expectedState } : null,
+                        disableFilters: false,
+                        CancellationToken.None,
+                        _logger,
+                        _profiler,
+                        serverId: null,
+                        customData: null));
 
                     return appliedState != null && appliedState.Name.Equals(state.Name, StringComparison.OrdinalIgnoreCase);
                 }

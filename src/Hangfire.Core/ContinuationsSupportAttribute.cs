@@ -27,6 +27,7 @@ namespace Hangfire
 {
     public class ContinuationsSupportAttribute : JobFilterAttribute, IElectStateFilter, IApplyStateFilter
     {
+        private static readonly IEnumerable<string> ExpectedAwaitingState = [AwaitingState.StateName];
         internal static readonly HashSet<string> KnownFinalStates = new HashSet<string> { DeletedState.StateName, SucceededState.StateName };
 
         private static readonly TimeSpan AddJobLockTimeout = TimeSpan.FromMinutes(1);
@@ -277,7 +278,13 @@ namespace Hangfire
                     context.Connection,
                     tuple.Key,
                     tuple.Value,
-                    AwaitingState.StateName));
+                    ExpectedAwaitingState,
+                    disableFilters: false,
+                    CancellationToken.None,
+                    context.Logger,
+                    context.Profiler,
+                    serverId: null, // TODO: Forward `ServerId` to filters?
+                    customData: null));
             }
         }
 

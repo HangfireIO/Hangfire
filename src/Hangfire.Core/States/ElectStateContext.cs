@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Hangfire.Annotations;
 using Hangfire.Common;
+using Hangfire.Logging;
 using Hangfire.Profiling;
 using Hangfire.Storage;
 
@@ -46,6 +47,7 @@ namespace Hangfire.States
             Connection = applyContext.Connection;
             Transaction = applyContext.Transaction;
             CurrentState = applyContext.OldStateName;
+            Logger = applyContext.Logger;
             Profiler = applyContext.Profiler;
             CustomData = applyContext.CustomData?.ToDictionary(static x => x.Key, static x => x.Value);
             StateMachine = stateMachine;
@@ -86,6 +88,9 @@ namespace Hangfire.States
 
         [NotNull]
         public IState[] TraversedStates => _traversedStates.ToArray();
+
+        [NotNull]
+        public ILog Logger { get; }
 
         [NotNull]
         internal IProfiler Profiler { get; }

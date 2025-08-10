@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using Hangfire.Logging;
 using Hangfire.Profiling;
 using Hangfire.States;
 using Hangfire.Storage;
@@ -20,6 +21,7 @@ namespace Hangfire.Core.Tests.States
         private readonly Mock<IState> _newState;
         private readonly string[] _expectedStates;
         private readonly CancellationToken _token;
+        private readonly Mock<ILog> _logger;
         private readonly Mock<IProfiler> _profiler;
         private readonly Dictionary<string, object> _customData;
 
@@ -30,6 +32,7 @@ namespace Hangfire.Core.Tests.States
             _newState = new Mock<IState>();
             _expectedStates = new[] { "Succeeded", "Failed" };
             _token = new CancellationToken(true);
+            _logger = new Mock<ILog>();
             _profiler = new Mock<IProfiler>();
             _customData = new Dictionary<string, object>();
         }
@@ -87,6 +90,25 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
+        public void Ctor_ThrowsAnException_WhenLoggerIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new StateChangeContext(
+                    _storage.Object,
+                    _connection.Object,
+                    JobId,
+                    _newState.Object,
+                    null,
+                    false,
+                    CancellationToken.None,
+                    null,
+                    _profiler.Object,
+                    null));
+
+            Assert.Equal("logger", exception.ParamName);
+        }
+
+        [Fact]
         public void Ctor_ThrowsAnException_WhenProfilerIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
@@ -98,6 +120,7 @@ namespace Hangfire.Core.Tests.States
                     null,
                     false,
                     CancellationToken.None,
+                    _logger.Object,
                     null,
                     null));
 
@@ -119,7 +142,8 @@ namespace Hangfire.Core.Tests.States
             Assert.Same(_newState.Object, context.NewState);
             Assert.Null(context.ExpectedStates);
             Assert.Equal(CancellationToken.None, context.CancellationToken);
-            Assert.NotNull(context.Profiler);
+            Assert.Same(LogProvider.NoOpLogger.Instance, context.Logger);
+            Assert.Same(EmptyProfiler.Instance, context.Profiler);
             Assert.Null(context.CustomData);
         }
 
@@ -139,7 +163,8 @@ namespace Hangfire.Core.Tests.States
             Assert.Same(_newState.Object, context.NewState);
             Assert.Equal(_expectedStates, context.ExpectedStates);
             Assert.Equal(CancellationToken.None, context.CancellationToken);
-            Assert.NotNull(context.Profiler);
+            Assert.Same(LogProvider.NoOpLogger.Instance, context.Logger);
+            Assert.Same(EmptyProfiler.Instance, context.Profiler);
             Assert.Null(context.CustomData);
         }
 
@@ -160,7 +185,8 @@ namespace Hangfire.Core.Tests.States
             Assert.Same(_newState.Object, context.NewState);
             Assert.Equal(_expectedStates, context.ExpectedStates);
             Assert.Equal(_token, context.CancellationToken);
-            Assert.NotNull(context.Profiler);
+            Assert.Same(LogProvider.NoOpLogger.Instance, context.Logger);
+            Assert.Same(EmptyProfiler.Instance, context.Profiler);
             Assert.Null(context.CustomData);
         }
 
@@ -175,6 +201,7 @@ namespace Hangfire.Core.Tests.States
                 _expectedStates,
                 false,
                 _token,
+                _logger.Object,
                 _profiler.Object,
                 "some-server",
                 _customData);
@@ -186,6 +213,7 @@ namespace Hangfire.Core.Tests.States
             Assert.Equal(_expectedStates, context.ExpectedStates);
             Assert.False(context.DisableFilters);
             Assert.Equal(_token, context.CancellationToken);
+            Assert.Same(_logger.Object, context.Logger);
             Assert.Same(_profiler.Object, context.Profiler);
             Assert.Equal("some-server", context.ServerId);
             Assert.Same(_customData, context.CustomData);
