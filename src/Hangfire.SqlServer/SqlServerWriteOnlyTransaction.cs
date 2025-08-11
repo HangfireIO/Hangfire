@@ -240,6 +240,12 @@ $@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
             }
             else
             {
+#if FEATURE_TRANSACTIONSCOPE
+                if (_storage.Options.DisableTransactionScope)
+                {
+                    throw new NotSupportedException($"`{nameof(SqlServerStorageOptions.DisableTransactionScope)}` option does not support external queue providers");
+                }
+#endif
                 _queueCommandQueue.Enqueue((connection, transaction) => persistentQueue.Enqueue(
                     connection,
 #if !FEATURE_TRANSACTIONSCOPE

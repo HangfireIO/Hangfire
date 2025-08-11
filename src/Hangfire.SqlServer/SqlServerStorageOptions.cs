@@ -215,5 +215,20 @@ namespace Hangfire.SqlServer
         /// registered for a particular queue.
         /// </summary>
         public IPersistentJobQueueProvider DefaultQueueProvider { get; set; }
+
+#if FEATURE_TRANSACTIONSCOPE
+        /// <summary>
+        /// Disables the use of the System.Transactions namespace and <see cref="TransactionScope"/> class
+        /// and switches to regular explicit transactions usage in .NET Framework version of <see cref="SqlServerStorage"/>
+        /// (as in .NET Core's implementation). Potentially fixes problems with abandoned locks and exhausted
+        /// connection pool.
+        /// </summary>
+        /// <remarks>
+        /// This option only works with the default
+        /// <see cref="IPersistentJobQueueProvider"/>, throwing an exception when external queue providers are used
+        /// (such as MSMQ-based or custom ones).
+        /// </remarks>
+        public bool DisableTransactionScope { get; set; }
+#endif
     }
 }
