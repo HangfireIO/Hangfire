@@ -25,12 +25,12 @@ namespace Hangfire
 {
     public static class RecurringJob
     {
-        private static readonly Func<IRecurringJobManager> DefaultFactory = static () => new RecurringJobManager();
+        private static readonly Func<RecurringJobManager> DefaultFactory = static () => new RecurringJobManager();
         private static readonly object ManagerFactoryLock = new object();
 
-        private static Func<IRecurringJobManager> _managerFactory;
+        private static Func<RecurringJobManager> _managerFactory;
 
-        internal static Func<IRecurringJobManager> ManagerFactory
+        internal static Func<RecurringJobManager> ManagerFactory
         {
             get
             {
