@@ -112,7 +112,7 @@ namespace Hangfire.States
         public Exception Exception { get; }
 
         [JsonIgnore]
-        public bool IncludeFileInfo { get; set; }
+        public bool IncludeFileInfo { get; set; } = true;
 
         /// <summary>
         /// Gets the server identifier on which the exception occurred.
