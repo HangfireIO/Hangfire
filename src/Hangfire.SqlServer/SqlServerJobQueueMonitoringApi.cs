@@ -15,14 +15,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
-#if FEATURE_TRANSACTIONSCOPE
-using System.Transactions;
-#else
-using System.Data;
-#endif
 using Dapper;
 using Hangfire.Annotations;
 

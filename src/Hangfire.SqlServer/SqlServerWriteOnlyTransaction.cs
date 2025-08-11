@@ -18,9 +18,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
-#if FEATURE_TRANSACTIONSCOPE
-using System.Transactions;
-#endif
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.States;
