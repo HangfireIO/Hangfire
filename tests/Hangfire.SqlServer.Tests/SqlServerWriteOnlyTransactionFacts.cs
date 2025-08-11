@@ -39,10 +39,13 @@ namespace Hangfire.SqlServer.Tests
             yield return new object[] { /* useBatching */ true,  /* useMicrosoftDataSqlClient */ false, /* disableTransactionScope */ false };
             yield return new object[] { /* useBatching */ true,  /* useMicrosoftDataSqlClient */ true,  /* disableTransactionScope */ false };
 #if NET452 || NET461
-            yield return new object[] { /* useBatching */ false, /* useMicrosoftDataSqlClient */ false, /* disableTransactionScope */ true };
-            yield return new object[] { /* useBatching */ false, /* useMicrosoftDataSqlClient */ true,  /* disableTransactionScope */ true };
-            yield return new object[] { /* useBatching */ true,  /* useMicrosoftDataSqlClient */ false, /* disableTransactionScope */ true };
-            yield return new object[] { /* useBatching */ true,  /* useMicrosoftDataSqlClient */ true,  /* disableTransactionScope */ true };
+            if (IsRunningOnWindows()) // TransactionScope isn't used on non-Windows platforms
+            {
+                yield return new object[] { /* useBatching */ false, /* useMicrosoftDataSqlClient */ false, /* disableTransactionScope */ true };
+                yield return new object[] { /* useBatching */ false, /* useMicrosoftDataSqlClient */ true,  /* disableTransactionScope */ true };
+                yield return new object[] { /* useBatching */ true,  /* useMicrosoftDataSqlClient */ false, /* disableTransactionScope */ true };
+                yield return new object[] { /* useBatching */ true,  /* useMicrosoftDataSqlClient */ true,  /* disableTransactionScope */ true };
+            }
 #endif
         }
 
@@ -2377,6 +2380,11 @@ values (@jobId, '', '', getutcdate())";
 #endif
                 CommandBatchMaxTimeout = useBatching ? (TimeSpan?)TimeSpan.FromMinutes(5) : null
             };
+        }
+
+        private static bool IsRunningOnWindows()
+        {
+            return Environment.OSVersion.Platform == PlatformID.Win32NT;
         }
     }
 }
