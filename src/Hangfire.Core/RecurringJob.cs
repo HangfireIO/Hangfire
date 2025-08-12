@@ -25,8 +25,28 @@ namespace Hangfire
 {
     public static class RecurringJob
     {
-        private static readonly Lazy<RecurringJobManager> Instance = new Lazy<RecurringJobManager>(
-            static () => new RecurringJobManager(), LazyThreadSafetyMode.PublicationOnly);
+        private static readonly Func<RecurringJobManager> DefaultFactory = static () => new RecurringJobManager();
+        private static readonly object ManagerFactoryLock = new object();
+
+        private static Func<RecurringJobManager>? _managerFactory;
+
+        internal static Func<RecurringJobManager> ManagerFactory
+        {
+            get
+            {
+                lock (ManagerFactoryLock)
+                {
+                    return _managerFactory ?? DefaultFactory;
+                }
+            }
+            set
+            {
+                lock (ManagerFactoryLock)
+                {
+                    _managerFactory = value;
+                }
+            }
+        }
 
         [Obsolete("Please use an overload with the explicit recurringJobId parameter and RecurringJobOptions instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate(
@@ -80,7 +100,7 @@ namespace Hangfire
             var job = Job.Create(methodCall);
             var id = GetRecurringJobId(job);
 
-            Instance.Value.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
+            ManagerFactory().AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
         [Obsolete("Please use an overload with the explicit recurringJobId parameter instead. Will be removed in 2.0.0.")]
@@ -92,7 +112,7 @@ namespace Hangfire
             var job = Job.Create(methodCall);
             var id = GetRecurringJobId(job);
 
-            Instance.Value.AddOrUpdate(id, job, cronExpression, options);
+            ManagerFactory().AddOrUpdate(id, job, cronExpression, options);
         }
 
         [Obsolete("Please use an overload with the explicit recurringJobId parameter and RecurringJobOptions instead. Will be removed in 2.0.0.")]
@@ -105,7 +125,7 @@ namespace Hangfire
             var job = Job.Create(methodCall);
             var id = GetRecurringJobId(job);
 
-            Instance.Value.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
+            ManagerFactory().AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
         [Obsolete("Please use an overload with the explicit recurringJobId parameter instead. Will be removed in 2.0.0.")]
@@ -117,7 +137,7 @@ namespace Hangfire
             var job = Job.Create(methodCall);
             var id = GetRecurringJobId(job);
 
-            Instance.Value.AddOrUpdate(id, job, cronExpression, options);
+            ManagerFactory().AddOrUpdate(id, job, cronExpression, options);
         }
 
         [Obsolete("Please use AddOrUpdate(string, Expression<Action>, Func<string>, RecurringJobOptions) instead. Will be removed in 2.0.0.")]
@@ -229,7 +249,7 @@ namespace Hangfire
             [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.Create(methodCall);
-            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
+            ManagerFactory().AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
         public static void AddOrUpdate(
@@ -247,7 +267,7 @@ namespace Hangfire
             [NotNull] RecurringJobOptions options)
         {
             var job = Job.Create(methodCall);
-            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, options);
+            ManagerFactory().AddOrUpdate(recurringJobId, job, cronExpression, options);
         }
 
         public static void AddOrUpdate(
@@ -269,7 +289,7 @@ namespace Hangfire
             if (queue == null) throw new ArgumentNullException(nameof(queue));
 
             var job = Job.Create(methodCall, queue);
-            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, options);
+            ManagerFactory().AddOrUpdate(recurringJobId, job, cronExpression, options);
         }
 
         [Obsolete("Please use AddOrUpdate<T>(string, Expression<Action<T>>, string, RecurringJobOptions) instead. Will be removed in 2.0.0.")]
@@ -281,7 +301,7 @@ namespace Hangfire
             [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.Create(methodCall);
-            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
+            ManagerFactory().AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
         public static void AddOrUpdate<T>(
@@ -299,7 +319,7 @@ namespace Hangfire
             [NotNull] RecurringJobOptions options)
         {
             var job = Job.Create(methodCall);
-            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, options);
+            ManagerFactory().AddOrUpdate(recurringJobId, job, cronExpression, options);
         }
 
         public static void AddOrUpdate<T>(
@@ -321,7 +341,7 @@ namespace Hangfire
             if (queue == null) throw new ArgumentNullException(nameof(queue));
 
             var job = Job.Create(methodCall, queue);
-            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, options);
+            ManagerFactory().AddOrUpdate(recurringJobId, job, cronExpression, options);
         }
 
         [Obsolete("Please use an overload with the explicit recurringJobId parameter and RecurringJobOptions instead. Will be removed in 2.0.0.")]
@@ -376,7 +396,7 @@ namespace Hangfire
             var job = Job.Create(methodCall);
             var id = GetRecurringJobId(job);
 
-            Instance.Value.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
+            ManagerFactory().AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
         [Obsolete("Please use an overload with the explicit recurringJobId parameter instead. Will be removed in 2.0.0.")]
@@ -388,7 +408,7 @@ namespace Hangfire
             var job = Job.Create(methodCall);
             var id = GetRecurringJobId(job);
 
-            Instance.Value.AddOrUpdate(id, job, cronExpression, options);
+            ManagerFactory().AddOrUpdate(id, job, cronExpression, options);
         }
 
         [Obsolete("Please use an overload with the explicit recurringJobId parameter and RecurringJobOptions instead. Will be removed in 2.0.0.")]
@@ -401,7 +421,7 @@ namespace Hangfire
             var job = Job.FromExpression(methodCall);
             var id = GetRecurringJobId(job);
 
-            Instance.Value.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
+            ManagerFactory().AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
         [Obsolete("Please use an overload with the explicit recurringJobId parameter instead. Will be removed in 2.0.0.")]
@@ -413,7 +433,7 @@ namespace Hangfire
             var job = Job.FromExpression(methodCall);
             var id = GetRecurringJobId(job);
 
-            Instance.Value.AddOrUpdate(id, job, cronExpression, options);
+            ManagerFactory().AddOrUpdate(id, job, cronExpression, options);
         }
 
         [Obsolete("Please use AddOrUpdate(string, Expression<Func<Task>>, Func<string>, RecurringJobOptions) instead. Will be removed in 2.0.0.")]
@@ -525,7 +545,7 @@ namespace Hangfire
             [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.Create(methodCall);
-            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
+            ManagerFactory().AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
         public static void AddOrUpdate(
@@ -543,7 +563,7 @@ namespace Hangfire
             [NotNull] RecurringJobOptions options)
         {
             var job = Job.Create(methodCall);
-            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, options);
+            ManagerFactory().AddOrUpdate(recurringJobId, job, cronExpression, options);
         }
 
         public static void AddOrUpdate(
@@ -565,7 +585,7 @@ namespace Hangfire
             if (queue == null) throw new ArgumentNullException(nameof(queue));
 
             var job = Job.Create(methodCall, queue);
-            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, options);
+            ManagerFactory().AddOrUpdate(recurringJobId, job, cronExpression, options);
         }
 
         [Obsolete("Please use AddOrUpdate<T>(string, Expression<Func<T, Task>>, string, RecurringJobOptions) instead. Will be removed in 2.0.0.")]
@@ -577,7 +597,7 @@ namespace Hangfire
             [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
-            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
+            ManagerFactory().AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
         public static void AddOrUpdate<T>(
@@ -595,7 +615,7 @@ namespace Hangfire
             [NotNull] RecurringJobOptions options)
         {
             var job = Job.Create(methodCall);
-            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, options);
+            ManagerFactory().AddOrUpdate(recurringJobId, job, cronExpression, options);
         }
 
         public static void AddOrUpdate<T>(
@@ -617,24 +637,24 @@ namespace Hangfire
             if (queue == null) throw new ArgumentNullException(nameof(queue));
 
             var job = Job.Create(methodCall, queue);
-            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, options);
+            ManagerFactory().AddOrUpdate(recurringJobId, job, cronExpression, options);
         }
 
         public static void RemoveIfExists([NotNull] string recurringJobId)
         {
-            Instance.Value.RemoveIfExists(recurringJobId);
+            ManagerFactory().RemoveIfExists(recurringJobId);
         }
 
         [Obsolete("Please use the TriggerJob method instead. Will be removed in 2.0.0.")]
         public static void Trigger([NotNull] string recurringJobId)
         {
-            Instance.Value.Trigger(recurringJobId);
+            ManagerFactory().Trigger(recurringJobId);
         }
 
         [CanBeNull]
         public static string? TriggerJob([NotNull] string recurringJobId)
         {
-            return Instance.Value.TriggerJob(recurringJobId);
+            return ManagerFactory().TriggerJob(recurringJobId);
         }
 
         private static string GetRecurringJobId(Job job)

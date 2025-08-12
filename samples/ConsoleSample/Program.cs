@@ -28,7 +28,8 @@ namespace ConsoleSample
                 .UseDefaultCulture(CultureInfo.CurrentCulture)
                 .UseSqlServerStorage(@"Server=.\;Database=Hangfire.Sample;Trusted_Connection=True;", new SqlServerStorageOptions
                 {
-                    EnableHeavyMigrations = true
+                    EnableHeavyMigrations = true,
+                    DisableTransactionScope = true
                 });
 
             Console.WriteLine(SerializationHelper.Serialize(new ExceptionInfo(new OperationCanceledException()), SerializationOption.Internal));

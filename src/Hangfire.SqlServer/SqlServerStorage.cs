@@ -332,7 +332,7 @@ namespace Hangfire.SqlServer
 #pragma warning restore 618
 
 #if FEATURE_TRANSACTIONSCOPE
-            if (IsRunningOnWindows())
+            if (IsRunningOnWindows() && !_options.DisableTransactionScope)
             {
                 using (var transaction = CreateTransaction(isolationLevel))
                 {

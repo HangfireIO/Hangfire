@@ -23,6 +23,13 @@ https://www.hangfire.io/
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
+1.8.21
+• Added – `FailedState.IncludeFileInfo` to optionally show/hide line numbers in exceptions in Failed state.
+• Changed – Include line numbers for exceptions by default when available.
+• Fixed – Portuguese (Brazil) translations in Strings.pt-BR.resx (by @pedro-cons).
+• Fixed – Static `BackgroundJob` class always acquires the most current `JobStorage.Current` instance.
+• Fixed – Static `RecurringJob` class always acquires the most current `JobStorage.Current` instance.
+
 1.8.20
 • Fixed – Glyphicons from Bootstrap are not displaying after upgrading to version 1.8.19.
 

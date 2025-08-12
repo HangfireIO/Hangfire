@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net451</TargetFramework>
     <UseRidGraph>true</UseRidGraph>
+    <DebugType>full</DebugType>
   </PropertyGroup>
 
   <ItemGroup>

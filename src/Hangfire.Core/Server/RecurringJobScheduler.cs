@@ -378,7 +378,7 @@ namespace Hangfire.Server
 
         private void RetryRecurringJob(string recurringJobId, RecurringJobEntity recurringJob, DateTime now, Exception error, ILog logger)
         {
-            var errorString = error.ToStringWithOriginalStackTrace(States.FailedState.MaxLinesInExceptionDetails);
+            var errorString = error.ToStringWithOriginalStackTrace(States.FailedState.MaxLinesInExceptionDetails, includeFileInfo: false);
 
             if (recurringJob.RetryAttempt < MaxRetryAttemptCount)
             {

@@ -110,6 +110,9 @@ namespace Hangfire.States
         [NotNull]
         public Exception Exception { get; }
 
+        [JsonIgnore]
+        public bool IncludeFileInfo { get; set; } = true;
+
         /// <summary>
         /// Gets the server identifier on which the exception occurred.
         /// </summary>
@@ -196,7 +199,7 @@ namespace Hangfire.States
                 { "FailedAt", JobHelper.SerializeDateTime(FailedAt) },
                 { "ExceptionType", Exception.GetType().FullName! },
                 { "ExceptionMessage", Exception.Message },
-                { "ExceptionDetails", Exception.ToStringWithOriginalStackTrace(MaxLinesInStackTrace) }
+                { "ExceptionDetails", Exception.ToStringWithOriginalStackTrace(MaxLinesInStackTrace, IncludeFileInfo) }
             };
 
             if (ServerId != null)
