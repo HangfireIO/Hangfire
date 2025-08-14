@@ -22,8 +22,6 @@ namespace Hangfire
 {
     public class JobActivator
     {
-        private static JobActivator _current = new JobActivator();
-
         /// <summary>
         /// Gets or sets the current <see cref="JobActivator"/> instance 
         /// that will be used to activate jobs during performance.
@@ -31,8 +29,10 @@ namespace Hangfire
         [NotNull]
         public static JobActivator Current
         {
-            get => _current;
-            set => _current = value ?? throw new ArgumentNullException(nameof(value));
+            get => GlobalConfiguration.Configuration.ResolveService<JobActivator>();
+
+            [Obsolete]
+            set => GlobalConfiguration.Configuration.UseActivator(value);
         }
 
         [CanBeNull]

@@ -48,13 +48,13 @@ namespace Hangfire
             if (services == null) throw new ArgumentNullException(nameof(services));
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
-            services.TryAddSingletonChecked(static _ => JobStorage.Current);
+            services.TryAddSingletonChecked(static x => x.GetRequiredService<GlobalConfiguration>().ResolveService<JobStorage>());
+            services.TryAddSingletonChecked(static x => x.GetRequiredService<GlobalConfiguration>().ResolveService<JobActivator>());
+            services.TryAddSingletonChecked(static x => x.GetRequiredService<GlobalConfiguration>().ResolveService<ILogProvider>());
 
             services.TryAddSingleton(static _ => DashboardRoutes.Routes);
             services.TryAddSingleton<IJobFilterProvider>(static _ => JobFilterProviders.Providers);
             services.TryAddSingleton<ITimeZoneResolver>(static _ => new DefaultTimeZoneResolver());
-            services.TryAddSingleton<ILogProvider>(static x => new AspNetCoreLogProvider(x.GetRequiredService<ILoggerFactory>()));
-            services.TryAddSingleton<JobActivator>(static x => new AspNetCoreJobActivator(x.GetRequiredService<IServiceScopeFactory>()));
             
             services.TryAddSingleton(static x => new DefaultClientManagerFactory(x));
             services.TryAddSingletonChecked<IBackgroundJobClientFactory>(static x => x.GetRequiredService<DefaultClientManagerFactory>());
@@ -72,6 +72,8 @@ namespace Hangfire
             services.TryAddSingletonChecked(static x => x
                 .GetRequiredService<IRecurringJobManagerFactoryV2>().GetManagerV2(x.GetRequiredService<JobStorage>()));
 
+            // TODO: Change comments
+            //
             // IGlobalConfiguration serves as a marker indicating that Hangfire's services 
             // were added to the service container (checked by IApplicationBuilder extensions).
             // 
@@ -81,17 +83,30 @@ namespace Hangfire
             // It should never be replaced by another implementation !!!
             // AddSingleton() will throw an exception if it was already registered
 
-            services.AddSingleton<IGlobalConfiguration>(serviceProvider =>
+            services.AddSingleton<IGlobalConfiguration>(x => x.GetRequiredService<GlobalConfiguration>());
+            services.AddSingleton<GlobalConfiguration>(serviceProvider =>
             {
                 // init defaults for log provider and job activator
                 // they may be overwritten by the configuration callback later
-                var configurationInstance = GlobalConfiguration.Configuration
-                    .UseLogProvider(serviceProvider.GetRequiredService<ILogProvider>())
-                    .UseActivator(serviceProvider.GetRequiredService<JobActivator>());
+                var configurationInstance = new GlobalConfiguration(GlobalConfiguration.Configuration);
+
+                var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+                if (loggerFactory != null)
+                {
+                    configurationInstance.UseLogProvider(new AspNetCoreLogProvider(loggerFactory));
+                }
+
+                var serviceScopeFactory = serviceProvider.GetService<IServiceScopeFactory>();
+                if (serviceScopeFactory != null)
+                {
+                    configurationInstance.UseActivator(new AspNetCoreJobActivator(serviceScopeFactory));
+                }
 
                 // do configuration inside callback
                 configuration(serviceProvider, configurationInstance);
-                
+
+                GlobalConfiguration.Configuration = configurationInstance;
+
                 return configurationInstance;
             });
             

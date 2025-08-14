@@ -26,48 +26,20 @@ namespace Hangfire
 {
     public abstract class JobStorage
     {
-        private static readonly object LockObject = new object();
-        private static JobStorage? _current;
-
         private TimeSpan _jobExpirationTimeout = TimeSpan.FromDays(1);
 
         [NotNull]
         public static JobStorage Current
         {
-            get
-            {
-                lock (LockObject)
-                {
-                    if (_current == null)
-                    {
-                        throw new InvalidOperationException(
-                            "Current JobStorage instance has not been initialized yet. You must set it before using Hangfire Client or Server API. " +
-#if NET45 || NET46
-                            "For NET Framework applications please use GlobalConfiguration.UseXXXStorage method, where XXX is the storage type, like `UseSqlServerStorage`."
-#else
-                            "For .NET Core applications please call the `IServiceCollection.AddHangfire` extension method from Hangfire.NetCore or Hangfire.AspNetCore package depending on your application type when configuring the services and ensure service-based APIs are used instead of static ones, like `IBackgroundJobClient` instead of `BackgroundJob` and `IRecurringJobManager` instead of `RecurringJob`."
-#endif
-                            );
-                    }
+            get => GlobalConfiguration.Configuration.ResolveService<JobStorage>();
 
-                    return _current;
-                }
-            }
-            set
-            {
-                lock (LockObject)
-                {
-                    _current = value;
-                }
-            }
+            [Obsolete]
+            set => GlobalConfiguration.Configuration.UseStorage(value);
         }
 
         public TimeSpan JobExpirationTimeout
         {
-            get
-            {
-                return _jobExpirationTimeout;
-            }
+            get => _jobExpirationTimeout;
             set
             {
                 if (value < TimeSpan.Zero)

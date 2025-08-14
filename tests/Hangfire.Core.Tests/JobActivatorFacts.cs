@@ -1,17 +1,21 @@
 ﻿using System;
 using Xunit;
 
+#nullable enable
+
 namespace Hangfire.Core.Tests
 {
     public class JobActivatorFacts
     {
         [Fact, GlobalLock]
+        [Obsolete]
         public void SetCurrent_ThrowsAnException_WhenValueIsNull()
         {
-            Assert.Throws<ArgumentNullException>(() => JobActivator.Current = null);
+            Assert.Throws<ArgumentNullException>(() => JobActivator.Current = null!);
         }
 
         [Fact, GlobalLock]
+        [Obsolete]
         public void GetCurrent_ReturnsPreviouslySetValue()
         {
             var activator = new JobActivator();

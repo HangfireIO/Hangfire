@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net452;net461;netcoreapp3.1;net6.0</TargetFrameworks>
     <NoWarn>0618</NoWarn>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

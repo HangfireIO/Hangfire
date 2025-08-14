@@ -37,8 +37,9 @@ namespace Hangfire
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             if (storage == null) throw new ArgumentNullException(nameof(storage));
-
-            return configuration.Use(storage, static x => JobStorage.Current = x);
+            
+            configuration.RegisterService<JobStorage>(storage);
+            return configuration.Use(storage, entryAction: null);
         }
 
         public static IGlobalConfiguration<TStorage> WithJobExpirationTimeout<TStorage>(
@@ -60,7 +61,8 @@ namespace Hangfire
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             if (activator == null) throw new ArgumentNullException(nameof(activator));
 
-            return configuration.Use(activator, static x => JobActivator.Current = x);
+            configuration.RegisterService<JobActivator>(activator);
+            return configuration.Use(activator, entryAction: null);
         }
 
         public static IGlobalConfiguration<JobActivator> UseDefaultActivator(
@@ -78,8 +80,9 @@ namespace Hangfire
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             if (provider == null) throw new ArgumentNullException(nameof(provider));
-            
-            return configuration.Use(provider, static x => LogProvider.SetCurrentLogProvider(x));
+
+            configuration.RegisterService<ILogProvider>(provider);
+            return configuration.Use(provider, entryAction: null);
         }
 
         public static IGlobalConfiguration<NLogLogProvider> UseNLogLogProvider(
@@ -415,19 +418,57 @@ namespace Hangfire
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static IGlobalConfiguration<T> Use<T>(
             [NotNull] this IGlobalConfiguration configuration, T entry,
-            [NotNull] Action<T> entryAction)
+            [CanBeNull] Action<T>? entryAction)
             where T : notnull
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
-            entryAction(entry);
+            entryAction?.Invoke(entry);
 
-            return new ConfigurationEntry<T>(entry);
+            var parent = configuration switch
+            {
+                GlobalConfiguration config => config,
+                ConfigurationEntry config => config.Parent,
+                _ => throw new InvalidOperationException(
+                    $"The configuration argument must be of type '{typeof(GlobalConfiguration).FullName}' or '{typeof(ConfigurationEntry).FullName}'.")
+            };
+
+            return new ConfigurationEntry<T>(parent, entry);
         }
 
-        private sealed class ConfigurationEntry<T>(T entry) : IGlobalConfiguration<T>
+        public static void RegisterService<T>([NotNull] this IGlobalConfiguration configuration, T service)
         {
-            public T Entry { get; } = entry;
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (service == null) throw new ArgumentNullException(nameof(service));
+
+            GetTopLevelConfiguration(configuration).RegisterService<T>(service);
+        }
+
+        private static GlobalConfiguration GetTopLevelConfiguration(IGlobalConfiguration configuration)
+        {
+            return configuration switch
+            {
+                GlobalConfiguration config => config,
+                ConfigurationEntry config => config.Parent,
+                _ => throw new InvalidOperationException(
+                    $"The configuration argument must be of type '{typeof(GlobalConfiguration).FullName}' or '{typeof(ConfigurationEntry).FullName}'.")
+            };
+        }
+
+        private abstract class ConfigurationEntry(GlobalConfiguration parent) : IGlobalConfiguration
+        {
+            public GlobalConfiguration Parent { get; } = parent ?? throw new ArgumentNullException(nameof(parent));
+        }
+
+        private sealed class ConfigurationEntry<T> : ConfigurationEntry, IGlobalConfiguration<T>
+        {
+            public ConfigurationEntry(GlobalConfiguration parent, T entry) : base(parent)
+            {
+                Entry = entry;
+            }
+
+            public T Entry { get; }
+            
         }
     }
 }

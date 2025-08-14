@@ -328,7 +328,6 @@ namespace Hangfire.Logging
     /// </summary>
     public static class LogProvider
     {
-        private static ILogProvider? _currentLogProvider;
         private static Lazy<ILogProvider?> _resolvedLogProvider = new Lazy<ILogProvider?>(ResolveLogProvider, LazyThreadSafetyMode.PublicationOnly);
 
         /// <summary>
@@ -370,8 +369,8 @@ namespace Hangfire.Logging
         /// <returns>An instance of <see cref="ILog"/></returns>
         public static ILog GetLogger(string name)
         {
-            ILogProvider? logProvider = Volatile.Read(ref _currentLogProvider) ?? _resolvedLogProvider.Value;
-            return logProvider == null ? NoOpLogger.Instance : (ILog)new LoggerExecutionWrapper(logProvider.GetLogger(name));
+            var logProvider = GetCurrentLogProvider();
+            return logProvider == NoOpLogProvider.Instance ? NoOpLogger.Instance : (ILog)new LoggerExecutionWrapper(logProvider.GetLogger(name));
         }
 
         /// <summary>
@@ -380,16 +379,17 @@ namespace Hangfire.Logging
         /// <returns>An instance of <see cref="ILogProvider"/>, or <see langword="null" /> when it is not registered.</returns>
         public static ILogProvider GetCurrentLogProvider()
         {
-            return Volatile.Read(ref _currentLogProvider) ?? _resolvedLogProvider.Value ?? NoOpLogProvider.Instance;
+            return GlobalConfiguration.Configuration.ResolveService<ILogProvider>();
         }
 
         /// <summary>
         /// Sets the current log provider.
         /// </summary>
         /// <param name="logProvider">The log provider.</param>
+        [Obsolete]
         public static void SetCurrentLogProvider(ILogProvider? logProvider)
         {
-            Volatile.Write(ref _currentLogProvider, logProvider);
+            GlobalConfiguration.Configuration.UseLogProvider(logProvider ?? NoOpLogProvider.Instance);
         }
 
         internal delegate bool IsLoggerAvailable();
@@ -409,7 +409,7 @@ namespace Hangfire.Logging
 #endif
         };
 
-        private static ILogProvider? ResolveLogProvider()
+        public static ILogProvider ResolveLogProvider()
         {
             try
             {
@@ -428,7 +428,8 @@ namespace Hangfire.Logging
                     typeof(LogProvider).GetTypeInfo().Assembly.FullName,
                     ex);
             }
-            return null;
+
+            return NoOpLogProvider.Instance;
         }
 
         internal sealed class NoOpLogProvider : ILogProvider

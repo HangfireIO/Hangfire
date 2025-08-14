@@ -2,6 +2,8 @@
 using Moq;
 using Xunit;
 
+#nullable enable
+
 namespace Hangfire.Core.Tests
 {
     public class JobStorageFacts
@@ -14,21 +16,24 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact, GlobalLock(Reason = "Access static JobStorage.Current member")]
+        [Obsolete]
         public void SetCurrent_DoesNotThrowAnException_WhenValueIsNull()
         {
             // Does not throw
-            JobStorage.Current = null;
+            JobStorage.Current = null!;
         }
 
         [Fact, GlobalLock(Reason = "Access static JobStorage.Current member")]
+        [Obsolete]
         public void GetCurrent_ThrowsAnException_OnUninitializedValue()
         {
-            JobStorage.Current = null;
+            JobStorage.Current = null!;
 
             Assert.Throws<InvalidOperationException>(() => JobStorage.Current);
         }
 
         [Fact, GlobalLock(Reason = "Access static JobStorage.Current member")]
+        [Obsolete]
         public void GetCurrent_ReturnsCurrentValue_WhenInitialized()
         {
             var storage = new Mock<JobStorage>();

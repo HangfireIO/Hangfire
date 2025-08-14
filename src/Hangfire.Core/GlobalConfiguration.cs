@@ -16,9 +16,12 @@
 // ReSharper disable InconsistentNaming
 
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
 using Hangfire.Annotations;
+using Hangfire.Logging;
 
 namespace Hangfire
 {
@@ -34,9 +37,16 @@ namespace Hangfire
     public class GlobalConfiguration : IGlobalConfiguration
     {
         private static int _compatibilityLevel = (int)CompatibilityLevel.Version_110;
+        private readonly ConcurrentDictionary<Type, KeyValuePair<Func<object, object>, object>> _services;
 
         [NotNull]
-        public static IGlobalConfiguration Configuration { get; } = new GlobalConfiguration();
+        public static GlobalConfiguration Configuration
+        {
+            get;
+
+            [EditorBrowsable(EditorBrowsableState.Never)]
+            set;
+        } = new GlobalConfiguration();
 
         internal static CompatibilityLevel CompatibilityLevel
         {
@@ -49,8 +59,56 @@ namespace Hangfire
             return CompatibilityLevel >= level;
         }
 
-        internal GlobalConfiguration()
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "RedundantTypeArgumentsOfMethod", Justification = "Just reassuring that required types are used, regardless of return values.")]
+        public GlobalConfiguration()
         {
+            _services = new ConcurrentDictionary<Type, KeyValuePair<Func<object, object>, object>>();
+
+            RegisterService<ILogProvider>(LogProvider.ResolveLogProvider());
+            RegisterService<JobActivator>(new JobActivator());
+            RegisterService<JobStorage>(static () =>
+            {
+                throw new InvalidOperationException(
+                    "Current JobStorage instance has not been initialized yet. You must set it before using Hangfire Client or Server API. " +
+#if NET45 || NET46
+                    "For NET Framework applications please use GlobalConfiguration.Configuration.UseXXXStorage method, where XXX is the storage type, like `UseSqlServerStorage`."
+#else
+                    "For .NET Core applications please call the `IServiceCollection.AddHangfire` extension method from Hangfire.NetCore or Hangfire.AspNetCore package depending on your application type when configuring the services and ensure service-based APIs are used instead of static ones, like `IBackgroundJobClient` instead of `BackgroundJob` and `IRecurringJobManager` instead of `RecurringJob`."
+#endif
+                );
+            });
+        }
+
+        public GlobalConfiguration(GlobalConfiguration configuration)
+        {
+            _services = new ConcurrentDictionary<Type, KeyValuePair<Func<object, object>, object>>(configuration._services);
+        }
+
+        public void RegisterService<TService>([NotNull] TService service)
+        {
+            if (service == null) throw new ArgumentNullException(nameof(service));
+
+            _services[typeof(TService)] = new KeyValuePair<Func<object, object>, object>(static state => state, service);
+        }
+
+        public void RegisterService<TService>([NotNull] Func<TService> serviceFactory)
+        {
+            if (serviceFactory == null) throw new ArgumentNullException(nameof(serviceFactory));
+
+            _services[typeof(TService)] = new KeyValuePair<Func<object, object>, object>(
+                static state => ((Func<TService>)state)()!,
+                serviceFactory);
+        }
+
+        [NotNull]
+        public T ResolveService<T>()
+        {
+            if (!_services.TryGetValue(typeof(T), out var service))
+            {
+                throw new InvalidOperationException($"Service of type '{typeof(T).FullName}' has not been registered.");
+            }
+
+            return (T)service.Key(service.Value);
         }
     }
 
