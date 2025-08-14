@@ -115,17 +115,26 @@ namespace Hangfire.Common
                 return;
             }
 
-            if (type.DeclaringType != null)
+            if (type.IsArray && type.HasElementType)
             {
-                SerializeType(type.DeclaringType, false, typeNameBuilder);
-                typeNameBuilder.Append('+');
+                var elementType = type.GetElementType()!;
+                SerializeType(elementType, false, typeNameBuilder);
+                typeNameBuilder.Append("[]");
             }
-            else if (type.Namespace != null)
+            else
             {
-                typeNameBuilder.Append(type.Namespace).Append('.');
-            }
+                if (type.DeclaringType != null)
+                {
+                    SerializeType(type.DeclaringType, false, typeNameBuilder);
+                    typeNameBuilder.Append('+');
+                }
+                else if (type.Namespace != null)
+                {
+                    typeNameBuilder.Append(type.Namespace).Append('.');
+                }
 
-            typeNameBuilder.Append(type.Name);
+                typeNameBuilder.Append(type.Name);
+            }
 
             if (type.GenericTypeArguments.Length > 0)
             {
