@@ -34,6 +34,7 @@
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
     <PackageReference Include="Microsoft.CSharp" Version="4.4.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.1" NoWarn="NU1903" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="5.0.0" />
   </ItemGroup>
   
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.3' or '$(TargetFramework)'=='netstandard2.0'">
