@@ -245,12 +245,13 @@ namespace Hangfire
         {
             ThrowIfNotConfigured(provider);
 
-            storage = storage ?? provider.GetService<JobStorage>() ?? JobStorage.Current;
-            additionalProcesses = additionalProcesses ?? provider.GetServices<IBackgroundProcess>();
+            storage ??= provider.GetService<JobStorage>() ?? JobStorage.Current;
+            additionalProcesses ??= provider.GetServices<IBackgroundProcess>();
 
-            options.Activator = options.Activator ?? provider.GetService<JobActivator>();
-            options.FilterProvider = options.FilterProvider ?? provider.GetService<IJobFilterProvider>();
-            options.TimeZoneResolver = options.TimeZoneResolver ?? provider.GetService<ITimeZoneResolver>();
+            options = options.Clone(); // To modify options without causing side effects
+            options.Activator ??= provider.GetService<JobActivator>();
+            options.FilterProvider ??= provider.GetService<IJobFilterProvider>();
+            options.TimeZoneResolver ??= provider.GetService<ITimeZoneResolver>();
 
             GetInternalServices(provider, out var factory, out var stateChanger, out var performer);
 

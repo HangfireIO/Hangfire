@@ -75,6 +75,7 @@ namespace Hangfire
             options ??= services.GetService<BackgroundJobServerOptions>() ?? new BackgroundJobServerOptions();
             additionalProcesses ??= services.GetServices<IBackgroundProcess>();
 
+            options = options.Clone(); // To modify options without causing possible side effects
             options.Activator ??= services.GetService<JobActivator>();
             options.FilterProvider ??= services.GetService<IJobFilterProvider>();
             options.TimeZoneResolver ??= services.GetService<ITimeZoneResolver>();
