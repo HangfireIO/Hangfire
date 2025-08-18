@@ -50,7 +50,7 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenPropertiesArgumentIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundProcessingServer(_storage.Object, _processes, null));
+                () => new BackgroundProcessingServer(_storage.Object, _processes, properties: null));
             
             Assert.Equal("properties", exception.ParamName);
         }

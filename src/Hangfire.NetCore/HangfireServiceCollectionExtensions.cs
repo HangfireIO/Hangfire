@@ -252,6 +252,7 @@ namespace Hangfire
             options.Activator ??= provider.GetService<JobActivator>();
             options.FilterProvider ??= provider.GetService<IJobFilterProvider>();
             options.TimeZoneResolver ??= provider.GetService<ITimeZoneResolver>();
+            options.LogProvider ??= provider.GetService<ILogProvider>();
 
             GetInternalServices(provider, out var factory, out var stateChanger, out var performer);
 

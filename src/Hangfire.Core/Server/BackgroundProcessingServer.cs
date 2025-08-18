@@ -58,29 +58,39 @@ namespace Hangfire.Server
         private bool _awaited;
 
         public BackgroundProcessingServer([NotNull] IEnumerable<IBackgroundProcess> processes)
-            : this(JobStorage.Current, processes)
+            : this(processes, new Dictionary<string, object>())
         {
         }
 
         public BackgroundProcessingServer(
             [NotNull] IEnumerable<IBackgroundProcess> processes,
             [NotNull] IDictionary<string, object> properties)
-            : this(JobStorage.Current, processes, properties)
+            : this(JobStorage.Current, processes, properties, LogProvider.GetCurrentLogProvider())
         {
         }
 
+        [Obsolete("Please use the overload with `ILogProvider` parameter instead. Will be removed in 2.0.0.")]
         public BackgroundProcessingServer(
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IBackgroundProcess> processes)
-            : this(storage, processes, new Dictionary<string, object>())
+            : this(storage, processes, LogProvider.GetCurrentLogProvider())
         {
         }
 
         public BackgroundProcessingServer(
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IBackgroundProcess> processes,
+            [NotNull] ILogProvider logProvider)
+            : this(storage, processes, new Dictionary<string, object>(), logProvider)
+        {
+        }
+
+        [Obsolete("Please use the overload with `ILogProvider` parameter instead. Will be removed in 2.0.0.")]
+        public BackgroundProcessingServer(
+            [NotNull] JobStorage storage,
+            [NotNull] IEnumerable<IBackgroundProcess> processes,
             [NotNull] IDictionary<string, object> properties)
-            : this(storage, processes, properties, new BackgroundProcessingServerOptions())
+            : this(storage, processes, properties, LogProvider.GetCurrentLogProvider())
         {
         }
 
@@ -88,8 +98,38 @@ namespace Hangfire.Server
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IBackgroundProcess> processes,
             [NotNull] IDictionary<string, object> properties,
+            [NotNull] ILogProvider logProvider)
+            : this(storage, processes, properties, new BackgroundProcessingServerOptions(), logProvider)
+        {
+        }
+
+        [Obsolete("Please use the overload with `ILogProvider` parameter instead. Will be removed in 2.0.0.")]
+        public BackgroundProcessingServer(
+            [NotNull] JobStorage storage,
+            [NotNull] IEnumerable<IBackgroundProcess> processes,
+            [NotNull] IDictionary<string, object> properties,
             [NotNull] BackgroundProcessingServerOptions options)
-            : this(storage, GetProcesses(processes), properties, options)
+            : this(storage, processes, properties, options, LogProvider.GetCurrentLogProvider())
+        {
+        }
+
+        public BackgroundProcessingServer(
+            [NotNull] JobStorage storage,
+            [NotNull] IEnumerable<IBackgroundProcess> processes,
+            [NotNull] IDictionary<string, object> properties,
+            [NotNull] BackgroundProcessingServerOptions options,
+            [NotNull] ILogProvider logProvider)
+            : this(storage, GetProcesses(processes), properties, options, logProvider)
+        {
+        }
+
+        [Obsolete("Please use the overload with `ILogProvider` parameter instead. Will be removed in 2.0.0.")]
+        public BackgroundProcessingServer(
+            [NotNull] JobStorage storage,
+            [NotNull] IEnumerable<IBackgroundProcessDispatcherBuilder> dispatcherBuilders,
+            [NotNull] IDictionary<string, object> properties,
+            [NotNull] BackgroundProcessingServerOptions options)
+            : this(storage, dispatcherBuilders, properties, options, LogProvider.GetCurrentLogProvider())
         {
         }
 
@@ -97,8 +137,9 @@ namespace Hangfire.Server
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IBackgroundProcessDispatcherBuilder> dispatcherBuilders,
             [NotNull] IDictionary<string, object> properties,
-            [NotNull] BackgroundProcessingServerOptions options)
-            : this(new BackgroundServerProcess(storage, dispatcherBuilders, options, properties), options, LogProvider.GetCurrentLogProvider())
+            [NotNull] BackgroundProcessingServerOptions options,
+            [NotNull] ILogProvider logProvider)
+            : this(new BackgroundServerProcess(storage, dispatcherBuilders, options, properties), options, logProvider)
         {
         }
 

@@ -27,6 +27,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Hangfire.Common;
+using Hangfire.Logging;
 
 namespace Hangfire
 {
@@ -79,6 +80,7 @@ namespace Hangfire
             options.Activator ??= services.GetService<JobActivator>();
             options.FilterProvider ??= services.GetService<IJobFilterProvider>();
             options.TimeZoneResolver ??= services.GetService<ITimeZoneResolver>();
+            options.LogProvider ??= services.GetService<ILogProvider>();
 
             services.RegisterHangfireServer(HangfireServiceCollectionExtensions.GetInternalServices(services, out var factory, out var stateChanger, out var performer)
                 ? new BackgroundJobServer(options, storage, additionalProcesses, factory, performer, stateChanger)

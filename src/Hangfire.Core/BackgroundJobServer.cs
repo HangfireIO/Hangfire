@@ -30,7 +30,7 @@ namespace Hangfire
 {
     public class BackgroundJobServer : IBackgroundProcessingServer
     {
-        private readonly ILog _logger = LogProvider.For<BackgroundJobServer>();
+        private readonly ILog _logger;
 
         private readonly BackgroundJobServerOptions _options;
         private readonly BackgroundProcessingServer _processingServer;
@@ -83,7 +83,6 @@ namespace Hangfire
         {
         }
 
-        // TODO: Add ILogProvider parameter, since this is a new overload
         public BackgroundJobServer(
             [NotNull] BackgroundJobServerOptions options,
             [NotNull] JobStorage storage,
@@ -97,7 +96,6 @@ namespace Hangfire
             if (additionalProcesses == null) throw new ArgumentNullException(nameof(additionalProcesses));
 
             _options = options;
-
             var processes = new List<IBackgroundProcessDispatcherBuilder>();
             processes.AddRange(GetRequiredProcesses(factory, performer, stateChanger));
             processes.AddRange(additionalProcesses.Select(static x => x.UseBackgroundPool(1)));
@@ -107,6 +105,9 @@ namespace Hangfire
                 { "Queues", options.Queues },
                 { "WorkerCount", options.WorkerCount }
             };
+
+            var logProvider = options.LogProvider ?? LogProvider.GetCurrentLogProvider();
+            _logger = logProvider.GetLogger(typeof(BackgroundJobServer).FullName!); // TODO: Get wrapped logger instead
 
             _logger.Info($"Starting Hangfire Server using job storage: '{storage}'");
 
@@ -136,7 +137,8 @@ namespace Hangfire
                 storage, 
                 processes, 
                 properties, 
-                GetProcessingServerOptions());
+                GetProcessingServerOptions(),
+                logProvider);
         }
 
         [Obsolete("Create your own BackgroundJobServer-like type and pass custom services to it. This constructor will be removed in 2.0.0.")]

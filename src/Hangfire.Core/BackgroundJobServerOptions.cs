@@ -18,6 +18,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Common;
+using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.States;
 
@@ -191,6 +192,9 @@ namespace Hangfire
         [CanBeNull]
         public Action<Thread>? WorkerThreadConfigurationAction { get; set; }
 
+        [CanBeNull]
+        public ILogProvider? LogProvider { get; set; }
+
         /// <summary>
         /// Experimental option for schedulers, but not for workers. Gets or sets the
         /// maximum degree of parallelism for <see cref="RecurringJobScheduler"/>
@@ -222,6 +226,7 @@ namespace Hangfire
                 TaskScheduler = TaskScheduler,
                 TimeZoneResolver = TimeZoneResolver,
                 WorkerThreadConfigurationAction = WorkerThreadConfigurationAction,
+                LogProvider = LogProvider,
 #pragma warning disable CS0618 // Type or member is obsolete
                 ServerWatchdogOptions = ServerWatchdogOptions,
 #pragma warning restore CS0618 // Type or member is obsolete
