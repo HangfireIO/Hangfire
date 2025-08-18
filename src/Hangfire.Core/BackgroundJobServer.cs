@@ -79,20 +79,15 @@ namespace Hangfire
             [NotNull] BackgroundJobServerOptions options,
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses)
-#pragma warning disable 618
-            : this(options, storage, additionalProcesses, null, null, null, null, null)
-#pragma warning restore 618
+            : this(options, storage, additionalProcesses, null, null, null)
         {
         }
 
-        [Obsolete("Create your own BackgroundJobServer-like type and pass custom services to it. This constructor will be removed in 2.0.0.")]
-        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        // TODO: Add ILogProvider parameter, since this is a new overload
         public BackgroundJobServer(
             [NotNull] BackgroundJobServerOptions options,
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses,
-            [CanBeNull] IJobFilterProvider? filterProvider,
-            [CanBeNull] JobActivator? activator,
             [CanBeNull] IBackgroundJobFactory? factory,
             [CanBeNull] IBackgroundJobPerformer? performer,
             [CanBeNull] IBackgroundJobStateChanger? stateChanger)
@@ -104,7 +99,7 @@ namespace Hangfire
             _options = options;
 
             var processes = new List<IBackgroundProcessDispatcherBuilder>();
-            processes.AddRange(GetRequiredProcesses(filterProvider, activator, factory, performer, stateChanger));
+            processes.AddRange(GetRequiredProcesses(factory, performer, stateChanger));
             processes.AddRange(additionalProcesses.Select(static x => x.UseBackgroundPool(1)));
 
             var properties = new Dictionary<string, object>
@@ -142,6 +137,21 @@ namespace Hangfire
                 processes, 
                 properties, 
                 GetProcessingServerOptions());
+        }
+
+        [Obsolete("Create your own BackgroundJobServer-like type and pass custom services to it. This constructor will be removed in 2.0.0.")]
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public BackgroundJobServer(
+            [NotNull] BackgroundJobServerOptions options,
+            [NotNull] JobStorage storage,
+            [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses,
+            [CanBeNull] IJobFilterProvider? filterProvider,
+            [CanBeNull] JobActivator? activator,
+            [CanBeNull] IBackgroundJobFactory? factory,
+            [CanBeNull] IBackgroundJobPerformer? performer,
+            [CanBeNull] IBackgroundJobStateChanger? stateChanger)
+            : this(options.CloneWithFilterAndActivator(filterProvider, activator), storage, additionalProcesses, factory, performer, stateChanger)
+        {
         }
 
         public void SendStop()
@@ -184,8 +194,6 @@ namespace Hangfire
         }
 
         private IEnumerable<IBackgroundProcessDispatcherBuilder> GetRequiredProcesses(
-            IJobFilterProvider? filterProvider,
-            JobActivator? activator,
             IBackgroundJobFactory? factory,
             IBackgroundJobPerformer? performer,
             IBackgroundJobStateChanger? stateChanger)
@@ -195,8 +203,8 @@ namespace Hangfire
 
             if (factory == null && performer == null && stateChanger == null)
             {
-                filterProvider = filterProvider ?? _options.FilterProvider ?? JobFilterProviders.Providers;
-                activator = activator ?? _options.Activator ?? JobActivator.Current;
+                var filterProvider = _options.FilterProvider ?? JobFilterProviders.Providers;
+                var activator = _options.Activator ?? JobActivator.Current;
 
                 factory = new BackgroundJobFactory(filterProvider);
                 performer = new BackgroundJobPerformer(filterProvider, activator, _options.TaskScheduler);

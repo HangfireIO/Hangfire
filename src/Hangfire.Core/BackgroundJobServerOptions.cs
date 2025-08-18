@@ -200,5 +200,41 @@ namespace Hangfire
         /// specified in the <see cref="TaskScheduler"/> property.
         /// </summary>
         public int MaxDegreeOfParallelismForSchedulers { get; set; } = 1;
+
+        public BackgroundJobServerOptions Clone()
+        {
+            return new BackgroundJobServerOptions
+            {
+                _heartbeatInterval = _heartbeatInterval,
+                _queues = _queues,
+                _schedulePollingInterval = _schedulePollingInterval,
+                _serverCheckInterval = _serverCheckInterval,
+                _serverTimeout = _serverTimeout,
+                _shutdownTimeout = _shutdownTimeout,
+                _stopTimeout = _stopTimeout,
+                _workerCount = _workerCount,
+                Activator = Activator,
+                CancellationCheckInterval = CancellationCheckInterval,
+                FilterProvider = FilterProvider,
+                IsLightweightServer = IsLightweightServer,
+                MaxDegreeOfParallelismForSchedulers = MaxDegreeOfParallelismForSchedulers,
+                ServerName = ServerName,
+                TaskScheduler = TaskScheduler,
+                TimeZoneResolver = TimeZoneResolver,
+                WorkerThreadConfigurationAction = WorkerThreadConfigurationAction,
+#pragma warning disable CS0618 // Type or member is obsolete
+                ServerWatchdogOptions = ServerWatchdogOptions,
+#pragma warning restore CS0618 // Type or member is obsolete
+            };
+        }
+
+        [Obsolete("Remove this method, once the corresponding BackgroundJobServer ctor is removed in 2.0.0.")]
+        internal BackgroundJobServerOptions CloneWithFilterAndActivator(IJobFilterProvider? filterProvider, JobActivator? activator)
+        {
+            var clone = Clone();
+            clone.FilterProvider = filterProvider ?? clone.FilterProvider;
+            clone.Activator = activator ?? clone.Activator;
+            return clone;
+        }
     }
 }
