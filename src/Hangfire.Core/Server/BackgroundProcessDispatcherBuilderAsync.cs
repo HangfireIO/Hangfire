@@ -26,12 +26,12 @@ namespace Hangfire.Server
     {
         private readonly int _maxConcurrency;
         private readonly bool _ownsScheduler;
-        private readonly Func<TaskScheduler> _taskScheduler;
+        private readonly Func<ILog, TaskScheduler> _taskScheduler;
         private readonly IBackgroundProcessAsync _process;
 
         public BackgroundProcessDispatcherBuilderAsync(
             [NotNull] IBackgroundProcessAsync process,
-            [NotNull] Func<TaskScheduler> taskScheduler,
+            [NotNull] Func<ILog, TaskScheduler> taskScheduler,
             int maxConcurrency,
             bool ownsScheduler)
         {
@@ -66,7 +66,7 @@ namespace Hangfire.Server
                 processLogger,
                 ExecuteProcess,
                 Tuple.Create(_process, context, execution, processLogger),
-                _taskScheduler(),
+                _taskScheduler(processLogger),
                 _maxConcurrency,
                 _ownsScheduler);
         }
