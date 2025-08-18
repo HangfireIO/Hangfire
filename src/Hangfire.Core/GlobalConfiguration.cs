@@ -66,17 +66,7 @@ namespace Hangfire
 
             RegisterService<ILogProvider>(LogProvider.ResolveLogProvider());
             RegisterService<JobActivator>(new JobActivator());
-            RegisterService<JobStorage>(static () =>
-            {
-                throw new InvalidOperationException(
-                    "Current JobStorage instance has not been initialized yet. You must set it before using Hangfire Client or Server API. " +
-#if NET45 || NET46
-                    "For NET Framework applications please use GlobalConfiguration.Configuration.UseXXXStorage method, where XXX is the storage type, like `UseSqlServerStorage`."
-#else
-                    "For .NET Core applications please call the `IServiceCollection.AddHangfire` extension method from Hangfire.NetCore or Hangfire.AspNetCore package depending on your application type when configuring the services and ensure service-based APIs are used instead of static ones, like `IBackgroundJobClient` instead of `BackgroundJob` and `IRecurringJobManager` instead of `RecurringJob`."
-#endif
-                );
-            });
+            RegisterUninitializedStorage();
         }
 
         public GlobalConfiguration(GlobalConfiguration configuration)
@@ -109,6 +99,21 @@ namespace Hangfire
             }
 
             return (T)service.Key(service.Value);
+        }
+
+        internal void RegisterUninitializedStorage()
+        {
+            RegisterService<JobStorage>(static () =>
+            {
+                throw new InvalidOperationException(
+                    "Current JobStorage instance has not been initialized yet. You must set it before using Hangfire Client or Server API. " +
+#if NET45 || NET46
+                    "For NET Framework applications please use GlobalConfiguration.Configuration.UseXXXStorage method, where XXX is the storage type, like `UseSqlServerStorage`."
+#else
+                    "For .NET Core applications please call the `IServiceCollection.AddHangfire` extension method from Hangfire.NetCore or Hangfire.AspNetCore package depending on your application type when configuring the services and ensure service-based APIs are used instead of static ones, like `IBackgroundJobClient` instead of `BackgroundJob` and `IRecurringJobManager` instead of `RecurringJob`."
+#endif
+                );
+            });
         }
     }
 

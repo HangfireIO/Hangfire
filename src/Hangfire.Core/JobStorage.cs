@@ -34,7 +34,7 @@ namespace Hangfire
             get => GlobalConfiguration.Configuration.ResolveService<JobStorage>();
 
             [Obsolete]
-            set => GlobalConfiguration.Configuration.UseStorage(value);
+            set => GlobalConfiguration.Configuration.UseStorageUnsafe(value);
         }
 
         public TimeSpan JobExpirationTimeout

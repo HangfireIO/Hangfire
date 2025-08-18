@@ -42,6 +42,23 @@ namespace Hangfire
             return configuration.Use(storage, entryAction: null);
         }
 
+        [Obsolete("Compatibility workaround for setting null values in JobStorage.Current. Should be removed in 2.0.0.")]
+        internal static void UseStorageUnsafe<TStorage>(
+            [NotNull] this IGlobalConfiguration configuration,
+            [CanBeNull] TStorage? storage)
+            where TStorage : JobStorage
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+            if (storage == null)
+            {
+                GetTopLevelConfiguration(configuration).RegisterUninitializedStorage();
+                return;
+            }
+
+            configuration.RegisterService<JobStorage>(storage);
+        }
+
         public static IGlobalConfiguration<TStorage> WithJobExpirationTimeout<TStorage>(
             [NotNull] this IGlobalConfiguration<TStorage> configuration,
             TimeSpan timeout)
