@@ -229,7 +229,7 @@ namespace Hangfire
             services.AddTransient<IHostedService, BackgroundProcessingServerHostedService>(
                 provider => new BackgroundProcessingServerHostedService(
                     implementationFactory(provider)
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
                     , provider.GetService<IHostApplicationLifetime>()
 #endif
                     ));

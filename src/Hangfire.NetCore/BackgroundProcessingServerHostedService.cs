@@ -29,7 +29,7 @@ namespace Hangfire
     {
         private IBackgroundProcessingServer? _server;
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
         public BackgroundProcessingServerHostedService([NotNull] IBackgroundProcessingServer server)
             : this(server, null)
         {
