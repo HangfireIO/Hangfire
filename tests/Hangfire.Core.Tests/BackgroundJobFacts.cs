@@ -195,6 +195,7 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact, GlobalLock(Reason = "Accesses to BJ.ClientFactory, JS.Current")]
+        [Obsolete]
         public void ClientFactory_HasDefaultValue_ThatReturns()
         {
             BackgroundJob.ClientFactory = null;

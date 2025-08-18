@@ -79,6 +79,7 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact, GlobalLock(Reason = "Needs JobStorage.Current instance")]
+        [Obsolete]
         public void Ctor_UsesCurrent_JobStorageInstance_ByDefault()
         {
             JobStorage.Current = new Mock<JobStorage>().Object;
