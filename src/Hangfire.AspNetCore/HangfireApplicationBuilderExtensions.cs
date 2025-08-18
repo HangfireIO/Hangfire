@@ -81,9 +81,7 @@ namespace Hangfire
             options.TimeZoneResolver ??= services.GetService<ITimeZoneResolver>();
 
             services.RegisterHangfireServer(HangfireServiceCollectionExtensions.GetInternalServices(services, out var factory, out var stateChanger, out var performer)
-#pragma warning disable 618
-                ? new BackgroundJobServer(options, storage, additionalProcesses, null, null, factory, performer, stateChanger)
-#pragma warning restore 618
+                ? new BackgroundJobServer(options, storage, additionalProcesses, factory, performer, stateChanger)
                 : new BackgroundJobServer(options, storage, additionalProcesses));
 
             return app;

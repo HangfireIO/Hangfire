@@ -64,7 +64,6 @@ namespace Hangfire
 #endif
 
 #if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
-        [Obsolete("This constructor uses an obsolete constructor overload of the BackgroundJobServer type that will be removed in 2.0.0.")]
         public BackgroundJobServerHostedService(
             [NotNull] JobStorage storage,
             [NotNull] BackgroundJobServerOptions options,
@@ -77,7 +76,6 @@ namespace Hangfire
         }
 #endif
 
-        [Obsolete("This constructor uses an obsolete constructor overload of the BackgroundJobServer type that will be removed in 2.0.0.")]
         public BackgroundJobServerHostedService(
             [NotNull] JobStorage storage,
             [NotNull] BackgroundJobServerOptions options,
@@ -157,10 +155,7 @@ namespace Hangfire
         private void InitializeProcessingServer()
         {
             _processingServer = _factory != null && _performer != null && _stateChanger != null
-#pragma warning disable 618
-                ? new BackgroundJobServer(_options, _storage, _additionalProcesses, null, null, _factory, _performer,
-                    _stateChanger)
-#pragma warning restore 618
+                ? new BackgroundJobServer(_options, _storage, _additionalProcesses, _factory, _performer, _stateChanger)
                 : new BackgroundJobServer(_options, _storage, _additionalProcesses);
         }
 

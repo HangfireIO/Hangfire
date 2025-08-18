@@ -259,9 +259,7 @@ namespace Hangfire
             var lifetime = provider.GetService<IHostApplicationLifetime>();
 #endif
 
-#pragma warning disable 618
             return new BackgroundJobServerHostedService(
-#pragma warning restore 618
                 storage, options, additionalProcesses, factory, performer, stateChanger
 #if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
                 , lifetime
