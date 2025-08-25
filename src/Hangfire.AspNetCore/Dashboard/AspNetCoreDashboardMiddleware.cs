@@ -29,12 +29,23 @@ namespace Hangfire.Dashboard
         private readonly JobStorage _storage;
         private readonly DashboardOptions _options;
         private readonly RouteCollection _routes;
+        private readonly bool _finalizeWhenNotFound;
 
         public AspNetCoreDashboardMiddleware(
             [NotNull] RequestDelegate next,
             [NotNull] JobStorage storage,
             [NotNull] DashboardOptions options,
             [NotNull] RouteCollection routes)
+            : this(next, storage, options, routes, finalizeWhenNotFound: false)
+        {
+        }
+
+        public AspNetCoreDashboardMiddleware(
+            [NotNull] RequestDelegate next,
+            [NotNull] JobStorage storage,
+            [NotNull] DashboardOptions options,
+            [NotNull] RouteCollection routes,
+            bool finalizeWhenNotFound)
         {
             if (next == null) throw new ArgumentNullException(nameof(next));
             if (storage == null) throw new ArgumentNullException(nameof(storage));
@@ -45,6 +56,7 @@ namespace Hangfire.Dashboard
             _storage = storage;
             _options = options;
             _routes = routes;
+            _finalizeWhenNotFound = finalizeWhenNotFound;
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -54,6 +66,16 @@ namespace Hangfire.Dashboard
 
             if (findResult == null)
             {
+                if (_finalizeWhenNotFound)
+                {
+                    // When UsePathBase method is used, such as in MapHangfireDashboard, we should
+                    // set 404 status code explicitly to handle non-found endpoints, because no one
+                    // will do this for us.
+                    // https://github.com/HangfireIO/Hangfire/issues/1729
+                    // https://github.com/HangfireIO/Hangfire/issues/2541
+                    SetResponseStatusCode(httpContext, (int)HttpStatusCode.NotFound);
+                }
+
                 await _next.Invoke(httpContext);
                 return;
             }

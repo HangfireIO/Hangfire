@@ -58,7 +58,7 @@ namespace Hangfire
 
             var pipeline = app
                 .UsePathBase(pattern)
-                .UseMiddleware<AspNetCoreDashboardMiddleware>(storage, options, routes)
+                .UseMiddleware<AspNetCoreDashboardMiddleware>(storage, options, routes, true)
                 .Build();
 
             return endpoints.Map(pattern + "/{**path}", pipeline);
