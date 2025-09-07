@@ -310,7 +310,14 @@ namespace Hangfire.Server
 
         private static ILog GetLogger()
         {
-            return LogProvider.GetLogger(typeof(AspNetShutdownDetector));
+            try
+            {
+                return LogProvider.GetCurrentLogProvider().GetLogger(typeof(AspNetShutdownDetector).FullName!); // TODO: Get safe logger instead
+            }
+            catch (Exception)
+            {
+                return LogProvider.NoOpLogger.Instance;
+            }
         }
     }
 }

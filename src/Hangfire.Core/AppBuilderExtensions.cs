@@ -341,7 +341,7 @@ namespace Hangfire
 
         private static void OnAppDisposing(object state)
         {
-            var logger = LogProvider.GetLogger(typeof(AppBuilderExtensions));
+            var logger = LogProvider.GetCurrentLogProvider().GetLogger(typeof(AppBuilderExtensions).FullName!); // TODO: Get safe logger instead
             logger.Info("Web application is shutting down via OWIN's host.OnAppDisposing callback.");
             ((IDisposable) state).Dispose();
             var server = state as BackgroundJobServer;
