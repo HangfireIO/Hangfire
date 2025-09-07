@@ -66,8 +66,8 @@ namespace Hangfire
             [NotNull] JobStorage storage, 
             [NotNull] IJobFilterProvider filterProvider,
             [NotNull] ITimeZoneResolver timeZoneResolver,
-            [NotNull] ILog logger)
-            : this(storage, new BackgroundJobFactory(filterProvider), timeZoneResolver, static () => DateTime.UtcNow, logger)
+            [NotNull] ILogProvider logProvider)
+            : this(storage, new BackgroundJobFactory(filterProvider), timeZoneResolver, static () => DateTime.UtcNow, logProvider)
         {
         }
 
@@ -76,7 +76,7 @@ namespace Hangfire
             [NotNull] IJobFilterProvider filterProvider, 
             [NotNull] ITimeZoneResolver timeZoneResolver,
             [NotNull] Func<DateTime> nowFactory)
-            : this(storage, new BackgroundJobFactory(filterProvider), timeZoneResolver, nowFactory, LogProvider.For<RecurringJobManager>())
+            : this(storage, new BackgroundJobFactory(filterProvider), timeZoneResolver, nowFactory, null)
         {
         }
 
@@ -86,7 +86,7 @@ namespace Hangfire
         }
 
         public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IBackgroundJobFactory factory, [NotNull] ITimeZoneResolver timeZoneResolver)
-            : this(storage, factory, timeZoneResolver, static () => DateTime.UtcNow, LogProvider.For<RecurringJobManager>())
+            : this(storage, factory, timeZoneResolver, static () => DateTime.UtcNow, null)
         {
         }
 
@@ -95,8 +95,8 @@ namespace Hangfire
             [NotNull] JobStorage storage,
             [NotNull] IBackgroundJobFactory factory,
             [NotNull] ITimeZoneResolver timeZoneResolver,
-            [NotNull] ILog logger)
-            : this(storage, factory, timeZoneResolver, static () => DateTime.UtcNow, logger)
+            [CanBeNull] ILogProvider? logProvider)
+            : this(storage, factory, timeZoneResolver, static () => DateTime.UtcNow, logProvider)
         {
         }
 
@@ -105,13 +105,16 @@ namespace Hangfire
             [NotNull] IBackgroundJobFactory factory,
             [NotNull] ITimeZoneResolver timeZoneResolver,
             [NotNull] Func<DateTime> nowFactory,
-            [NotNull] ILog logger)
+            [CanBeNull] ILogProvider? logProvider)
         {
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
             _timeZoneResolver = timeZoneResolver ?? throw new ArgumentNullException(nameof(timeZoneResolver));
             _nowFactory = nowFactory ?? throw new ArgumentNullException(nameof(nowFactory));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+            logProvider ??= LogProvider.GetCurrentLogProvider();
+
+            _logger = logProvider.GetLogger(GetType().FullName!); // TODO: Obtain safe logger here
             _profiler = new SlowLogProfiler(_logger);
         }
 

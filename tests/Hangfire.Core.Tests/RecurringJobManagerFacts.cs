@@ -28,7 +28,7 @@ namespace Hangfire.Core.Tests
         private readonly Func<DateTime> _nowFactory;
         private readonly BackgroundJob _backgroundJob;
         private readonly Mock<ITimeZoneResolver> _timeZoneResolver;
-        private readonly Mock<ILog> _logger;
+        private readonly Mock<ILogProvider> _logProvider;
 
         public RecurringJobManagerFacts()
         {
@@ -39,7 +39,8 @@ namespace Hangfire.Core.Tests
             _storage = new Mock<JobStorage>();
             _factory = new Mock<IBackgroundJobFactory>();
             _stateMachine = new Mock<IStateMachine>();
-            _logger = new Mock<ILog>();
+            _logProvider = new Mock<ILogProvider>();
+            _logProvider.Setup(x => x.GetLogger(It.IsAny<string>())).Returns(new Mock<ILog>().Object);
             _factory.SetupGet(x => x.StateMachine).Returns(_stateMachine.Object);
             _nowFactory = () => _now;
 
@@ -82,7 +83,7 @@ namespace Hangfire.Core.Tests
         public void Ctor_ThrowsAnException_WhenTimeZoneResolverIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new RecurringJobManager(_storage.Object, _factory.Object, null, _nowFactory, _logger.Object));
+                () => new RecurringJobManager(_storage.Object, _factory.Object, null, _nowFactory, _logProvider.Object));
 
             Assert.Equal("timeZoneResolver", exception.ParamName);
         }
@@ -91,18 +92,16 @@ namespace Hangfire.Core.Tests
         public void Ctor_ThrowsAnException_WhenNowFactoryIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new RecurringJobManager(_storage.Object, _factory.Object, _timeZoneResolver.Object, null, _logger.Object));
+                () => new RecurringJobManager(_storage.Object, _factory.Object, _timeZoneResolver.Object, null, _logProvider.Object));
 
             Assert.Equal("nowFactory", exception.ParamName);
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenLoggerIsNull()
+        public void Ctor_DoesNotThrow_WhenLoggerIsNull()
         {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new RecurringJobManager(_storage.Object, _factory.Object, _timeZoneResolver.Object, _nowFactory, null));
-
-            Assert.Equal("logger", exception.ParamName);
+            var manager = new RecurringJobManager(_storage.Object, _factory.Object, _timeZoneResolver.Object, _nowFactory, null);
+            Assert.NotNull(manager);
         }
 
         [Fact]
@@ -1034,7 +1033,7 @@ namespace Hangfire.Core.Tests
 
         private RecurringJobManager CreateManager()
         {
-            return new RecurringJobManager(_storage.Object, _factory.Object, _timeZoneResolver.Object, _nowFactory, _logger.Object);
+            return new RecurringJobManager(_storage.Object, _factory.Object, _timeZoneResolver.Object, _nowFactory, _logProvider.Object);
         }
 
         [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
