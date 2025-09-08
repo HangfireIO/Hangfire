@@ -42,22 +42,31 @@ namespace Hangfire.Core.Tests.Server
 
             _connection
                 .Setup(x => x.GetFirstByLowestScoreFromSet("schedule", 0, It.Is<double>(time => time > 0)))
-                .Returns(_schedule.FirstOrDefault);
+                .Returns(() =>
+                {
+                    lock (_schedule) return _schedule.FirstOrDefault();
+                });
             
             _connection
                 .Setup(x => x.GetFirstByLowestScoreFromSet("schedule", 0, It.Is<double>(time => time > 0), It.IsAny<int>()))
-                .Returns(_schedule.ToList);
+                .Returns(() =>
+                {
+                    lock (_schedule) return _schedule.ToList();
+                });
 
             _stateChanger
                 .Setup(x => x.ChangeState(It.IsNotNull<StateChangeContext>()))
                 .Callback<StateChangeContext>(ctx =>
                 {
-                    if (!(ctx.NewState is ScheduledState)) _schedule.Remove(ctx.BackgroundJobId);
+                    if (!(ctx.NewState is ScheduledState)) lock (_schedule) _schedule.Remove(ctx.BackgroundJobId);
                 });
 
             _transaction
                 .Setup(x => x.RemoveFromSet("schedule", It.IsNotNull<string>()))
-                .Callback<string, string>((key, value) => _schedule.Remove(value));
+                .Callback<string, string>((key, value) =>
+                {
+                    lock (_schedule) _schedule.Remove(value);
+                });
         }
 
         [Fact]
@@ -79,7 +88,7 @@ namespace Hangfire.Core.Tests.Server
             EnableBatching(batching);
 
             var scheduler = CreateScheduler(maxParallelism);
-            _schedule.Add(JobId);
+            lock (_schedule) _schedule.Add(JobId);
             
             scheduler.Execute(_context.Object);
 
@@ -102,8 +111,11 @@ namespace Hangfire.Core.Tests.Server
             EnableBatching(batching);
 
             // Arrange
-            _schedule.Add("default:some-id");
-            _schedule.Add("critical:another-id");
+            lock (_schedule)
+            {
+                _schedule.Add("default:some-id");
+                _schedule.Add("critical:another-id");
+            }
 
             var scheduler = CreateScheduler(maxParallelism);
 
@@ -128,8 +140,11 @@ namespace Hangfire.Core.Tests.Server
             // Arrange
             EnableBatching(true);
 
-            _schedule.Add("job-1");
-            _schedule.Add("job-2");
+            lock (_schedule)
+            {
+                _schedule.Add("job-1");
+                _schedule.Add("job-2");
+            }
 
             var scheduler = CreateScheduler(maxParallelism);
 
@@ -153,8 +168,11 @@ namespace Hangfire.Core.Tests.Server
             // Arrange
             EnableBatching(true);
 
-            _schedule.Add("default:some-id");
-            _schedule.Add("critical:another-id");
+            lock (_schedule)
+            {
+                _schedule.Add("default:some-id");
+                _schedule.Add("critical:another-id");
+            }
 
             var scheduler = CreateScheduler(maxParallelism);
 
@@ -181,11 +199,14 @@ namespace Hangfire.Core.Tests.Server
                 .Setup(x => x.GetFirstByLowestScoreFromSet(It.IsAny<string>(), It.IsAny<double>(), It.IsAny<double>(),It.IsAny<int>()))
                 .Throws<NotImplementedException>();
             
-            _schedule.Add("job-1");
+            lock (_schedule) _schedule.Add("job-1");
 
             _connection
                 .Setup(x => x.GetFirstByLowestScoreFromSet("schedule", 0, It.Is<double>(time => time > 0)))
-                .Returns(_schedule.FirstOrDefault);
+                .Returns(() =>
+                {
+                    lock (_schedule) return _schedule.FirstOrDefault();
+                });
 
             var scheduler = CreateScheduler(maxParallelism);
 
@@ -226,7 +247,7 @@ namespace Hangfire.Core.Tests.Server
             _stateChanger
                 .Setup(x => x.ChangeState(It.IsAny<StateChangeContext>()))
                 .Returns<IState>(null);
-            _schedule.Add(JobId);
+            lock (_schedule) _schedule.Add(JobId);
 
             var scheduler = CreateScheduler(maxParallelism);
             
@@ -246,7 +267,7 @@ namespace Hangfire.Core.Tests.Server
             // Arrange
             EnableBatching(batching);
 
-            _schedule.Add(JobId);
+            lock (_schedule) _schedule.Add(JobId);
             _stateChanger
                 .Setup(x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.NewState is EnqueuedState)))
                 .Throws<InvalidOperationException>();
@@ -282,8 +303,11 @@ namespace Hangfire.Core.Tests.Server
             // Arrange
             EnableBatching(batching);
 
-            _schedule.Add(JobId);
-            _schedule.Add("AnotherId");
+            lock (_schedule)
+            {
+                _schedule.Add(JobId);
+                _schedule.Add("AnotherId");
+            }
 
             _stateChanger
                 .Setup(x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.BackgroundJobId == JobId && ctx.NewState is ScheduledState)))
@@ -342,7 +366,7 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             EnableBatching(batching);
-            _schedule.Add(JobId);
+            lock (_schedule) _schedule.Add(JobId);
 
             _connection.Setup(x => x.GetJobData(JobId)).Returns<JobData>(null);
 
@@ -370,7 +394,7 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             EnableBatching(batching);
-            _schedule.Add(JobId);
+            lock (_schedule) _schedule.Add(JobId);
 
             _connection.Setup(x => x.GetJobData(JobId))
                 .Returns(new JobData { State = SucceededState.StateName });
@@ -399,7 +423,7 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             EnableBatching(batching);
-            _schedule.Add(JobId);
+            lock (_schedule) _schedule.Add(JobId);
 
             _connection.Setup(x => x.GetJobData(JobId))
                 .Returns(new JobData { State = ScheduledState.StateName });
@@ -407,7 +431,7 @@ namespace Hangfire.Core.Tests.Server
             _stateChanger
                 .SetupSequence(x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.NewState is EnqueuedState)))
                 .Returns((IState)null)
-                .Returns(() => { _schedule.Remove(JobId); return new EnqueuedState(); });
+                .Returns(() => { lock (_schedule) _schedule.Remove(JobId); return new EnqueuedState(); });
 
             var scheduler = CreateScheduler(maxParallelism);
 

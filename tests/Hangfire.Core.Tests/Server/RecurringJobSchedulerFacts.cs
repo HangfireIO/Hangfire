@@ -66,21 +66,33 @@ namespace Hangfire.Core.Tests.Server
             _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
 
             _connection.Setup(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", 0, JobHelper.ToTimestamp(_nowInstant)))
-                .Returns(() => _schedule.FirstOrDefault());
+                .Returns(() =>
+                {
+                    lock (_schedule) return _schedule.FirstOrDefault();
+                });
 
             _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{RecurringJobId}"))
                 .Returns(_recurringJob);
 
             _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", 0, JobHelper.ToTimestamp(_nowInstant), It.IsAny<int>()))
-                .Returns(() => _schedule.ToList());
+                .Returns(() =>
+                {
+                    lock (_schedule) return _schedule.ToList();
+                });
 
             _transaction = new Mock<IWriteOnlyTransaction>();
             _transaction
                 .Setup(x => x.RemoveFromSet("recurring-jobs", It.IsNotNull<string>()))
-                .Callback<string, string>((key, value) => _schedule.Remove(value));
+                .Callback<string, string>((key, value) =>
+                {
+                    lock (_schedule) _schedule.Remove(value);
+                });
             _transaction
                 .Setup(x => x.AddToSet("recurring-jobs", It.IsNotNull<string>(), It.IsAny<double>()))
-                .Callback<string, string, double>((key, value, score) => _schedule.Remove(value));
+                .Callback<string, string, double>((key, value, score) =>
+                {
+                    lock (_schedule) _schedule.Remove(value);
+                });
 
             _connection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
 
@@ -362,9 +374,12 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             EnableBatching(batching);
-            
-            _schedule.Clear();
-            _schedule.Add("non-existing-job");
+
+            lock (_schedule)
+            {
+                _schedule.Clear();
+                _schedule.Add("non-existing-job");
+            }
 
             var scheduler = CreateScheduler(maxParallelism);
 
@@ -1353,7 +1368,7 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             EnableBatching(batching);
-            _schedule.Add("AnotherId");
+            lock (_schedule) _schedule.Add("AnotherId");
             _connection.Setup(x => x.GetAllEntriesFromHash("recurring-job:AnotherId"))
                 .Returns(_recurringJob);
 
@@ -1381,7 +1396,7 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             EnableBatching(batching);
-            _schedule.Add("AnotherId");
+            lock (_schedule) _schedule.Add("AnotherId");
             _connection.Setup(x => x.GetAllEntriesFromHash("recurring-job:AnotherId")).Returns(_recurringJob);
             _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{RecurringJobId}")).Returns<Dictionary<string, string>>(null);
 
