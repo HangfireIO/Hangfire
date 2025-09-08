@@ -95,8 +95,8 @@ namespace Hangfire
         {
         }
 
-        public BackgroundJobClient([NotNull] JobStorage storage, [NotNull] IJobFilterProvider filterProvider, [NotNull] ILog logger)
-            : this(storage, new BackgroundJobFactory(filterProvider), new BackgroundJobStateChanger(filterProvider), logger)
+        public BackgroundJobClient([NotNull] JobStorage storage, [NotNull] IJobFilterProvider filterProvider, [CanBeNull] ILogProvider? logProvider)
+            : this(storage, new BackgroundJobFactory(filterProvider), new BackgroundJobStateChanger(filterProvider), logProvider)
         {
         }
 
@@ -116,7 +116,7 @@ namespace Hangfire
             [NotNull] JobStorage storage,
             [NotNull] IBackgroundJobFactory factory,
             [NotNull] IBackgroundJobStateChanger stateChanger)
-            : this(storage, factory, stateChanger, LogProvider.For<BackgroundJobClient>())
+            : this(storage, factory, stateChanger, null)
         {
         }
 
@@ -125,12 +125,15 @@ namespace Hangfire
             [NotNull] JobStorage storage,
             [NotNull] IBackgroundJobFactory factory,
             [NotNull] IBackgroundJobStateChanger stateChanger,
-            [NotNull] ILog logger)
+            [CanBeNull] ILogProvider? logProvider)
         {
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
             _stateChanger = stateChanger ?? throw new ArgumentNullException(nameof(stateChanger));
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+            logProvider ??= LogProvider.GetCurrentLogProvider();
+
+            _logger = logProvider.GetLogger(GetType().FullName!); // TODO: Obtain safe logger here
             _profiler = new SlowLogProfiler(_logger);
         }
 

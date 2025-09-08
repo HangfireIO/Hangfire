@@ -33,17 +33,16 @@ namespace Hangfire
         public IBackgroundJobClientV2 GetClientV2(JobStorage storage)
         {
             var logProvider = _serviceProvider.GetRequiredService<ILogProvider>();
-            var logger = logProvider.GetLogger(typeof(BackgroundJobClient).FullName!); // TODO: Ensure logger is wrapped
 
             if (HangfireServiceCollectionExtensions.GetInternalServices(_serviceProvider, out var factory, out var stateChanger, out _))
             {
-                return new BackgroundJobClient(storage, factory, stateChanger, logger);
+                return new BackgroundJobClient(storage, factory, stateChanger, logProvider);
             }
 
             return new BackgroundJobClient(
                 storage,
                 _serviceProvider.GetRequiredService<IJobFilterProvider>(),
-                logger);
+                logProvider);
         }
 
         public IBackgroundJobClient GetClient(JobStorage storage)
@@ -54,7 +53,6 @@ namespace Hangfire
         public IRecurringJobManagerV2 GetManagerV2(JobStorage storage)
         {
             var logProvider = _serviceProvider.GetRequiredService<ILogProvider>();
-            var logger = logProvider.GetLogger(typeof(BackgroundJobClient).FullName!); // TODO: Ensure logger is wrapped
 
             if (HangfireServiceCollectionExtensions.GetInternalServices(_serviceProvider, out var factory, out _, out _))
             {
@@ -62,14 +60,14 @@ namespace Hangfire
                     storage,
                     factory,
                     _serviceProvider.GetRequiredService<ITimeZoneResolver>(),
-                    logger);
+                    logProvider);
             }
 
             return new RecurringJobManager(
                 storage,
                 _serviceProvider.GetRequiredService<IJobFilterProvider>(),
                 _serviceProvider.GetRequiredService<ITimeZoneResolver>(),
-                logger);
+                logProvider);
         }
 
         public IRecurringJobManager GetManager(JobStorage storage)
