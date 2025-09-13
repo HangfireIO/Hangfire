@@ -129,9 +129,7 @@ namespace Hangfire
                     scheduleChanged = true;
                 }
 
-#pragma warning disable 618
-                recurringJob.Queue = options.QueueName;
-#pragma warning restore 618
+                recurringJob.Queue = job.Queue;
                 recurringJob.MisfireHandling = options.MisfireHandling;
                 recurringJob.RetryAttempt = 0;
 

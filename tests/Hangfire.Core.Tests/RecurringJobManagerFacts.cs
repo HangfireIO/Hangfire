@@ -31,7 +31,7 @@ namespace Hangfire.Core.Tests
         public RecurringJobManagerFacts()
         {
             _id = "recurring-job-id";
-            _job = Job.FromExpression(() => Method());
+            _job = Job.FromExpression(() => Method(), "default");
             _backgroundJob = new BackgroundJob("my-id", _job, _now);
             _cronExpression = Cron.Minutely();
             _storage = new Mock<JobStorage>();
@@ -241,6 +241,23 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void AddOrUpdate_SetsJobQueue_WhenStorageSupportsIt()
+        {
+            // Arrange
+            _storage.Setup(x => x.HasFeature(JobStorageFeatures.JobQueueProperty)).Returns(true);
+            var nonDefaultQueue = "my_queue";
+            _job = Job.FromExpression(() => Method(), nonDefaultQueue);
+            var manager = CreateManager();
+
+            // Act
+            manager.AddOrUpdate(_id, _job, "* * * * *", new RecurringJobOptions());
+
+            // Assert
+            _transaction.Verify(x => x.SetRangeInHash($"recurring-job:{_id}", It.Is<Dictionary<string, string>>(
+                dict => dict.ContainsKey("Queue") && dict["Queue"].Equals(nonDefaultQueue))));
+        }
+
+        [Fact]
         public void AddOrUpdate_DoesNotUpdateCreatedAtValue_OfExistingJobs()
         {
             // Arrange
@@ -287,6 +304,7 @@ namespace Hangfire.Core.Tests
         public void AddOrUpdate_EnsuresExistingOldJobsAreUpdated()
         {
             // Arrange
+            _storage.Setup(x => x.HasFeature(JobStorageFeatures.JobQueueProperty)).Returns(true);
             _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}")).Returns(new Dictionary<string, string>
             {
                 { "Cron", _cronExpression },
@@ -607,6 +625,7 @@ namespace Hangfire.Core.Tests
         public void AddOrUpdate_DoesNotUpdate_UnchangedRecurringJob()
         {
             // Arrange
+            _storage.Setup(x => x.HasFeature(JobStorageFeatures.JobQueueProperty)).Returns(true);
             _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}")).Returns(new Dictionary<string, string>
             {
                 { "Queue", "default" },
@@ -633,6 +652,7 @@ namespace Hangfire.Core.Tests
         public void AddOrUpdate_DoesNotUpdateRecurringJob_WhenErrorFieldIsSetToEmptyString()
         {
             // Arrange
+            _storage.Setup(x => x.HasFeature(JobStorageFeatures.JobQueueProperty)).Returns(true);
             _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}")).Returns(new Dictionary<string, string>
             {
                 { "Queue", "default" },
@@ -660,6 +680,7 @@ namespace Hangfire.Core.Tests
         public void AddOrUpdate_DoesNotUpdateRecurringJob_WhenLastJobIdFieldIsSetToEmptyString()
         {
             // Arrange
+            _storage.Setup(x => x.HasFeature(JobStorageFeatures.JobQueueProperty)).Returns(true);
             _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}")).Returns(new Dictionary<string, string>
             {
                 { "Queue", "default" },
