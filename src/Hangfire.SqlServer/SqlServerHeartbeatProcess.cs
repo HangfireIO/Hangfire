@@ -44,6 +44,7 @@ namespace Hangfire.SqlServer
             ExecuteCore(context.Logger, context.ShutdownToken);
         }
 
+        [Obsolete("IServerComponent interface will be removed in 2.0.0.")]
         public void Execute(CancellationToken cancellationToken)
         {
             ExecuteCore(LogProvider.For<SqlServerHeartbeatProcess>(), cancellationToken);

@@ -17,6 +17,7 @@ using System;
 using System.Data.Common;
 using System.Reflection;
 using Hangfire.Annotations;
+using Hangfire.Logging;
 #if FEATURE_TRANSACTIONSCOPE
 using System.Transactions;
 #else
@@ -234,5 +235,21 @@ namespace Hangfire.SqlServer
         /// </remarks>
         public bool DisableTransactionScope { get; set; }
 #endif
+
+        /// <summary>
+        /// Gets or sets an <see cref="ILogProvider"/> implementation that will be used in the storage
+        /// for logging purposes. When not specified, the return value of the <see cref="LogProvider.GetCurrentLogProvider"/>
+        /// method will be used.
+        /// </summary>
+        [CanBeNull]
+        public ILogProvider? LogProvider { get; set; }
+
+        /// <summary>
+        /// Creates a shallow copy of the current instance.
+        /// </summary>
+        public SqlServerStorageOptions Clone()
+        {
+            return (SqlServerStorageOptions)MemberwiseClone();
+        }
     }
 }

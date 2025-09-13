@@ -17,6 +17,7 @@ using System;
 using System.Data.Common;
 using System.Threading;
 using Hangfire.Annotations;
+using Hangfire.Logging;
 using Hangfire.SqlServer;
 
 // ReSharper disable once CheckNamespace
@@ -33,8 +34,8 @@ namespace Hangfire
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             if (nameOrConnectionString == null) throw new ArgumentNullException(nameof(nameOrConnectionString));
 
-            var storage = new SqlServerStorage(nameOrConnectionString);
-            return configuration.UseStorage(storage).UseSqlServerStorageCommonMetrics();
+            var options = new SqlServerStorageOptions();
+            return UseSqlServerStorage(configuration, nameOrConnectionString, options);
         }
 
         public static IGlobalConfiguration<SqlServerStorage> UseSqlServerStorage(
@@ -45,6 +46,9 @@ namespace Hangfire
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             if (nameOrConnectionString == null) throw new ArgumentNullException(nameof(nameOrConnectionString));
             if (options == null) throw new ArgumentNullException(nameof(options));
+
+            options = options.Clone();
+            options.LogProvider ??= configuration.ResolveService<ILogProvider>();
 
             var storage = new SqlServerStorage(nameOrConnectionString, options);
             return configuration.UseStorage(storage).UseSqlServerStorageCommonMetrics();
@@ -57,8 +61,8 @@ namespace Hangfire
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             if (connectionFactory == null) throw new ArgumentNullException(nameof(connectionFactory));
 
-            var storage = new SqlServerStorage(connectionFactory);
-            return configuration.UseStorage(storage).UseSqlServerStorageCommonMetrics();
+            var options = new SqlServerStorageOptions();
+            return UseSqlServerStorage(configuration, connectionFactory, options);
         }
 
         public static IGlobalConfiguration<SqlServerStorage> UseSqlServerStorage(
@@ -69,6 +73,9 @@ namespace Hangfire
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             if (connectionFactory == null) throw new ArgumentNullException(nameof(connectionFactory));
             if (options == null) throw new ArgumentNullException(nameof(options));
+
+            options = options.Clone();
+            options.LogProvider ??= configuration.ResolveService<ILogProvider>();
 
             var storage = new SqlServerStorage(connectionFactory, options);
             return configuration.UseStorage(storage).UseSqlServerStorageCommonMetrics();

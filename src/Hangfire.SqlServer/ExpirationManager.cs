@@ -63,6 +63,7 @@ namespace Hangfire.SqlServer
             _checkInterval = checkInterval;
         }
 
+        [Obsolete("IServerComponent interface will be removed in 2.0.0.")]
         public void Execute(CancellationToken cancellationToken)
         {
             ExecuteCore(_storage, LogProvider.For<ExpirationManager>(), cancellationToken);

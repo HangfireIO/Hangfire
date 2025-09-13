@@ -461,6 +461,13 @@ namespace Hangfire
             GetTopLevelConfiguration(configuration).RegisterService<T>(service);
         }
 
+        public static T ResolveService<T>([NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+            return GetTopLevelConfiguration(configuration).ResolveService<T>();
+        }
+
         private static GlobalConfiguration GetTopLevelConfiguration(IGlobalConfiguration configuration)
         {
             return configuration switch

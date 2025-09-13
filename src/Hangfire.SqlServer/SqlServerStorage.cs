@@ -47,6 +47,7 @@ namespace Hangfire.SqlServer
         private readonly Func<DbConnection> _connectionFactory;
         private readonly SqlServerStorageOptions _options;
         private readonly string? _connectionString;
+        private ILogProvider _logProvider;
         private string _escapedSchemaName;
         private SqlServerHeartbeatProcess _heartbeatProcess;
 
@@ -452,16 +453,18 @@ namespace Hangfire.SqlServer
 #endif
         }
 
+        [System.Diagnostics.CodeAnalysis.MemberNotNull(nameof(_logProvider))]
         [System.Diagnostics.CodeAnalysis.MemberNotNull(nameof(_escapedSchemaName))]
         [System.Diagnostics.CodeAnalysis.MemberNotNull(nameof(_heartbeatProcess))]
         [System.Diagnostics.CodeAnalysis.MemberNotNull(nameof(QueueProviders))]
         private void Initialize()
         {
+            _logProvider = _options.LogProvider ?? LogProvider.GetCurrentLogProvider();
             _escapedSchemaName = _options.SchemaName.Replace("]", "]]");
 
             if (_options.PrepareSchemaIfNecessary)
             {
-                var log = LogProvider.GetLogger(typeof(SqlServerObjectsInstaller));
+                var log = _logProvider.GetLogger(typeof(SqlServerObjectsInstaller).FullName!); // TODO: Obtain safe logger
                 const int RetryAttempts = 3;
 
                 log.Info("Start installing Hangfire SQL objects...");
@@ -521,7 +524,7 @@ namespace Hangfire.SqlServer
                 }
                 catch (Exception ex)
                 {
-                    var log = LogProvider.GetLogger(typeof(SqlServerStorage));
+                    var log = _logProvider.GetLogger(typeof(SqlServerStorage).FullName!); // TODO: Obtain safe logger
                     log.ErrorException("Was unable to use the TryAutoDetectSchemaDependentOptions option due to an exception.", ex);
                 }
             }
