@@ -109,7 +109,7 @@ namespace Hangfire.Server
                 // SignalR and Kudu service by checking the UnsafeIISMethods.MgdHasConfigChanged
                 // method. But I was failed to find this method in the recent ASP.NET sources.
                 // But nevertheless it may be useful to have it for older versions.
-                InitializeMgdHasConfigChanged(ref _isSucceeded);                
+                InitializeMgdHasConfigChanged(ref _isSucceeded);
 
                 if (_isSucceeded)
                 {
@@ -117,8 +117,8 @@ namespace Hangfire.Server
                     {
                         Name = "AspNetShutdownDetector",
                         IsBackground = true,
-                        Priority = ThreadPriority.AboveNormal
                     };
+                    _checkForShutdownThread.Start();
                 }
             }
             catch (Exception ex) when (ex.IsCatchableExceptionType())
