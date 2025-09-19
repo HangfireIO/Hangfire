@@ -343,9 +343,10 @@ namespace Hangfire
         {
             var logger = LogProvider.GetLogger(typeof(AppBuilderExtensions));
             logger.Info("Web application is shutting down via OWIN's host.OnAppDisposing callback.");
+
             ((IDisposable) state).Dispose();
-            var server = state as BackgroundJobServer;
-            if (server != null)
+
+            if (state is IBackgroundProcessingServer server)
                 Servers.TryRemove(server, out _);
         }
 
