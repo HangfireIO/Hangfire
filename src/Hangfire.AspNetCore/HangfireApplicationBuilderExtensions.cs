@@ -80,11 +80,12 @@ namespace Hangfire
             options.Activator ??= services.GetService<JobActivator>();
             options.FilterProvider ??= services.GetService<IJobFilterProvider>();
             options.TimeZoneResolver ??= services.GetService<ITimeZoneResolver>();
-            options.LogProvider ??= services.GetService<ILogProvider>();
+
+            var logProvider= services.GetService<ILogProvider>();
 
             services.RegisterHangfireServer(HangfireServiceCollectionExtensions.GetInternalServices(services, out var factory, out var stateChanger, out var performer)
-                ? new BackgroundJobServer(options, storage, additionalProcesses, factory, performer, stateChanger)
-                : new BackgroundJobServer(options, storage, additionalProcesses));
+                ? new BackgroundJobServer(options, storage, additionalProcesses, logProvider, factory, performer, stateChanger)
+                : new BackgroundJobServer(options, storage, additionalProcesses, logProvider));
 
             return app;
         }

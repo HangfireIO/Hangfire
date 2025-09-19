@@ -192,9 +192,6 @@ namespace Hangfire
         [CanBeNull]
         public Action<Thread>? WorkerThreadConfigurationAction { get; set; }
 
-        [CanBeNull]
-        public ILogProvider? LogProvider { get; set; }
-
         /// <summary>
         /// Experimental option for schedulers, but not for workers. Gets or sets the
         /// maximum degree of parallelism for <see cref="RecurringJobScheduler"/>

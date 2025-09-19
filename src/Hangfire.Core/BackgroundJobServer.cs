@@ -79,7 +79,7 @@ namespace Hangfire
             [NotNull] BackgroundJobServerOptions options,
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses)
-            : this(options, storage, additionalProcesses, null, null, null)
+            : this(options, storage, additionalProcesses, null)
         {
         }
 
@@ -87,6 +87,16 @@ namespace Hangfire
             [NotNull] BackgroundJobServerOptions options,
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses,
+            [CanBeNull] ILogProvider? logProvider)
+            : this(options, storage, additionalProcesses, logProvider, null, null, null)
+        {
+        }
+
+        public BackgroundJobServer(
+            [NotNull] BackgroundJobServerOptions options,
+            [NotNull] JobStorage storage,
+            [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses,
+            [CanBeNull] ILogProvider? logProvider,
             [CanBeNull] IBackgroundJobFactory? factory,
             [CanBeNull] IBackgroundJobPerformer? performer,
             [CanBeNull] IBackgroundJobStateChanger? stateChanger)
@@ -96,6 +106,7 @@ namespace Hangfire
             if (additionalProcesses == null) throw new ArgumentNullException(nameof(additionalProcesses));
 
             _options = options;
+
             var processes = new List<IBackgroundProcessDispatcherBuilder>();
             processes.AddRange(GetRequiredProcesses(factory, performer, stateChanger));
             processes.AddRange(additionalProcesses.Select(static x => x.UseBackgroundPool(1)));
@@ -106,7 +117,7 @@ namespace Hangfire
                 { "WorkerCount", options.WorkerCount }
             };
 
-            var logProvider = options.LogProvider ?? LogProvider.GetCurrentLogProvider();
+            logProvider ??= LogProvider.GetCurrentLogProvider();
             _logger = logProvider.GetLogger(typeof(BackgroundJobServer).FullName!); // TODO: Get wrapped logger instead
 
             _logger.Info($"Starting Hangfire Server using job storage: '{storage}'");
@@ -152,7 +163,7 @@ namespace Hangfire
             [CanBeNull] IBackgroundJobFactory? factory,
             [CanBeNull] IBackgroundJobPerformer? performer,
             [CanBeNull] IBackgroundJobStateChanger? stateChanger)
-            : this(options.CloneWithFilterAndActivator(filterProvider, activator), storage, additionalProcesses, factory, performer, stateChanger)
+            : this(options.CloneWithFilterAndActivator(filterProvider, activator), storage, additionalProcesses, null, factory, performer, stateChanger)
         {
         }
 

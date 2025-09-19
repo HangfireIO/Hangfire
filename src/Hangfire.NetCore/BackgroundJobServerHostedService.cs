@@ -20,6 +20,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Client;
+using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.States;
 using Microsoft.Extensions.Hosting;
@@ -37,6 +38,7 @@ namespace Hangfire
         private readonly IBackgroundJobFactory? _factory;
         private readonly IBackgroundJobPerformer? _performer;
         private readonly IBackgroundJobStateChanger? _stateChanger;
+        private readonly ILogProvider? _logProvider;
 
         private IBackgroundProcessingServer? _processingServer;
 
@@ -87,7 +89,26 @@ namespace Hangfire
             ,
             [CanBeNull] IHostApplicationLifetime? hostApplicationLifetime
 #endif
-            )
+        )
+            : this(storage, options, additionalProcesses, factory, performer, stateChanger,
+#if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
+                hostApplicationLifetime,
+#endif
+                null)
+        {
+        }
+
+        public BackgroundJobServerHostedService(
+            [NotNull] JobStorage storage,
+            [NotNull] BackgroundJobServerOptions options,
+            [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses,
+            [CanBeNull] IBackgroundJobFactory? factory,
+            [CanBeNull] IBackgroundJobPerformer? performer,
+            [CanBeNull] IBackgroundJobStateChanger? stateChanger,
+#if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
+            [CanBeNull] IHostApplicationLifetime? hostApplicationLifetime,
+#endif
+            [CanBeNull] ILogProvider? logProvider)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
@@ -102,6 +123,7 @@ namespace Hangfire
             _hostApplicationLifetime = hostApplicationLifetime;
             _hostApplicationLifetime?.ApplicationStopping.Register(SendStopSignal);
 #endif
+            _logProvider = logProvider;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -155,8 +177,8 @@ namespace Hangfire
         private void InitializeProcessingServer()
         {
             _processingServer = _factory != null && _performer != null && _stateChanger != null
-                ? new BackgroundJobServer(_options, _storage, _additionalProcesses, _factory, _performer, _stateChanger)
-                : new BackgroundJobServer(_options, _storage, _additionalProcesses);
+                ? new BackgroundJobServer(_options, _storage, _additionalProcesses, _logProvider, _factory, _performer, _stateChanger)
+                : new BackgroundJobServer(_options, _storage, _additionalProcesses, _logProvider);
         }
 
 #if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER

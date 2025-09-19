@@ -47,7 +47,7 @@ namespace Hangfire.SqlServer
         private readonly Func<DbConnection> _connectionFactory;
         private readonly SqlServerStorageOptions _options;
         private readonly string? _connectionString;
-        private ILogProvider _logProvider;
+        private readonly ILogProvider _logProvider;
         private string _escapedSchemaName;
         private SqlServerHeartbeatProcess _heartbeatProcess;
 
@@ -86,6 +86,14 @@ namespace Hangfire.SqlServer
         /// a valid SQL Server connection string nor the name of a connection string in the application
         /// config file.</exception>
         public SqlServerStorage(string nameOrConnectionString, SqlServerStorageOptions options)
+            : this(nameOrConnectionString, options, null)
+        {
+        }
+
+        public SqlServerStorage(
+            [NotNull] string nameOrConnectionString,
+            [NotNull] SqlServerStorageOptions options,
+            [CanBeNull] ILogProvider? logProvider)
         {
             if (nameOrConnectionString == null) throw new ArgumentNullException(nameof(nameOrConnectionString));
             if (options == null) throw new ArgumentNullException(nameof(options));
@@ -93,6 +101,7 @@ namespace Hangfire.SqlServer
             _connectionString = GetConnectionString(nameOrConnectionString);
             _connectionFactory = DefaultConnectionFactory;
             _options = options;
+            _logProvider = logProvider ?? LogProvider.GetCurrentLogProvider();
 
             Initialize();
         }
@@ -113,10 +122,19 @@ namespace Hangfire.SqlServer
         /// to query the data, with the given options.
         /// </summary>
         public SqlServerStorage([NotNull] DbConnection existingConnection, [NotNull] SqlServerStorageOptions options)
+            : this(existingConnection, options, null)
+        {
+        }
+
+        public SqlServerStorage(
+            [NotNull] DbConnection existingConnection,
+            [NotNull] SqlServerStorageOptions options,
+            [CanBeNull] ILogProvider? logProvider)
         {
             _existingConnection = existingConnection ?? throw new ArgumentNullException(nameof(existingConnection));
             _connectionFactory = () => throw new InvalidOperationException("Existing connection should be used when specified");
             _options = options ?? throw new ArgumentNullException(nameof(options));
+            _logProvider = logProvider ?? LogProvider.GetCurrentLogProvider();
 
             Initialize();
         }
@@ -137,9 +155,18 @@ namespace Hangfire.SqlServer
         /// to create new database connections for querying the data.
         /// </summary>
         public SqlServerStorage([NotNull] Func<DbConnection> connectionFactory, [NotNull] SqlServerStorageOptions options)
+            : this(connectionFactory, options, null)
+        {
+        }
+
+        public SqlServerStorage(
+            [NotNull] Func<DbConnection> connectionFactory,
+            [NotNull] SqlServerStorageOptions options,
+            [CanBeNull] ILogProvider? logProvider)
         {
             _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
             _options = options ?? throw new ArgumentNullException(nameof(options));
+            _logProvider = logProvider ?? LogProvider.GetCurrentLogProvider();
 
             Initialize();
         }
@@ -453,13 +480,11 @@ namespace Hangfire.SqlServer
 #endif
         }
 
-        [System.Diagnostics.CodeAnalysis.MemberNotNull(nameof(_logProvider))]
         [System.Diagnostics.CodeAnalysis.MemberNotNull(nameof(_escapedSchemaName))]
         [System.Diagnostics.CodeAnalysis.MemberNotNull(nameof(_heartbeatProcess))]
         [System.Diagnostics.CodeAnalysis.MemberNotNull(nameof(QueueProviders))]
         private void Initialize()
         {
-            _logProvider = _options.LogProvider ?? LogProvider.GetCurrentLogProvider();
             _escapedSchemaName = _options.SchemaName.Replace("]", "]]");
 
             if (_options.PrepareSchemaIfNecessary)

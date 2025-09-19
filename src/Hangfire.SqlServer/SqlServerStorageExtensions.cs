@@ -47,10 +47,11 @@ namespace Hangfire
             if (nameOrConnectionString == null) throw new ArgumentNullException(nameof(nameOrConnectionString));
             if (options == null) throw new ArgumentNullException(nameof(options));
 
-            options = options.Clone();
-            options.LogProvider ??= configuration.ResolveService<ILogProvider>();
+            var storage = new SqlServerStorage(
+                nameOrConnectionString,
+                new SqlServerStorageOptions(),
+                configuration.ResolveService<ILogProvider>());
 
-            var storage = new SqlServerStorage(nameOrConnectionString, options);
             return configuration.UseStorage(storage).UseSqlServerStorageCommonMetrics();
         }
 
@@ -74,10 +75,11 @@ namespace Hangfire
             if (connectionFactory == null) throw new ArgumentNullException(nameof(connectionFactory));
             if (options == null) throw new ArgumentNullException(nameof(options));
 
-            options = options.Clone();
-            options.LogProvider ??= configuration.ResolveService<ILogProvider>();
+            var storage = new SqlServerStorage(
+                connectionFactory,
+                options,
+                configuration.ResolveService<ILogProvider>());
 
-            var storage = new SqlServerStorage(connectionFactory, options);
             return configuration.UseStorage(storage).UseSqlServerStorageCommonMetrics();
         }
 
