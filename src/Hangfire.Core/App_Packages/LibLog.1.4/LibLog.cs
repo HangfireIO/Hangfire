@@ -329,6 +329,7 @@ namespace Hangfire.Logging
     public static class LogProvider
     {
         private static Lazy<ILogProvider?> _resolvedLogProvider = new Lazy<ILogProvider?>(ResolveLogProvider, LazyThreadSafetyMode.PublicationOnly);
+        private static ILogProvider? _currentLogProvider;
 
         /// <summary>
         /// Gets a logger for the specified type.
@@ -379,17 +380,23 @@ namespace Hangfire.Logging
         /// <returns>An instance of <see cref="ILogProvider"/>, or <see langword="null" /> when it is not registered.</returns>
         public static ILogProvider GetCurrentLogProvider()
         {
-            return GlobalConfiguration.Configuration.ResolveService<ILogProvider>();
+            return _currentLogProvider ?? _resolvedLogProvider.Value ?? NoOpLogProvider.Instance;
         }
 
         /// <summary>
         /// Sets the current log provider.
         /// </summary>
         /// <param name="logProvider">The log provider.</param>
-        [Obsolete]
         public static void SetCurrentLogProvider(ILogProvider? logProvider)
         {
-            GlobalConfiguration.Configuration.UseLogProvider(logProvider ?? NoOpLogProvider.Instance);
+            // We can not use GlobalConfiguration.Configuration.Register here as with other
+            // static members, like JobStorage.Current and JobActivator.Current, because we
+            // should make the value accessible as soon as possible to allow other services
+            // that can be configured with the IGlobalConfiguration pipeline to use the new
+            // value, if they are based on obsolete LogProvider.GetLogger method.
+            // Some contexts, like modern .NET Core applications flush the current
+            // GlobalConfiguration.Configuration value only after everything is configured.
+            _currentLogProvider = logProvider; // ?? NoOpLogProvider.Instance?
         }
 
         internal delegate bool IsLoggerAvailable();

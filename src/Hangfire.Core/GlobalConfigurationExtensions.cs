@@ -99,7 +99,10 @@ namespace Hangfire
             if (provider == null) throw new ArgumentNullException(nameof(provider));
 
             configuration.RegisterService<ILogProvider>(provider);
-            return configuration.Use(provider, entryAction: null);
+
+            // Using LogProvider.SetCurrentLogProvider for backward compatibility, since there are
+            // still a lot of consumers of the obsolete `LogProvider.GetLogger` method.
+            return configuration.Use(provider, static x => LogProvider.SetCurrentLogProvider(x));
         }
 
         public static IGlobalConfiguration<NLogLogProvider> UseNLogLogProvider(
