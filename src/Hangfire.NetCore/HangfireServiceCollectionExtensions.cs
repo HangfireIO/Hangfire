@@ -48,9 +48,9 @@ namespace Hangfire
             if (services == null) throw new ArgumentNullException(nameof(services));
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
-            services.TryAddSingletonChecked(static x => x.GetRequiredService<GlobalConfiguration>().ResolveService<JobStorage>());
-            services.TryAddSingletonChecked(static x => x.GetRequiredService<GlobalConfiguration>().ResolveService<JobActivator>());
-            services.TryAddSingletonChecked(static x => x.GetRequiredService<GlobalConfiguration>().ResolveService<ILogProvider>());
+            services.TryAddSingleton(static x => x.GetRequiredService<IGlobalConfiguration>().ResolveService<JobStorage>());
+            services.TryAddSingleton(static x => x.GetRequiredService<IGlobalConfiguration>().ResolveService<JobActivator>());
+            services.TryAddSingleton(static x => x.GetRequiredService<IGlobalConfiguration>().ResolveService<ILogProvider>());
 
             services.TryAddSingleton(static _ => DashboardRoutes.Routes);
             services.TryAddSingleton<IJobFilterProvider>(static _ => JobFilterProviders.Providers);
