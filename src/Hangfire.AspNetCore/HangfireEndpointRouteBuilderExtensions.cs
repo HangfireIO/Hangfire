@@ -64,6 +64,23 @@ namespace Hangfire
             return endpoints.Map(pattern + "/{**path}", pipeline);
         }
 
+        public static IEndpointConventionBuilder MapHangfireDashboardWithNoAuthorizationFilters(
+            [NotNull] this IEndpointRouteBuilder endpoints,
+            [NotNull] string pattern = "/hangfire",
+            [CanBeNull] DashboardOptions options = null,
+            [CanBeNull] JobStorage storage = null)
+        {
+            if (endpoints == null) throw new ArgumentNullException(nameof(endpoints));
+
+            options = options ?? new DashboardOptions();
+
+            // We don't require the default LocalRequestsOnlyAuthorizationFilter since we provide our own policy
+            options.Authorization = Enumerable.Empty<IDashboardAuthorizationFilter>();
+            options.AsyncAuthorization = Enumerable.Empty<IDashboardAsyncAuthorizationFilter>();
+
+            return endpoints.MapHangfireDashboard(pattern, options, storage);
+        }
+
         public static IEndpointConventionBuilder MapHangfireDashboardWithAuthorizationPolicy(
             [NotNull] this IEndpointRouteBuilder endpoints,
             [NotNull] string authorizationPolicyName,
@@ -74,14 +91,8 @@ namespace Hangfire
             if (endpoints == null) throw new ArgumentNullException(nameof(endpoints));
             if (authorizationPolicyName == null) throw new ArgumentNullException(nameof(authorizationPolicyName));
 
-            options = options ?? new DashboardOptions();
-
-            // We don't require the default LocalRequestsOnlyAuthorizationFilter since we provide our own policy
-            options.Authorization = Enumerable.Empty<IDashboardAuthorizationFilter>();
-            options.AsyncAuthorization = Enumerable.Empty<IDashboardAsyncAuthorizationFilter>();
-
             return endpoints
-                .MapHangfireDashboard(pattern, options, storage)
+                .MapHangfireDashboardWithNoAuthorizationFilters(pattern, options, storage)
                 .RequireAuthorization(authorizationPolicyName);
         }
     }
