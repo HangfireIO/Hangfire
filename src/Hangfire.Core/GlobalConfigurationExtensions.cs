@@ -82,6 +82,18 @@ namespace Hangfire
             return configuration.Use(provider, static x => LogProvider.SetCurrentLogProvider(x));
         }
 
+        /// <summary>
+        /// Explicitly disables all the logging in Hangfire. Not recommended to use in a production
+        /// application, because logging provides significant benefits in case of exceptions or other
+        /// problems. But it can be useful for testing-related scenarios.
+        /// </summary>
+        public static IGlobalConfiguration<ILogProvider> UseNoOpLogProvider(
+            [NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            return configuration.UseLogProvider(LogProvider.NoOpLogProvider.Instance);
+        }
+
         public static IGlobalConfiguration<NLogLogProvider> UseNLogLogProvider(
             [NotNull] this IGlobalConfiguration configuration)
         {

@@ -421,8 +421,20 @@ namespace Hangfire.Logging
             return null;
         }
 
+        internal sealed class NoOpLogProvider : ILogProvider
+        {
+            public static readonly NoOpLogProvider Instance = new NoOpLogProvider();
+
+            public ILog GetLogger(string name)
+            {
+                return NoOpLogger.Instance;
+            }
+        }
+
         internal sealed class NoOpLogger : ILog
         {
+            public static readonly NoOpLogger Instance = new NoOpLogger();
+
             public bool Log(LogLevel logLevel, Func<string> messageFunc, Exception exception)
             {
                 return false;
