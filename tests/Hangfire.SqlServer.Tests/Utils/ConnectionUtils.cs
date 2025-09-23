@@ -20,6 +20,8 @@ namespace Hangfire.SqlServer.Tests
                 "Hangfire.SqlServer.Tests.netcoreapp3_1"
 #elif NET6_0
                 "Hangfire.SqlServer.Tests.net6_0"
+#elif NET8_0
+                "Hangfire.SqlServer.Tests.net8_0"
 #else
                 "Hangfire.SqlServer.Tests"
 #endif

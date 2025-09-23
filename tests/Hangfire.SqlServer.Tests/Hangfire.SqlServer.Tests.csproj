@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net452;net461;netcoreapp3.1;net6.0</TargetFrameworks>
+    <TargetFrameworks>net452;net461;net6.0;net8.0</TargetFrameworks>
     <NoWarn>0618</NoWarn>
   </PropertyGroup>
 
@@ -30,6 +30,13 @@
   <ItemGroup Condition="'$(TargetFramework)'=='net6.0'">
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" NoWarn="NU1902" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" NoWarn="NU1902" />
+    <PackageReference Include="Dapper" Version="2.1.28" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='net8.0'">
+    <PackageReference Include="System.Data.SqlClient" Version="4.9.0" NoWarn="NU1902" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.1" NoWarn="NU1902" />
     <PackageReference Include="Dapper" Version="2.1.28" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
