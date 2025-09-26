@@ -90,7 +90,6 @@ Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfi
 
     <file src="LICENSE.md" />
     <file src="COPYING" />
-    <file src="COPYING.LESSER" />
     <file src="NOTICES" />
     <file src="LICENSE_STANDARD" />
     <file src="LICENSE_ROYALTYFREE" />

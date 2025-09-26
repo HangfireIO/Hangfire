@@ -37,7 +37,6 @@
 *.txt          text
 *.manifest     text
 COPYING        text
-COPYING.LESSER text
 
 # Configs
 *.config       text

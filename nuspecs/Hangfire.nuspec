@@ -512,7 +512,6 @@ Hangfire.SqlServer.Msmq
     <file src="README.md" />
     <file src="LICENSE.md" />
     <file src="COPYING" />
-    <file src="COPYING.LESSER" />
     <file src="NOTICES" />
     <file src="LICENSE_STANDARD" />
     <file src="LICENSE_ROYALTYFREE" />

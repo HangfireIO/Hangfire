@@ -62,7 +62,6 @@ Task Collect -Depends Test -Description "Copy all artifacts to the build folder.
     Collect-File "README.md"
     Collect-File "LICENSE.md"
     Collect-File "NOTICES"
-    Collect-File "COPYING.LESSER"
     Collect-File "COPYING"
     Collect-File "LICENSE_STANDARD"
     Collect-File "LICENSE_ROYALTYFREE"
