@@ -527,7 +527,7 @@
   </data>
   <data name="ServersPage_Note_Text" xml:space="preserve">
     <value>Alguns servidores não reportaram nehum sinal no último minuto e podem ser cancelados. Se não reportarem nenhum sinal brevemente serão cancelados assim que o tempo limite seja ultrapassado, não é necessária nenhuma acção manual.
-                    Tarefas incompletas nesses servidores serão repetidas automaticamente, no entanto o processo pode ser acelarado acedendo e verificando a seguinte página &lt;a href=\"{0}\"&gt;Tarefas em Processamento&lt;/a&gt;.</value>
+                    Tarefas incompletas nesses servidores serão repetidas automaticamente, no entanto o processo pode ser acelarado acedendo e verificando a seguinte página &lt;a href="{0}"&gt;Tarefas em Processamento&lt;/a&gt;.</value>
   </data>
   <data name="ServersPage_Note_Title" xml:space="preserve">
     <value>Servidores cancelados serão removidos automaticamente</value>
