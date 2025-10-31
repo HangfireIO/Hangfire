@@ -213,50 +213,65 @@ namespace Hangfire
             return $"{minute} {hour} {day} {month} *";
         }
 
-		/// <summary>
-		/// Returns cron expression that never fires. Specifically 31st of February
-		/// </summary>
-		/// <returns></returns>
-		public static string Never()
-		{
-			return Yearly(2, 31);
-		}
+        /// <summary>
+        /// Returns cron expression that never fires. Specifically 31st of February.
+        /// </summary>
+        public static string Never()
+        {
+            return Yearly(2, 31);
+        }
 
         /// <summary>
-        /// Returns cron expression that fires every &lt;<paramref name="interval"></paramref>&gt; minutes.
+        /// Returns cron expression that fires every <paramref name="interval"/> minutes.
         /// </summary>
+        /// <remarks>
+        /// Please note that only those intervals into which the number 60 is evenly divisible make sense
+        /// in Cron expressions, such as 2, 5, 10, 15, 30, etc. Intervals such as 7, 13, 25 will not work
+        /// correctly.
+        /// </remarks>
         /// <param name="interval">The number of minutes to wait between every activation.</param>
-        [Obsolete("Please use Cron expressions instead. Will be removed in 2.0.0")]
         public static string MinuteInterval(int interval)
         {
             return $"*/{interval} * * * *";
         }
 
         /// <summary>
-        /// Returns cron expression that fires every &lt;<paramref name="interval"></paramref>&gt; hours.
+        /// Returns cron expression that fires every <paramref name="interval"/> hours.
         /// </summary>
+        /// <remarks>
+        /// Please note that only those intervals into which the number 24 is evenly divisible make sense
+        /// in Cron expressions, such as 2, 4, 6, 8, 12, etc. Intervals such as 7, 13, 25 will not work
+        /// correctly.
+        /// </remarks>
         /// <param name="interval">The number of hours to wait between every activation.</param>
-        [Obsolete("Please use Cron expressions instead. Will be removed in 2.0.0")]
         public static string HourInterval(int interval)
         {
             return $"0 */{interval} * * *";
         }
 
         /// <summary>
-        /// Returns cron expression that fires every &lt;<paramref name="interval"></paramref>&gt; days.
+        /// Returns cron expression that fires every <paramref name="interval"/> days.
         /// </summary>
+        /// <remarks>
+        /// Please note that only those intervals into which the number 30 is evenly divisible make sense
+        /// in Cron expressions, such as 2, 5, 6, 10, 15, etc. Intervals such as 7, 13, 25 will not work
+        /// correctly. However, even in this case the actual intervals may be longer in months with
+        /// 31 or 28 days.
+        /// </remarks>
         /// <param name="interval">The number of days to wait between every activation.</param>
-        [Obsolete("Please use Cron expressions instead. Will be removed in 2.0.0")]
         public static string DayInterval(int interval)
         {
             return $"0 0 */{interval} * *";
         }
 
         /// <summary>
-        /// Returns cron expression that fires every &lt;<paramref name="interval"></paramref>&gt; months.
+        /// Returns cron expression that fires every <paramref name="interval"/> months.
         /// </summary>
+        /// <remarks>
+        /// Please note that only those intervals into which the number 12 is evenly divisible make sense
+        /// in Cron expressions, such as 2, 3, 4, 6. Intervals such as 7, 13, 25 will not work correctly.
+        /// </remarks>
         /// <param name="interval">The number of months to wait between every activation.</param>
-        [Obsolete("Please use Cron expressions instead. Will be removed in 2.0.0")]
         public static string MonthInterval(int interval)
         {
             return $"0 0 1 */{interval} *";
