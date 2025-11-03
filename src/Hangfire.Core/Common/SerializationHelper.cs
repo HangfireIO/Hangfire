@@ -99,14 +99,15 @@ namespace Hangfire.Common
 
                 // For internal purposes we should ensure that JsonConvert.DefaultSettings don't affect
                 // the serialization process, and the only way is to create a custom serializer.
-                using (var stringWriter = new StringWriter(new StringBuilder(256), CultureInfo.InvariantCulture))
+                using var stringWriter = new StringWriter(new StringBuilder(256), CultureInfo.InvariantCulture);
+
                 using (var jsonWriter = new JsonTextWriter(stringWriter))
                 {
                     var serializer = JsonSerializer.Create(serializerSettings);
                     serializer.Serialize(jsonWriter, value, type);
-
-                    return stringWriter.ToString();
                 }
+
+                return stringWriter.ToString();
             }
             else
             {
@@ -155,12 +156,11 @@ namespace Hangfire.Common
                 {
                     // For internal purposes we should ensure that JsonConvert.DefaultSettings don't affect
                     // the deserialization process, and the only way is to create a custom serializer.
-                    using (var stringReader = new StringReader(value))
-                    using (var jsonReader = new JsonTextReader(stringReader))
-                    {
-                        var serializer = JsonSerializer.Create(serializerSettings);
-                        return serializer.Deserialize(jsonReader, type);
-                    }
+                    using var stringReader = new StringReader(value);
+                    using var jsonReader = new JsonTextReader(stringReader);
+
+                    var serializer = JsonSerializer.Create(serializerSettings);
+                    return serializer.Deserialize(jsonReader, type);
                 }
                 catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
