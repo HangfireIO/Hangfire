@@ -32,6 +32,7 @@ namespace Hangfire.SqlServer
         private static readonly ConcurrentDictionary<Type, Action<object, DbCommand>> AppendMethod = new ConcurrentDictionary<Type, Action<object, DbCommand>>();
         private static readonly ConcurrentDictionary<Type, Func<object, int>> ExecuteNonQueryMethod = new ConcurrentDictionary<Type, Func<object, int>>();
         private static readonly ConcurrentDictionary<Type, Action<object>> DisposeMethod = new ConcurrentDictionary<Type, Action<object>>();
+        private static readonly ConcurrentDictionary<Type, Func<object>> SqlCommandSetConstructor = new  ConcurrentDictionary<Type, Func<object>>();
 
         private readonly object _instance;
 
@@ -41,6 +42,7 @@ namespace Hangfire.SqlServer
         private readonly Action<object, DbCommand> _appendMethod;
         private readonly Func<object, int> _executeNonQueryMethod;
         private readonly Action<object> _disposeMethod;
+        private readonly Func<object> _constructor;
 
         public SqlCommandSet(DbConnection connection)
         {
@@ -116,13 +118,18 @@ namespace Hangfire.SqlServer
                     var converted = Expression.Convert(p, type);
                     return Expression.Lambda<Action<object>>(Expression.Call(converted, "Dispose", null), p).Compile();
                 });
+                _constructor = SqlCommandSetConstructor.GetOrAdd(sqlCommandSetType, static type =>
+                {
+                    var ctor = Expression.New(type);
+                    return Expression.Lambda<Func<object>>(ctor).Compile();
+                });
             }
             catch (Exception exception) when (exception.IsCatchableExceptionType())
             {
                 throw new NotSupportedException($"SqlCommandSet for {connection.GetType().FullName} is not supported, use regular commands instead", exception);
             }
 
-            _instance = Activator.CreateInstance(sqlCommandSetType, true);
+            _instance = _constructor();
         }
 
         public DbConnection Connection
