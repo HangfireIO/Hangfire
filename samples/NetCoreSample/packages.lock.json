@@ -49,8 +49,8 @@
       },
       "Cronos": {
         "type": "Transitive",
-        "resolved": "0.8.3",
-        "contentHash": "lep1gKd68dBEt7isLnnHadJHwUlhctMd+gYGMk3p8eOT9dIfw6fXJFkreYBQ8dIXm23S01ilHgpk2ttou5Wvtw=="
+        "resolved": "0.11.1",
+        "contentHash": "5Ug+giPQITSAdTp/METAsofRSSUi3I5p7t4dlcXnzUgUzwZb4HkOBcYfpHuPwAHrnKJjmyW8amVzLD6mfLpaBg=="
       },
       "Dapper": {
         "type": "Transitive",
@@ -356,7 +356,7 @@
       "hangfire.core": {
         "type": "Project",
         "dependencies": {
-          "Cronos": "[0.8.3, )",
+          "Cronos": "[0.11.1, )",
           "Microsoft.CSharp": "[4.4.0, )",
           "Newtonsoft.Json": "[11.0.1, )"
         }

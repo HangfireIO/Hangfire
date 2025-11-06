@@ -20,8 +20,8 @@
       },
       "Cronos": {
         "type": "Transitive",
-        "resolved": "0.8.3",
-        "contentHash": "lep1gKd68dBEt7isLnnHadJHwUlhctMd+gYGMk3p8eOT9dIfw6fXJFkreYBQ8dIXm23S01ilHgpk2ttou5Wvtw=="
+        "resolved": "0.11.1",
+        "contentHash": "5Ug+giPQITSAdTp/METAsofRSSUi3I5p7t4dlcXnzUgUzwZb4HkOBcYfpHuPwAHrnKJjmyW8amVzLD6mfLpaBg=="
       },
       "Microsoft.Build.Tasks.Git": {
         "type": "Transitive",
@@ -88,7 +88,7 @@
       "hangfire.core": {
         "type": "Project",
         "dependencies": {
-          "Cronos": "[0.8.3, )",
+          "Cronos": "[0.11.1, )",
           "Microsoft.CSharp": "[4.4.0, )",
           "Newtonsoft.Json": "[11.0.1, )"
         }
@@ -158,8 +158,8 @@
       },
       "Cronos": {
         "type": "Transitive",
-        "resolved": "0.8.3",
-        "contentHash": "lep1gKd68dBEt7isLnnHadJHwUlhctMd+gYGMk3p8eOT9dIfw6fXJFkreYBQ8dIXm23S01ilHgpk2ttou5Wvtw=="
+        "resolved": "0.11.1",
+        "contentHash": "5Ug+giPQITSAdTp/METAsofRSSUi3I5p7t4dlcXnzUgUzwZb4HkOBcYfpHuPwAHrnKJjmyW8amVzLD6mfLpaBg=="
       },
       "Microsoft.AspNetCore.Cryptography.Internal": {
         "type": "Transitive",
@@ -422,7 +422,7 @@
         "type": "Project",
         "dependencies": {
           "CronExpressionDescriptor": "[1.21.0, )",
-          "Cronos": "[0.8.3, )",
+          "Cronos": "[0.11.1, )",
           "Microsoft.Owin": "[4.2.2, )",
           "Newtonsoft.Json": "[5.0.1, )",
           "Owin": "[1.0.0, )"
@@ -493,8 +493,8 @@
       },
       "Cronos": {
         "type": "Transitive",
-        "resolved": "0.8.3",
-        "contentHash": "lep1gKd68dBEt7isLnnHadJHwUlhctMd+gYGMk3p8eOT9dIfw6fXJFkreYBQ8dIXm23S01ilHgpk2ttou5Wvtw=="
+        "resolved": "0.11.1",
+        "contentHash": "5Ug+giPQITSAdTp/METAsofRSSUi3I5p7t4dlcXnzUgUzwZb4HkOBcYfpHuPwAHrnKJjmyW8amVzLD6mfLpaBg=="
       },
       "Microsoft.AspNetCore.Cryptography.Internal": {
         "type": "Transitive",
@@ -713,7 +713,7 @@
         "type": "Project",
         "dependencies": {
           "CronExpressionDescriptor": "[1.21.0, )",
-          "Cronos": "[0.8.3, )",
+          "Cronos": "[0.11.1, )",
           "Microsoft.Owin": "[4.2.2, )",
           "Newtonsoft.Json": "[5.0.1, )",
           "Owin": "[1.0.0, )"
@@ -826,8 +826,8 @@
       },
       "Cronos": {
         "type": "Transitive",
-        "resolved": "0.8.3",
-        "contentHash": "lep1gKd68dBEt7isLnnHadJHwUlhctMd+gYGMk3p8eOT9dIfw6fXJFkreYBQ8dIXm23S01ilHgpk2ttou5Wvtw==",
+        "resolved": "0.11.1",
+        "contentHash": "5Ug+giPQITSAdTp/METAsofRSSUi3I5p7t4dlcXnzUgUzwZb4HkOBcYfpHuPwAHrnKJjmyW8amVzLD6mfLpaBg==",
         "dependencies": {
           "NETStandard.Library": "1.6.1"
         }
@@ -1918,7 +1918,7 @@
       "hangfire.core": {
         "type": "Project",
         "dependencies": {
-          "Cronos": "[0.8.3, )",
+          "Cronos": "[0.11.1, )",
           "NETStandard.Library": "[1.6.1, )",
           "Newtonsoft.Json": "[9.0.1, )",
           "System.Threading.Thread": "[4.0.0, )",
@@ -1986,8 +1986,8 @@
       },
       "Cronos": {
         "type": "Transitive",
-        "resolved": "0.8.3",
-        "contentHash": "lep1gKd68dBEt7isLnnHadJHwUlhctMd+gYGMk3p8eOT9dIfw6fXJFkreYBQ8dIXm23S01ilHgpk2ttou5Wvtw=="
+        "resolved": "0.11.1",
+        "contentHash": "5Ug+giPQITSAdTp/METAsofRSSUi3I5p7t4dlcXnzUgUzwZb4HkOBcYfpHuPwAHrnKJjmyW8amVzLD6mfLpaBg=="
       },
       "Microsoft.AspNetCore.Cryptography.Internal": {
         "type": "Transitive",
@@ -2197,7 +2197,7 @@
       "hangfire.core": {
         "type": "Project",
         "dependencies": {
-          "Cronos": "[0.8.3, )",
+          "Cronos": "[0.11.1, )",
           "Microsoft.CSharp": "[4.4.0, )",
           "Newtonsoft.Json": "[11.0.1, )"
         }

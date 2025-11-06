@@ -26,6 +26,7 @@ Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfi
 1.8.22
 • Added – `IGlobalConfiguration.UseNoOpLogProvider` method to disable logging.
 • Changed – Un-deprecate interval methods in the `Cron` class, add remarks in docs instead.
+• Changed – Bump internalized version of Cronos to 0.11.1.
 • Fixed – Serialization of arrays of nested types `SimpleAssemblyTypeSerializer`.
 • Fixed – Remove wrong escaping characters in Portuguese translations on the "Servers" page.
 • Fixed – Properly remove registered `IBackgroundProcessingServer` instances on OWIN app shutdown.
