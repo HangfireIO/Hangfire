@@ -186,7 +186,7 @@ commit tran;");
                         ctx.Value.Key(command);
                         ctx.Value.Value?.Invoke(command);
 
-                        return ((long)command.ExecuteScalar()).ToString(CultureInfo.InvariantCulture);
+                        return Convert.ToInt64(command.ExecuteScalar(), CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture);
                     },
                     new KeyValuePair<string, KeyValuePair<Action<DbCommand>, Action<DbCommand>>>(
                         queryString,
@@ -200,7 +200,7 @@ commit tran;");
 
                 jobCommand.Transaction = transaction;
 
-                var jobId = ((long)jobCommand.ExecuteScalar()).ToString(CultureInfo.InvariantCulture);
+                var jobId = Convert.ToInt64(jobCommand.ExecuteScalar(), CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture);
 
                 var query = storage.GetQueryFromTemplate(static schemaName =>
 $@"insert into [{schemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name, @value)");
