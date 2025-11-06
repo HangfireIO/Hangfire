@@ -23,6 +23,29 @@ https://www.hangfire.io/
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
+1.8.22
+
+Hangfire.Core
+
+• Added – `IGlobalConfiguration.UseNoOpLogProvider` method to disable logging.
+• Changed – Un-deprecate interval methods in the `Cron` class, add remarks in docs instead.
+• Fixed – Serialization of arrays of nested types `SimpleAssemblyTypeSerializer`.
+• Fixed – Remove wrong escaping characters in Portuguese translations on the "Servers" page.
+• Fixed – Properly remove registered `IBackgroundProcessingServer` instances on OWIN app shutdown.
+• Fixed – `AspNetShutdownDetector` for early ASP.NET shutdown detection is not working (regression from 1.7.30).
+• Project – Replace the `netcoreapp3.1` target with the `net8.0` one in tests.
+
+Hangfire.SqlServer
+
+• Fixed – `InvalidCastException` when creating a background job with Schema 5 (regression from 1.8.15).
+• Project – Replace the `netcoreapp3.1` target with the `net8.0` one in tests.
+
+Hangfire.AspNetCore
+
+• Added – `MapHangfireDashboardWithNoAuthorizationFilters` method, which does not include local-only filters.
+• Changed – Set 404 status code when `MapHangfireDashboard` is used and no dispatcher is found.
+• Fixed – `InvalidOperationException` upon receiving a request for 'hangfire/bootstrap.min.css.map'.
+
 1.8.21
 
 Hangfire.Core
