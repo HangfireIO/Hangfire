@@ -52,8 +52,8 @@
       },
       "Microsoft.Owin": {
         "type": "Transitive",
-        "resolved": "4.2.2",
-        "contentHash": "jt410l/8dvCIguRdU7dupYdm4kGLepVdD8EOTKU4nYZcLRrn6kQYqI6pbJOTJp7Vlm/T2WUF5bzyKK2z29xtjg==",
+        "resolved": "4.2.3",
+        "contentHash": "uoOKm7Ouj06+ULS7Ss60tRM2E5t0ku7rQ7cJk864jArtE35WTJKMzUxgHxs7gdiqHZYnC3ddZSr9zj8yRjguEA==",
         "dependencies": {
           "Owin": "1.0.0"
         }
@@ -91,7 +91,7 @@
         "dependencies": {
           "CronExpressionDescriptor": "[1.21.0, )",
           "Cronos": "[0.11.1, )",
-          "Microsoft.Owin": "[4.2.2, )",
+          "Microsoft.Owin": "[4.2.3, )",
           "Newtonsoft.Json": "[5.0.1, )",
           "Owin": "[1.0.0, )"
         }
