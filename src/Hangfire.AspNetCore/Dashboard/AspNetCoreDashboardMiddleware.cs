@@ -74,6 +74,7 @@ namespace Hangfire.Dashboard
                     // https://github.com/HangfireIO/Hangfire/issues/1729
                     // https://github.com/HangfireIO/Hangfire/issues/2541
                     SetResponseStatusCode(httpContext, (int)HttpStatusCode.NotFound);
+                    return;
                 }
 
                 await _next.Invoke(httpContext);
