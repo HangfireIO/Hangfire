@@ -134,6 +134,9 @@
   <data name="AwaitingJobsPage_Table_Parent" xml:space="preserve">
     <value>Förälder</value>
   </data>
+  <data name="AwaitingJobsPage_Table_Since" xml:space="preserve">
+    <value>Sen</value>
+  </data>
   <data name="AwaitingJobsPage_Title" xml:space="preserve">
     <value>Väntade jobb</value>
   </data>
@@ -211,6 +214,9 @@
   </data>
   <data name="DeletedJobsPage_Table_Deleted" xml:space="preserve">
     <value>Borttaget</value>
+  </data>
+  <data name="DeletedJobsPage_Table_Exception" xml:space="preserve">
+    <value>Undantag</value>
   </data>
   <data name="DeletedJobsPage_Title" xml:space="preserve">
     <value>Borttagna jobb</value>
@@ -290,8 +296,14 @@
   <data name="LayoutPage_Footer_Generatedms" xml:space="preserve">
     <value>Genererades på: {0}ms</value>
   </data>
+  <data name="LayoutPage_Footer_StorageTime" xml:space="preserve">
+    <value>Lagringstid:</value>
+  </data>
   <data name="LayoutPage_Footer_Time" xml:space="preserve">
-    <value>Tid:</value>
+    <value>Applikationstid:</value>
+  </data>
+  <data name="LayoutPage_Footer_TimeIsOutOfSync" xml:space="preserve">
+    <value>Applikationstiden är inte i synk med lagringstiden</value>
   </data>
   <data name="Paginator_Next" xml:space="preserve">
     <value>Nästa</value>
@@ -419,6 +431,12 @@
   <data name="SucceededJobsPage_NoJobs" xml:space="preserve">
     <value>Inga lyckade jobb hittades.</value>
   </data>
+  <data name="SucceededJobsPage_Table_Duration" xml:space="preserve">
+    <value>Tidsåtgång</value>
+  </data>
+  <data name="SucceededJobsPage_Table_Latency" xml:space="preserve">
+    <value>Fördröjning</value>
+  </data>
   <data name="SucceededJobsPage_Table_Succeeded" xml:space="preserve">
     <value>Lyckades</value>
   </data>
@@ -487,6 +505,18 @@
   </data>
   <data name="Metrics_Retries" xml:space="preserve">
     <value>Antal nya försök</value>
+  </data>
+  <data name="Metrics_SQLServer_ActiveTransactions" xml:space="preserve">
+    <value>Aktiva transaktioner</value>
+  </data>
+  <data name="Metrics_SQLServer_DataFilesSize" xml:space="preserve">
+    <value>Datafiler (MB)</value>
+  </data>
+  <data name="Metrics_SQLServer_LogFilesSize" xml:space="preserve">
+    <value>Loggfiler (MB)</value>
+  </data>
+  <data name="Metrics_SQLServer_SchemaVersion" xml:space="preserve">
+    <value>Schemaversion</value>
   </data>
   <data name="Metrics_ScheduledJobs" xml:space="preserve">
     <value>Schemalagda jobb</value>
