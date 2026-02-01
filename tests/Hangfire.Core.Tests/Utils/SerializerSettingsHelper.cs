@@ -8,7 +8,12 @@ namespace Hangfire.Core.Tests
         public static JsonSerializerSettings DangerousSettings = new JsonSerializerSettings
         {
             TypeNameHandling = TypeNameHandling.All,
+
+#if NET452 || NET461 || NETCOREAPP3_1
             TypeNameAssemblyFormat = FormatterAssemblyStyle.Full,
+#else
+            TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Full,
+#endif
 
             DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
 
