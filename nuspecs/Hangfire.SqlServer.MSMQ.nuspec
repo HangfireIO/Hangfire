@@ -11,7 +11,7 @@
     <license type="file">LICENSE.md</license>
     <icon>icon.png</icon>
     <description>MSMQ queues support for SQL Server job storage implementation for Hangfire, a background job framework for .NET applications.</description>
-    <copyright>Copyright © 2014-2025 Hangfire OÜ</copyright>
+    <copyright>Copyright © 2014-2026 Hangfire OÜ</copyright>
     <tags>Hangfire SqlServer MSMQ</tags>
     <releaseNotes><![CDATA[https://www.hangfire.io/blog/
 

@@ -11,7 +11,7 @@
     <license type="file">LICENSE.md</license>
     <icon>icon.png</icon>
     <description>.NET Core's Worker Service host support for Hangfire, a background job framework for .NET applications.</description>
-    <copyright>Copyright © 2019-2025 Hangfire OÜ</copyright>
+    <copyright>Copyright © 2019-2026 Hangfire OÜ</copyright>
     <tags>hangfire netcore</tags>
     <releaseNotes><![CDATA[
 Release notes are available in our blog https://www.hangfire.io/blog/

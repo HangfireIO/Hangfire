@@ -11,7 +11,7 @@
     <license type="file">LICENSE.md</license>
     <icon>icon.png</icon>
     <description>SQL Server 2008+ (including Express), SQL Server LocalDB and SQL Azure storage support for Hangfire, a background job framework for .NET applications.</description>
-    <copyright>Copyright © 2013-2025 Hangfire OÜ</copyright>
+    <copyright>Copyright © 2013-2026 Hangfire OÜ</copyright>
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes><![CDATA[
 Release notes are available in our blog https://www.hangfire.io/blog/

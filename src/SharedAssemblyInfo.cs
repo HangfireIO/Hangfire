@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyProduct("Hangfire")]
 [assembly: AssemblyCompany("Hangfire OÜ")]
-[assembly: AssemblyCopyright("Copyright © 2013-2025 Hangfire OÜ")]
+[assembly: AssemblyCopyright("Copyright © 2013-2026 Hangfire OÜ")]
 [assembly: AssemblyCulture("")]
 
 [assembly: ComVisible(false)]
