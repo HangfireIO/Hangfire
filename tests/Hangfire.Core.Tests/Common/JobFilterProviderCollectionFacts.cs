@@ -68,6 +68,45 @@ namespace Hangfire.Core.Tests.Common
             Assert.Same(lateGlobalFilter, result[4]);
         }
 
+        [Fact]
+        public void GetFiltersSortsFiltersStablyAllowMultipleFalse()
+        {
+            // Arrange
+            var objectFilter = new JobFilter(new Object(), JobFilterScope.Global, null);
+            var allowMultipleFalseAttribute1 = new JobFilter(new AllowMultipleFalseAttribute(), JobFilterScope.Global, null);
+            var allowMultipleFalseAttribute2 = new JobFilter(new AllowMultipleFalseAttribute(), JobFilterScope.Global, null);
+            var provider = new Mock<IJobFilterProvider>(MockBehavior.Strict);
+            var collection = new JobFilterProviderCollection(provider.Object);
+
+            // to prove instability we need at least 17 items in the list
+            provider.Setup(p => p.GetFilters(_job))
+                .Returns(new[] {
+                    objectFilter,
+                    objectFilter,
+                    objectFilter,
+                    objectFilter,
+                    objectFilter,
+                    objectFilter,
+                    objectFilter,
+                    allowMultipleFalseAttribute1,
+                    objectFilter,
+                    objectFilter,
+                    objectFilter,
+                    allowMultipleFalseAttribute2,
+                    objectFilter,
+                    objectFilter,
+                    objectFilter,
+                    objectFilter,
+                    objectFilter
+                });
+
+            // Act
+            IEnumerable<JobFilter> result = collection.GetFilters(_job);
+
+            // Assert
+            Assert.Same(allowMultipleFalseAttribute2, result.Last(item => item.Instance is AllowMultipleFalseAttribute));
+        }
+
         [AttributeUsage(AttributeTargets.All)]
         private class AllowMultipleFalseAttribute : JobFilterAttribute
         {
