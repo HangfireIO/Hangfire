@@ -23,6 +23,14 @@ https://www.hangfire.io/
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
+1.8.23
+• Changed – Bump the internalized version of Cronos to 0.11.1.
+• Changed – Bump the internalized version of Microsoft.Owin to 4.2.3.
+• Changed – Use stable sorting algorithm for background job filters again (by @jirikanda).
+• Fixed – Add missing keys for Swedish translation (by @karl-sjogren).
+• Fixed – Custom `AutomaticRetryAttribute` is ignored under certain conditions (by @jirikanda).
+• Project – Use `TypeNameAssemblyFormatHandling` in tests with .NET 6 (by @viktor-vintertass).
+
 1.8.22
 • Added – `IGlobalConfiguration.UseNoOpLogProvider` method to disable logging.
 • Changed – Un-deprecate interval methods in the `Cron` class, add remarks in docs instead.
