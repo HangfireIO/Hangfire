@@ -25,6 +25,8 @@ namespace Hangfire.Common
     /// </summary>
     public class JobFilterProviderCollection : Collection<IJobFilterProvider>, IJobFilterProvider
     {
+        private static readonly JobFilterComparer FilterComparer = new JobFilterComparer();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="JobFilterProviderCollection"/> 
         /// class.
@@ -55,7 +57,7 @@ namespace Hangfire.Common
             if (combinedFilters.Count > 1)
             {
                 // Sorting before removing duplicates in the correct order
-                combinedFilters = combinedFilters.OrderBy(filter => filter, new JobFilterComparer()).ToList();
+                combinedFilters = combinedFilters.OrderBy(static filter => filter, FilterComparer).ToList();
                 RemoveDuplicates(combinedFilters);
             }
 
@@ -88,7 +90,7 @@ namespace Hangfire.Common
             return true;
         }
 
-        private class JobFilterComparer : IComparer<JobFilter>
+        private sealed class JobFilterComparer : IComparer<JobFilter>
         {
             public int Compare(JobFilter x, JobFilter y)
             {
