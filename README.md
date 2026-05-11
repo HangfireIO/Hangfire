@@ -110,6 +110,85 @@ using (new BackgroundJobServer())
 }
 ```
 
+**Resource-aware background servers**
+
+The implementation described in [documentations/Awareness specification.md](documentations/Awareness%20specification.md) adds an opt-in resource gate to `BackgroundJobServer`. A server can now report whether the local node has enough capacity to accept more work. When capacity is unavailable, its workers stay alive, continue to observe shutdown, and keep the server visible in monitoring, but they do not fetch or reserve new jobs. Already fetched jobs continue through the normal Hangfire processing pipeline.
+
+This feature keeps existing applications compatible: if `BackgroundJobServerOptions.Resource` is not configured, the server behaves as before and always fetches jobs when workers are ready.
+
+The implementation includes:
+
+- `IJobServerResource` and the default `JobServerResource` implementation in `Hangfire.Core`.
+- `BackgroundJobServerOptions.Resource` for passing a resource provider to a server.
+- Worker-side checks before `FetchNextJob`, so constrained servers stop taking new jobs until capacity returns.
+- A periodic capacity reporter for `JobServerResource`.
+- `CanAllocate` server metadata exposed through monitoring APIs, including `ServerDto.CanAllocate`.
+- SQL Server storage support that persists `CanAllocate` in existing serialized server data without requiring a schema migration.
+
+Use the built-in `JobServerResource` when capacity can be computed periodically:
+
+```csharp
+var resource = new JobServerResource();
+
+resource.CapacityReporter(
+    computeCapacity: async () => await localCapacityProbe.CanAcceptMoreJobs(),
+    interval: TimeSpan.FromSeconds(5));
+
+services.AddHangfireServer(options =>
+{
+    options.Resource = resource;
+});
+```
+
+For self-hosted servers, pass the same resource through `BackgroundJobServerOptions`:
+
+```csharp
+var resource = new JobServerResource();
+
+resource.CapacityReporter(
+    computeCapacity: () => Task.FromResult(Environment.WorkingSet < 512 * 1024 * 1024),
+    interval: TimeSpan.FromSeconds(10));
+
+var options = new BackgroundJobServerOptions
+{
+    Resource = resource
+};
+
+using (new BackgroundJobServer(options))
+{
+    Console.WriteLine("Hangfire Server started. Press ENTER to exit...");
+    Console.ReadLine();
+}
+```
+
+You can also provide your own resource provider by implementing `IJobServerResource`:
+
+```csharp
+public sealed class MaintenanceWindowResource : IJobServerResource
+{
+    public bool CanAllocate()
+    {
+        return !maintenanceWindow.IsActive;
+    }
+
+    public void CapacityReporter(Func<Task<bool>> computeCapacity, TimeSpan interval)
+    {
+        throw new NotSupportedException("This resource is checked directly.");
+    }
+}
+```
+
+Monitoring code can inspect the last reported allocation state through the existing monitoring API:
+
+```csharp
+var servers = JobStorage.Current.GetMonitoringApi().Servers();
+
+foreach (var server in servers)
+{
+    Console.WriteLine($"{server.Name}: can allocate = {server.CanAllocate}");
+}
+```
+
 Questions? Problems?
 ---------------------
 
