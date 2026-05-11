@@ -306,7 +306,7 @@ namespace Hangfire.Server
             }
         }
 
-        private static ServerContext GetServerContext(IDictionary<string, object> properties)
+        internal static ServerContext GetServerContext(IDictionary<string, object> properties)
         {
             var serverContext = new ServerContext();
 
@@ -318,6 +318,11 @@ namespace Hangfire.Server
             if (properties.TryGetValue("WorkerCount", out var workerCount))
             {
                 serverContext.WorkerCount = (int)workerCount;
+            }
+
+            if (properties.TryGetValue("Resource", out var resource) && resource is IJobServerResource jobServerResource)
+            {
+                serverContext.CanAllocate = jobServerResource.CanAllocate();
             }
 
             return serverContext;

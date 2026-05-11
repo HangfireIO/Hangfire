@@ -21,9 +21,11 @@ namespace Hangfire.Server
         {
             Queues = [];
             WorkerCount = -1;
+            CanAllocate = true;
         }
 
         public int WorkerCount { get; set; }
         public string[] Queues { get; set; }
+        public bool CanAllocate { get; set; }
     }
 }

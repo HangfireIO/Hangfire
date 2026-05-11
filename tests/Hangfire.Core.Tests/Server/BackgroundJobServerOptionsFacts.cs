@@ -19,6 +19,7 @@ namespace Hangfire.Core.Tests.Server
             Assert.Equal(TimeSpan.FromMinutes(5), options.ServerTimeout);
             Assert.Equal(TimeSpan.FromMinutes(5), options.ServerCheckInterval);
             Assert.Equal(TimeSpan.FromSeconds(30), options.HeartbeatInterval);
+            Assert.Null(options.Resource);
         }
 
         [Fact]

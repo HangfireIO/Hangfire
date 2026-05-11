@@ -1,4 +1,4 @@
-// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -59,6 +59,8 @@ namespace Hangfire.Server
         private readonly IBackgroundJobPerformer _performer;
         private readonly IBackgroundJobStateChanger _stateChanger;
         private readonly IProfiler _profiler;
+        private readonly IJobServerResource _resource;
+        private readonly TimeSpan _resourcePollingInterval;
         
         public Worker() : this(EnqueuedState.DefaultQueue)
         {
@@ -73,7 +75,16 @@ namespace Hangfire.Server
             [NotNull] IEnumerable<string> queues,
             [NotNull] IBackgroundJobPerformer performer,
             [NotNull] IBackgroundJobStateChanger stateChanger)
-            : this(queues, performer, stateChanger, jobInitializationTimeout: TimeSpan.FromMinutes(1), maxStateChangeAttempts: 10)
+            : this(queues, performer, stateChanger, resource: null)
+        {
+        }
+
+        public Worker(
+            [NotNull] IEnumerable<string> queues,
+            [NotNull] IBackgroundJobPerformer performer,
+            [NotNull] IBackgroundJobStateChanger stateChanger,
+            [CanBeNull] IJobServerResource resource)
+            : this(queues, performer, stateChanger, resource, jobInitializationTimeout: TimeSpan.FromMinutes(1), maxStateChangeAttempts: 10, resourcePollingInterval: TimeSpan.FromSeconds(1))
         {
         }
 
@@ -83,17 +94,32 @@ namespace Hangfire.Server
             [NotNull] IBackgroundJobStateChanger stateChanger,
             TimeSpan jobInitializationTimeout,
             int maxStateChangeAttempts)
+            : this(queues, performer, stateChanger, null, jobInitializationTimeout, maxStateChangeAttempts, TimeSpan.FromSeconds(1))
+        {
+        }
+
+        internal Worker(
+            [NotNull] IEnumerable<string> queues,
+            [NotNull] IBackgroundJobPerformer performer,
+            [NotNull] IBackgroundJobStateChanger stateChanger,
+            [CanBeNull] IJobServerResource resource,
+            TimeSpan jobInitializationTimeout,
+            int maxStateChangeAttempts,
+            TimeSpan resourcePollingInterval)
         {
             if (queues == null) throw new ArgumentNullException(nameof(queues));
             if (performer == null) throw new ArgumentNullException(nameof(performer));
             if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
+            if (resourcePollingInterval < TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(resourcePollingInterval));
             
             _queues = queues;
             _performer = performer;
             _stateChanger = stateChanger;
+            _resource = resource;
 
             _jobInitializationWaitTimeout = jobInitializationTimeout;
             _maxStateChangeAttempts = maxStateChangeAttempts;
+            _resourcePollingInterval = resourcePollingInterval;
 
             _profiler = new SlowLogProfiler(_logger);
         }
@@ -102,6 +128,12 @@ namespace Hangfire.Server
         public void Execute(BackgroundProcessContext context)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
+
+            if (_resource != null && !_resource.CanAllocate())
+            {
+                context.StoppingToken.WaitOrThrow(_resourcePollingInterval);
+                return;
+            }
 
             using (var connection = context.Storage.GetConnection())
             using (var fetchedJob = connection.FetchNextJob(_queues.ToArray(), context.StoppingToken))

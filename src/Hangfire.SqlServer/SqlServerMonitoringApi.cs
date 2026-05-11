@@ -165,7 +165,8 @@ namespace Hangfire.SqlServer
                         Heartbeat = server.LastHeartbeat,
                         Queues = data.Queues,
                         StartedAt = data.StartedAt ?? DateTime.MinValue,
-                        WorkersCount = data.WorkerCount
+                        WorkersCount = data.WorkerCount,
+                        CanAllocate = data.CanAllocate ?? true
                     });
                 }
 

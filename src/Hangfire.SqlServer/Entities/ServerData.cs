@@ -22,5 +22,6 @@ namespace Hangfire.SqlServer.Entities
         public int WorkerCount { get; set; }
         public string[] Queues { get; set; }
         public DateTime? StartedAt { get; set; }
+        public bool? CanAllocate { get; set; }
     }
 }

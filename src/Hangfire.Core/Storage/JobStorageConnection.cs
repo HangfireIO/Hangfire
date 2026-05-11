@@ -44,6 +44,10 @@ namespace Hangfire.Storage
 
         // Servers
         public abstract void AnnounceServer(string serverId, ServerContext context);
+        public virtual void UpdateServer(string serverId, ServerContext context)
+        {
+        }
+
         public abstract void RemoveServer(string serverId);
         public abstract void Heartbeat(string serverId);
         public abstract int RemoveTimedOutServers(TimeSpan timeOut);

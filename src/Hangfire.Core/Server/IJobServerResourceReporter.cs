@@ -14,17 +14,15 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace Hangfire.Storage.Monitoring
+namespace Hangfire.Server
 {
-    public class ServerDto
+    internal interface IJobServerResourceReporter
     {
-        public string Name { get; set; }
-        public int WorkersCount { get; set; }
-        public DateTime StartedAt { get; set; }
-        public IList<string> Queues { get; set; }
-        public DateTime? Heartbeat { get; set; }
-        public bool CanAllocate { get; set; }
+        bool IsConfigured { get; }
+        TimeSpan Interval { get; }
+        Task<bool> ComputeCapacityAsync(CancellationToken cancellationToken);
     }
 }

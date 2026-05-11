@@ -105,6 +105,37 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
+        public void Execute_DoesNotFetchAJob_WhenResourceCanNotAllocate()
+        {
+            var resource = new Mock<IJobServerResource>();
+            resource.Setup(x => x.CanAllocate()).Returns(false);
+
+            var worker = CreateWorker(resource: resource.Object);
+
+            worker.Execute(_context.Object);
+
+            _context.Storage.Verify(x => x.GetConnection(), Times.Never);
+            _connection.Verify(
+                x => x.FetchNextJob(It.IsAny<string[]>(), It.IsAny<CancellationToken>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public void Execute_FetchesAJob_WhenResourceCanAllocate()
+        {
+            var resource = new Mock<IJobServerResource>();
+            resource.Setup(x => x.CanAllocate()).Returns(true);
+
+            var worker = CreateWorker(resource: resource.Object);
+
+            worker.Execute(_context.Object);
+
+            _connection.Verify(
+                x => x.FetchNextJob(_queues, _context.StoppingTokenSource.Token),
+                Times.Once);
+        }
+
+        [Fact]
         public void Execute_RequeuesAJob_WhenThereWasAnException()
         {
             _stateChanger
@@ -393,9 +424,16 @@ namespace Hangfire.Core.Tests.Server
                 ctx.DisableFilters == false)));
         }
 
-        private Worker CreateWorker(int maxStateChangeAttempts = 10)
+        private Worker CreateWorker(int maxStateChangeAttempts = 10, IJobServerResource resource = null)
         {
-            return new Worker(_queues, _performer.Object, _stateChanger.Object, TimeSpan.FromSeconds(5), maxStateChangeAttempts);
+            return new Worker(
+                _queues,
+                _performer.Object,
+                _stateChanger.Object,
+                resource,
+                TimeSpan.FromSeconds(5),
+                maxStateChangeAttempts,
+                TimeSpan.Zero);
         }
 
         [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]

@@ -113,6 +113,11 @@ namespace Hangfire
                 { "WorkerCount", options.WorkerCount }
             };
 
+            if (options.Resource != null)
+            {
+                properties.Add("Resource", options.Resource);
+            }
+
             _logger.Info($"Starting Hangfire Server using job storage: '{storage}'");
 
             storage.WriteOptionsToLog(_logger);
@@ -209,7 +214,12 @@ namespace Hangfire
                 if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
             }
 
-            processes.Add(new Worker(_options.Queues, performer, stateChanger).UseBackgroundPool(_options.WorkerCount, _options.WorkerThreadConfigurationAction));
+            if (_options.Resource is IJobServerResourceReporter reporter)
+            {
+                processes.Add(new JobServerResourceReporterProcess(reporter).UseThreadPool(maxConcurrency: 1));
+            }
+
+            processes.Add(new Worker(_options.Queues, performer, stateChanger, _options.Resource).UseBackgroundPool(_options.WorkerCount, _options.WorkerThreadConfigurationAction));
 
             if (!_options.IsLightweightServer)
             {

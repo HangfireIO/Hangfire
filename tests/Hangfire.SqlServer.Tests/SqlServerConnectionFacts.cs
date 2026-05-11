@@ -1196,6 +1196,7 @@ values
                 Assert.True(((string)server.Data).StartsWith(
                     "{\"WorkerCount\":4,\"Queues\":[\"critical\",\"default\"],\"StartedAt\":"),
                     server.Data);
+                Assert.Contains("\"CanAllocate\":true", server.Data);
                 Assert.NotNull(server.LastHeartbeat);
                 Assert.True(DateTime.UtcNow.AddHours(-1) < server.LastHeartbeat &&
                             server.LastHeartbeat < DateTime.UtcNow.AddHours(1));
@@ -1209,6 +1210,33 @@ values
                 var sameServer = sql.Query($"select * from [{Constants.DefaultSchema}].Server").Single();
                 Assert.Equal("server", sameServer.Id);
                 Assert.Contains("1000", sameServer.Data);
+            }, useBatching: false, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void UpdateServer_UpdatesExistingServerData(bool useMicrosoftDataSqlClient)
+        {
+            UseConnections((sql, connection) =>
+            {
+                connection.AnnounceServer("server", new ServerContext
+                {
+                    Queues = new[] { "critical", "default" },
+                    WorkerCount = 4,
+                    CanAllocate = true
+                });
+
+                connection.UpdateServer("server", new ServerContext
+                {
+                    Queues = new[] { "default" },
+                    WorkerCount = 8,
+                    CanAllocate = false
+                });
+
+                var server = sql.Query($"select * from [{Constants.DefaultSchema}].Server").Single();
+                Assert.Contains("\"WorkerCount\":8", server.Data);
+                Assert.Contains("\"Queues\":[\"default\"]", server.Data);
+                Assert.Contains("\"CanAllocate\":false", server.Data);
             }, useBatching: false, useMicrosoftDataSqlClient);
         }
 

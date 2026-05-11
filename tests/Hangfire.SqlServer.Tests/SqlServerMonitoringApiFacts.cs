@@ -1,4 +1,4 @@
-extern alias ReferencedDapper;
+﻿extern alias ReferencedDapper;
 
 using System;
 using System.Collections.Generic;
@@ -282,20 +282,48 @@ namespace Hangfire.SqlServer.Tests
             var server1 = result.Single(x => x.Name == "server1");
             Assert.Equal(new [] { "default" }, server1.Queues);
             Assert.Equal(100, server1.WorkersCount);
+            Assert.True(server1.CanAllocate);
             AssertWithinSecond(_utcNow, server1.StartedAt);
             AssertWithinSecond(_utcNow, server1.Heartbeat);
 
             var server2 = result.Single(x => x.Name == "server2");
             Assert.Equal(new[] { "critical" }, server2.Queues);
             Assert.Equal(17, server2.WorkersCount);
+            Assert.True(server2.CanAllocate);
             AssertWithinSecond(_utcNow, server2.StartedAt);
             AssertWithinSecond(_utcNow, server2.Heartbeat);
 
             var server3 = result.Single(x => x.Name == "server3");
             Assert.Equal(new[] { "alpha", "beta" }, server3.Queues);
             Assert.Equal(0, server3.WorkersCount);
+            Assert.True(server3.CanAllocate);
             AssertWithinSecond(_utcNow, server3.StartedAt);
             AssertWithinSecond(_utcNow, server3.Heartbeat);
+        }
+
+        [Fact, CleanDatabase]
+        public void Servers_TreatsMissingCanAllocateValue_AsTrue()
+        {
+            UseSqlConnection(sql =>
+            {
+                var serverData = SerializationHelper.Serialize(new ServerData
+                {
+                    Queues = new[] { "default" },
+                    WorkerCount = 1,
+                    StartedAt = _utcNow
+                });
+
+                sql.Execute($@"
+insert into [{Constants.DefaultSchema}].Server (Id, Data, LastHeartbeat)
+values ('server', @data, @heartbeat)",
+                    new { data = serverData, heartbeat = _utcNow });
+            });
+
+            var monitoring = CreateMonitoringApi();
+
+            var result = monitoring.Servers().Single();
+
+            Assert.True(result.CanAllocate);
         }
 
         [Fact, CleanDatabase]
