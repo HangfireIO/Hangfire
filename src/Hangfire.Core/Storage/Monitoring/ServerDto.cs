@@ -21,9 +21,11 @@ namespace Hangfire.Storage.Monitoring
     public class ServerDto
     {
         public string Name { get; set; }
+        public string TenantId { get; set; }
         public int WorkersCount { get; set; }
         public DateTime StartedAt { get; set; }
         public IList<string> Queues { get; set; }
+        public IDictionary<string, int> QueuePriorities { get; set; }
         public DateTime? Heartbeat { get; set; }
         public bool CanAllocate { get; set; }
         public string AllocationState { get; set; }

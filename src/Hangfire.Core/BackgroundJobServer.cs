@@ -106,13 +106,20 @@ namespace Hangfire
             _options = options;
             _storage = storage;
 
+            if (options.TenantId != null && !storage.HasFeature(JobStorageFeatures.Connection.TenantAwareQueueFetch))
+            {
+                throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Connection.TenantAwareQueueFetch);
+            }
+
             var processes = new List<IBackgroundProcessDispatcherBuilder>();
             processes.AddRange(GetRequiredProcesses(filterProvider, activator, factory, performer, stateChanger));
             processes.AddRange(additionalProcesses.Select(static x => x.UseBackgroundPool(1)));
 
             var properties = new Dictionary<string, object>
             {
-                { "Queues", options.Queues },
+                { "Queues", options.Queues.ToQueueArray() },
+                { "QueuePriorities", options.Queues },
+                { "TenantId", options.TenantId },
                 { "WorkerCount", options.WorkerCount }
             };
 
@@ -127,12 +134,13 @@ namespace Hangfire
 
             _logger.Info("Using the following options for Hangfire Server:\r\n" +
                 $"    Worker count: {options.WorkerCount}\r\n" +
-                $"    Listening queues: {String.Join(", ", options.Queues.Select(static x => "'" + x + "'"))}\r\n" +
+                $"    Tenant id: {options.TenantId ?? "global"}\r\n" +
+                $"    Listening queues: {String.Join(", ", options.Queues.ToDescriptors().Select(static x => $"'{x.Name}' (priority {x.Priority})"))}\r\n" +
                 $"    Shutdown timeout: {options.ShutdownTimeout}\r\n" +
                 $"    Schedule polling interval: {options.SchedulePollingInterval}");
 
             var wrongQueues = new HashSet<string>(StringComparer.Ordinal);
-            foreach (var queue in options.Queues)
+            foreach (var queue in options.Queues.Keys)
             {
                 if (!EnqueuedState.TryValidateQueueName(queue))
                 {
@@ -231,7 +239,7 @@ namespace Hangfire
                     _options.ResourceCommandPollingInterval).UseBackgroundPool(threadCount: 1));
             }
 
-            processes.Add(new Worker(_options.Queues, performer, stateChanger, _options.Resource).UseBackgroundPool(_options.WorkerCount, _options.WorkerThreadConfigurationAction));
+            processes.Add(new Worker(_options.TenantId, _options.Queues, performer, stateChanger, _options.Resource).UseBackgroundPool(_options.WorkerCount, _options.WorkerThreadConfigurationAction));
 
             if (!_options.IsLightweightServer)
             {

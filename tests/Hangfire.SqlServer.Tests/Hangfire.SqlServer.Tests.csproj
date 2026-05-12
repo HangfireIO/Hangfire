@@ -48,6 +48,10 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)'!='net452'">
+    <PackageReference Include="Testcontainers.MsSql" Version="4.11.0" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\Hangfire.Core\Hangfire.Core.csproj" />
     <ProjectReference Include="..\..\src\Hangfire.SqlServer\Hangfire.SqlServer.csproj" />

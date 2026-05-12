@@ -81,9 +81,28 @@ namespace Hangfire.SqlServer
                 throw new InvalidOperationException(
                     $"Multiple provider instances registered for queues: {String.Join(", ", queues)}. You should choose only one type of persistent queues per server instance.");
             }
-            
+
             var persistentQueue = providers[0].GetJobQueue();
             return persistentQueue.Dequeue(queues, cancellationToken);
+        }
+
+        public override IFetchedJob FetchNextJob(string tenantId, QueueDescriptor[] queues, CancellationToken cancellationToken)
+        {
+            if (queues == null || queues.Length == 0) throw new ArgumentNullException(nameof(queues));
+
+            var providers = queues
+                .Select(queue => _storage.QueueProviders.GetProvider(queue.Name))
+                .Distinct()
+                .ToArray();
+
+            if (providers.Length != 1)
+            {
+                throw new InvalidOperationException(
+                    $"Multiple provider instances registered for queues: {String.Join(", ", queues)}. You should choose only one type of persistent queues per server instance.");
+            }
+            
+            var persistentQueue = providers[0].GetJobQueue();
+            return persistentQueue.Dequeue(tenantId, queues, cancellationToken);
         }
 
         public override string CreateExpiredJob(
@@ -505,7 +524,9 @@ $@"select Field, Value from [{schemaName}].Hash with (forceseek) where [Key] = @
             var data = new ServerData
             {
                 WorkerCount = context.WorkerCount,
+                TenantId = context.TenantId,
                 Queues = context.Queues,
+                QueuePriorities = context.QueuePriorities,
                 StartedAt = DateTime.UtcNow,
                 CanAllocate = context.CanAllocate,
                 AllocationState = context.AllocationState,
@@ -563,7 +584,9 @@ $@"select Data from [{schemaName}].Server with (forceseek) where Id = @id");
                 }
 
                 data.WorkerCount = pair.Value.WorkerCount;
+                data.TenantId = pair.Value.TenantId;
                 data.Queues = pair.Value.Queues;
+                data.QueuePriorities = pair.Value.QueuePriorities;
                 data.CanAllocate = pair.Value.CanAllocate;
                 data.AllocationState = pair.Value.AllocationState;
                 data.AllocationReason = pair.Value.AllocationReason;

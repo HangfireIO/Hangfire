@@ -21,6 +21,8 @@ namespace Hangfire.Storage.Monitoring
     {
         public string Queue { get; set; }
 
+        public string TenantId { get; set; }
+
         public int AvailableServers { get; set; }
 
         public int ConstrainedServers { get; set; }

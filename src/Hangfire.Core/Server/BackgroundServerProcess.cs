@@ -315,6 +315,16 @@ namespace Hangfire.Server
                 serverContext.Queues = array;
             }
 
+            if (properties.TryGetValue("QueuePriorities", out var queuePriorities) && queuePriorities is IDictionary<string, int> priorities)
+            {
+                serverContext.QueuePriorities = priorities;
+            }
+
+            if (properties.TryGetValue("TenantId", out var tenantId))
+            {
+                serverContext.TenantId = tenantId as string;
+            }
+
             if (properties.TryGetValue("WorkerCount", out var workerCount))
             {
                 serverContext.WorkerCount = (int)workerCount;

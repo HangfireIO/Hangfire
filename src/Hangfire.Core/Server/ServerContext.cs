@@ -30,7 +30,9 @@ namespace Hangfire.Server
         }
 
         public int WorkerCount { get; set; }
+        public string TenantId { get; set; }
         public string[] Queues { get; set; }
+        public IDictionary<string, int> QueuePriorities { get; set; }
         public bool CanAllocate { get; set; }
         public string AllocationState { get; set; }
         public string AllocationReason { get; set; }

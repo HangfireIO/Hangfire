@@ -40,6 +40,17 @@ namespace Hangfire.Storage
         // Background jobs
         public abstract string CreateExpiredJob(Job job, IDictionary<string, string> parameters, DateTime createdAt, TimeSpan expireIn);
         public abstract IFetchedJob FetchNextJob(string[] queues, CancellationToken cancellationToken);
+        public virtual IFetchedJob FetchNextJob(string tenantId, QueueDescriptor[] queues, CancellationToken cancellationToken)
+        {
+            if (queues == null) throw new ArgumentNullException(nameof(queues));
+            if (queues.Length == 0) throw new ArgumentException("Queue array must be non-empty.", nameof(queues));
+            if (tenantId != null)
+            {
+                throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Connection.TenantAwareQueueFetch);
+            }
+
+            return FetchNextJob(queues.Select(static queue => queue.Name).ToArray(), cancellationToken);
+        }
         public abstract void SetJobParameter(string id, string name, string value);
         public abstract string GetJobParameter(string id, string name);
         public abstract JobData GetJobData(string jobId);
@@ -269,14 +280,16 @@ namespace Hangfire.Storage
                 {
                     if (String.IsNullOrWhiteSpace(queue)) continue;
 
-                    if (!result.TryGetValue(queue, out var availability))
+                    var key = $"{server.TenantId ?? String.Empty}:{queue}";
+                    if (!result.TryGetValue(key, out var availability))
                     {
                         availability = new QueueAvailabilityDto
                         {
+                            TenantId = server.TenantId,
                             Queue = queue,
                             ConstrainedByReason = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
                         };
-                        result.Add(queue, availability);
+                        result.Add(key, availability);
                     }
 
                     if (offline)
@@ -315,7 +328,10 @@ namespace Hangfire.Storage
                 }
             }
 
-            return result.Values.OrderBy(static x => x.Queue, StringComparer.OrdinalIgnoreCase).ToList();
+            return result.Values
+                .OrderBy(static x => x.TenantId, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(static x => x.Queue, StringComparer.OrdinalIgnoreCase)
+                .ToList();
         }
 
         private static string GetServerResourceCommandKey(string serverId)

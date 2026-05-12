@@ -29,7 +29,8 @@ namespace Hangfire
         private const int MaxDefaultWorkerCount = 20;
 
         private int _workerCount;
-        private string[] _queues;
+        private QueuePriorityCollection _queues;
+        private string _tenantId;
         private TimeSpan _serverTimeout;
         private TimeSpan _serverCheckInterval;
         private TimeSpan _heartbeatInterval;
@@ -40,7 +41,7 @@ namespace Hangfire
         public BackgroundJobServerOptions()
         {
             WorkerCount = Math.Min(Environment.ProcessorCount * 5, MaxDefaultWorkerCount);
-            Queues = new[] { EnqueuedState.DefaultQueue };
+            Queues = new QueuePriorityCollection { [EnqueuedState.DefaultQueue] = 1 };
             StopTimeout = BackgroundProcessingServerOptions.DefaultStopTimeout;
             ShutdownTimeout = BackgroundProcessingServer.DefaultShutdownTimeout;
             SchedulePollingInterval = DelayedJobScheduler.DefaultPollingDelay;
@@ -77,15 +78,26 @@ namespace Hangfire
             }
         }
 
-        public string[] Queues
+        public QueuePriorityCollection Queues
         {
             get { return _queues; }
             set
             {
                 if (value == null) throw new ArgumentNullException(nameof(value));
-                if (value.Length == 0) throw new ArgumentException("You should specify at least one queue to listen.", nameof(value));
+                if (value.Count == 0) throw new ArgumentException("You should specify at least one queue to listen.", nameof(value));
 
                 _queues = value;
+            }
+        }
+
+        public string TenantId
+        {
+            get { return _tenantId; }
+            set
+            {
+                if (value != null) TenantIdValidator.Validate(nameof(value), value);
+
+                _tenantId = value;
             }
         }
 

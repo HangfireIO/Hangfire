@@ -1,6 +1,10 @@
 using System;
 using System.Data.Common;
 using System.Data.SqlClient;
+#if !NET452
+using System.Threading.Tasks;
+using Testcontainers.MsSql;
+#endif
 
 namespace Hangfire.SqlServer.Tests
 {
@@ -36,18 +40,27 @@ namespace Hangfire.SqlServer.Tests
 
         public static string GetMasterConnectionString()
         {
-            return String.Format(GetConnectionStringTemplate(), MasterDatabaseName);
+            return GetConnectionString(MasterDatabaseName);
         }
 
         public static string GetConnectionString()
         {
-            return String.Format(GetConnectionStringTemplate(), GetDatabaseName());
+            return GetConnectionString(GetDatabaseName());
         }
 
-        private static string GetConnectionStringTemplate()
+        private static string GetConnectionString(string databaseName)
         {
-            return Environment.GetEnvironmentVariable(ConnectionStringTemplateVariable)
-                   ?? DefaultConnectionStringTemplate;
+            var connectionStringTemplate = Environment.GetEnvironmentVariable(ConnectionStringTemplateVariable);
+            if (!String.IsNullOrEmpty(connectionStringTemplate))
+            {
+                return String.Format(connectionStringTemplate, databaseName);
+            }
+
+#if NET452
+            return String.Format(DefaultConnectionStringTemplate, databaseName);
+#else
+            return SqlServerTestcontainer.GetConnectionString(databaseName);
+#endif
         }
 
         public static DbConnection CreateConnection(bool microsoftDataSqlClient)
@@ -62,5 +75,37 @@ namespace Hangfire.SqlServer.Tests
 
             return connection;
         }
+
+#if !NET452
+        private static class SqlServerTestcontainer
+        {
+            private static readonly Lazy<MsSqlContainer> Container = new Lazy<MsSqlContainer>(StartContainer);
+
+            public static string GetConnectionString(string databaseName)
+            {
+                var builder = new SqlConnectionStringBuilder(Container.Value.GetConnectionString())
+                {
+                    InitialCatalog = databaseName
+                };
+
+                return builder.ConnectionString;
+            }
+
+            private static MsSqlContainer StartContainer()
+            {
+                var container = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04")
+                    .Build();
+
+                StartContainerAsync(container).GetAwaiter().GetResult();
+
+                return container;
+            }
+
+            private static async Task StartContainerAsync(MsSqlContainer container)
+            {
+                await container.StartAsync().ConfigureAwait(false);
+            }
+        }
+#endif
     }
 }

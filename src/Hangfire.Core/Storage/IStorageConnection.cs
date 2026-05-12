@@ -34,6 +34,7 @@ namespace Hangfire.Storage
             TimeSpan expireIn);
 
         IFetchedJob FetchNextJob(string[] queues, CancellationToken cancellationToken);
+        IFetchedJob FetchNextJob(string tenantId, QueueDescriptor[] queues, CancellationToken cancellationToken);
 
         void SetJobParameter(string id, string name, string value);
         string GetJobParameter(string id, string name);

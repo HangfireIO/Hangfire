@@ -174,7 +174,9 @@ namespace Hangfire.SqlServer
                     {
                         Name = server.Id,
                         Heartbeat = server.LastHeartbeat,
+                        TenantId = data.TenantId,
                         Queues = data.Queues,
+                        QueuePriorities = data.QueuePriorities,
                         StartedAt = data.StartedAt ?? DateTime.MinValue,
                         WorkersCount = data.WorkerCount,
                         CanAllocate = data.CanAllocate ?? true,
@@ -824,4 +826,3 @@ where j.Id in @jobIds");
         }
     }
 }
-

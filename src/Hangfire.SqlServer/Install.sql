@@ -147,6 +147,7 @@ BEGIN
     CREATE TABLE [$(HangFireSchema)].[JobQueue](
         [Id] [int] IDENTITY(1,1) NOT NULL,
         [JobId] [int] NOT NULL,
+        [TenantId] [nvarchar](100) NULL,
         [Queue] [nvarchar](20) NOT NULL,
         [FetchedAt] [datetime] NULL,
             
@@ -165,7 +166,7 @@ BEGIN
         [FetchedAt] ASC
     );
     PRINT 'Created index [IX_HangFire_JobQueue_QueueAndFetchedAt]';
-        
+
     -- Servers table
         
     CREATE TABLE [$(HangFireSchema)].[Server](
@@ -768,14 +769,28 @@ BEGIN
 	SET @CURRENT_SCHEMA_VERSION = 9;
 END
 
-/*IF @CURRENT_SCHEMA_VERSION = 9
+IF @CURRENT_SCHEMA_VERSION = 9
 BEGIN
 	PRINT 'Installing schema version 10';
 
-	 Insert migration here
+	IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'JobQueue' AND COLUMN_NAME = 'TenantId' AND TABLE_SCHEMA='$(HangFireSchema)')
+	BEGIN
+		ALTER TABLE [$(HangFireSchema)].[JobQueue] ADD [TenantId] NVARCHAR(100) NULL;
+		PRINT 'Created [$(HangFireSchema)].[JobQueue].[TenantId] column';
+	END
+
+	IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_HangFire_JobQueue_Tenant_QueueAndFetchedAt' AND object_id = OBJECT_ID('[$(HangFireSchema)].[JobQueue]'))
+	BEGIN
+		CREATE NONCLUSTERED INDEX [IX_HangFire_JobQueue_Tenant_QueueAndFetchedAt] ON [$(HangFireSchema)].[JobQueue] (
+			[TenantId] ASC,
+			[Queue] ASC,
+			[FetchedAt] ASC
+		) INCLUDE ([JobId]);
+		PRINT 'Created index [IX_HangFire_JobQueue_Tenant_QueueAndFetchedAt]';
+	END
 
 	SET @CURRENT_SCHEMA_VERSION = 10;
-END*/
+END
 
 UPDATE [$(HangFireSchema)].[Schema] SET [Version] = @CURRENT_SCHEMA_VERSION
 IF @@ROWCOUNT = 0 

@@ -757,6 +757,12 @@ Required behavior:
 - Direct links to tenant-scoped queue, job, recurring job, or server views must enforce the same authorization check.
 - If no tenant authorization filter is registered, existing dashboard authorization semantics apply and authorized dashboard users can see all tenants.
 
+Implementation note after the resource-awareness dashboard work:
+
+- Dashboard tenant authorization should follow the same option-level authorization pattern already used by operational resource commands.
+- Mutating tenant-scoped dashboard actions, if added later, must use a mutation-specific authorization hook rather than read-only dashboard authorization filters.
+- Generated dashboard Razor `.cshtml.cs` files must be updated together with their `.cshtml` sources while Razor generation is skipped by the current build.
+
 ## Monitoring API Requirements
 
 Existing DTOs can be extended with optional tenant fields.
@@ -817,6 +823,14 @@ Tenant abc, Queue a: 2 available, 0 constrained
 ```
 
 Remote drain controls should target the server instance. Per-queue drain should apply to the tenant-scoped queue on that server.
+
+The existing resource command capability flag remains independent:
+
+```csharp
+JobStorageFeatures.Connection.ServerResourceCommands
+```
+
+Tenant-aware queue support must add its own granular feature flags alongside this existing resource-control flag. Queue availability DTOs and monitoring APIs must include `TenantId` so resource status for queue `a` under tenant `xyz` is not merged with queue `a` under tenant `abc`.
 
 ## Recurring Jobs
 

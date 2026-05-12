@@ -80,6 +80,7 @@ namespace Hangfire.States
         public static readonly string StateName = "Enqueued";
 
         private string _queue;
+        private string _tenantId;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EnqueuedState"/> class 
@@ -113,6 +114,7 @@ namespace Hangfire.States
             ValidateQueueName(nameof(queue), queue);
 
             _queue = queue;
+            _tenantId = HangfireTenantContext.CurrentTenantId;
             EnqueuedAt = DateTime.UtcNow;
         }
 
@@ -148,6 +150,18 @@ namespace Hangfire.States
             {
                 ValidateQueueName(nameof(value), value);
                 _queue = value;
+            }
+        }
+
+        [CanBeNull]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string TenantId
+        {
+            get { return _tenantId; }
+            set
+            {
+                if (value != null) TenantIdValidator.Validate(nameof(value), value);
+                _tenantId = value;
             }
         }
 
@@ -216,11 +230,18 @@ namespace Hangfire.States
         /// </remarks>
         public Dictionary<string, string> SerializeData()
         {
-            return new Dictionary<string, string>
+            var result = new Dictionary<string, string>
             {
                 { "EnqueuedAt", JobHelper.SerializeDateTime(EnqueuedAt) },
                 { "Queue", Queue }
             };
+
+            if (TenantId != null)
+            {
+                result.Add("TenantId", TenantId);
+            }
+
+            return result;
         }
 
         internal static bool TryValidateQueueName([NotNull] string value)
@@ -278,11 +299,29 @@ namespace Hangfire.States
                     throw new NotSupportedException("Current storage doesn't support specifying queues directly for a specific job. Please use the QueueAttribute instead.");
                 }
 
-                transaction.AddToQueue(
-                    context.BackgroundJob.Job?.Queue == null || !DefaultQueue.Equals(enqueuedState.Queue, StringComparison.OrdinalIgnoreCase)
-                        ? enqueuedState.Queue
-                        : context.BackgroundJob.Job.Queue,
-                    context.BackgroundJob.Id);
+                var queue = context.BackgroundJob.Job?.Queue == null || !DefaultQueue.Equals(enqueuedState.Queue, StringComparison.OrdinalIgnoreCase)
+                    ? enqueuedState.Queue
+                    : context.BackgroundJob.Job.Queue;
+                var tenantId = enqueuedState.TenantId ?? context.Connection.GetJobParameter(context.BackgroundJob.Id, "TenantId");
+
+                if (tenantId != null && !context.Storage.HasFeature(JobStorageFeatures.Transaction.TenantAwareQueueEnqueue))
+                {
+                    throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Transaction.TenantAwareQueueEnqueue);
+                }
+
+                if (tenantId != null && context.Storage.HasFeature(JobStorageFeatures.Transaction.SetJobParameter))
+                {
+                    transaction.SetJobParameter(context.BackgroundJob.Id, "TenantId", tenantId);
+                }
+
+                if (tenantId == null)
+                {
+                    transaction.AddToQueue(queue, context.BackgroundJob.Id);
+                }
+                else
+                {
+                    transaction.AddToQueue(tenantId, queue, context.BackgroundJob.Id);
+                }
             }
 
             public void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction)

@@ -15,13 +15,18 @@
 
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Hangfire.SqlServer.Entities
 {
     internal sealed class ServerData
     {
         public int WorkerCount { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string TenantId { get; set; }
         public string[] Queues { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public IDictionary<string, int> QueuePriorities { get; set; }
         public DateTime? StartedAt { get; set; }
         public bool? CanAllocate { get; set; }
         public string AllocationState { get; set; }
