@@ -1242,6 +1242,89 @@ values
 
         [Theory, CleanDatabase]
         [InlineData(false), InlineData(true)]
+        public void SaveServerResourceCommand_PersistsCommandFields(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var createdAt = new DateTime(2026, 05, 12, 10, 20, 30, DateTimeKind.Utc);
+
+                connection.SaveServerResourceCommand("server", new ServerResourceCommand
+                {
+                    CommandId = "command-1",
+                    Command = "drain-queue",
+                    Queue = "critical",
+                    Reason = "maintenance",
+                    CreatedAt = createdAt,
+                    CreatedBy = "operator@example.com"
+                });
+
+                var command = connection.GetServerResourceCommand("server");
+
+                Assert.Equal("command-1", command.CommandId);
+                Assert.Equal("drain-queue", command.Command);
+                Assert.Equal("server", command.ServerId);
+                Assert.Equal("critical", command.Queue);
+                Assert.Equal("maintenance", command.Reason);
+                Assert.Equal(createdAt, command.CreatedAt);
+                Assert.Equal("operator@example.com", command.CreatedBy);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void ClearServerResourceCommand_DoesNotClearAnotherCommand(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                connection.SaveServerResourceCommand("server", new ServerResourceCommand
+                {
+                    CommandId = "command-1",
+                    Command = "drain"
+                });
+
+                connection.ClearServerResourceCommand("server", "another-command");
+
+                Assert.NotNull(connection.GetServerResourceCommand("server"));
+
+                connection.ClearServerResourceCommand("server", "command-1");
+
+                Assert.Null(connection.GetServerResourceCommand("server"));
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void AddServerResourceEvent_IndexesEventByServerQueueAndRecentList(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var createdAt = new DateTime(2026, 05, 12, 10, 20, 30, DateTimeKind.Utc);
+
+                connection.AddServerResourceEvent(new ServerResourceEvent
+                {
+                    ServerId = "server",
+                    Queue = "critical",
+                    EventType = "drain-requested",
+                    AllocationState = JobServerAllocationState.Draining,
+                    Reason = "maintenance",
+                    CreatedAt = createdAt,
+                    Source = "operator@example.com"
+                });
+
+                var serverEvents = connection.GetServerResourceEvents("server", 0, 10);
+                var recentEvents = connection.GetServerResourceEvents(createdAt.AddSeconds(-1), createdAt.AddSeconds(1));
+
+                Assert.Single(serverEvents);
+                Assert.Single(recentEvents);
+                Assert.Equal("drain-requested", serverEvents[0].EventType);
+                Assert.Equal("critical", serverEvents[0].Queue);
+                Assert.Equal("maintenance", serverEvents[0].Reason);
+                Assert.Equal("operator@example.com", serverEvents[0].Source);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
         public void RemoveServer_ThrowsAnException_WhenServerIdIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(

@@ -327,6 +327,118 @@ values ('server', @data, @heartbeat)",
         }
 
         [Fact, CleanDatabase]
+        public void Servers_ShowsPendingRemoteCommandState()
+        {
+            UseConnection(connection =>
+            {
+                connection.AnnounceServer("server", new ServerContext { Queues = new[] { "default" }, WorkerCount = 1 });
+                connection.SaveServerResourceCommand("server", new ServerResourceCommand
+                {
+                    CommandId = "command-1",
+                    Command = "drain",
+                    Reason = "deployment"
+                });
+
+                return true;
+            });
+
+            var monitoring = CreateMonitoringApi();
+
+            var result = monitoring.Servers().Single();
+
+            Assert.Equal("Drain requested", result.RemoteCommandState);
+        }
+
+        [Fact, CleanDatabase]
+        public void QueueAvailability_ReturnsAvailableConstrainedDrainingAndOfflineCounts()
+        {
+            var now = DateTime.UtcNow;
+
+            UseConnection(connection =>
+            {
+                connection.AnnounceServer("available", new ServerContext
+                {
+                    Queues = new[] { "default" },
+                    WorkerCount = 1,
+                    CanAllocate = true
+                });
+                connection.AnnounceServer("constrained", new ServerContext
+                {
+                    Queues = new[] { "default" },
+                    WorkerCount = 1,
+                    CanAllocate = false,
+                    AllocationReason = "CPU pressure"
+                });
+                connection.AnnounceServer("draining", new ServerContext
+                {
+                    Queues = new[] { "default" },
+                    WorkerCount = 1,
+                    CanAllocate = true,
+                    DrainMode = true,
+                    AllocationReason = "deployment"
+                });
+                connection.AnnounceServer("offline", new ServerContext
+                {
+                    Queues = new[] { "default" },
+                    WorkerCount = 1,
+                    CanAllocate = true
+                });
+
+                return true;
+            });
+
+            UseSqlConnection(sql => sql.Execute($@"
+update [{Constants.DefaultSchema}].Server
+set LastHeartbeat = @heartbeat
+where Id = 'offline'",
+                new { heartbeat = now.AddHours(-1) }));
+
+            var monitoring = CreateMonitoringApi();
+
+            var result = monitoring.QueueAvailability().Single();
+
+            Assert.Equal("default", result.Queue);
+            Assert.Equal(1, result.AvailableServers);
+            Assert.Equal(2, result.ConstrainedServers);
+            Assert.Equal(1, result.DrainingServers);
+            Assert.Equal(1, result.OfflineServers);
+            Assert.Equal(1, result.ConstrainedByReason["CPU pressure"]);
+            Assert.Equal(1, result.ConstrainedByReason["deployment"]);
+        }
+
+        [Fact, CleanDatabase]
+        public void ResourceEvents_ReturnsEventsForServerAndDateRange()
+        {
+            var createdAt = new DateTime(2026, 05, 12, 10, 20, 30, DateTimeKind.Utc);
+
+            UseConnection(connection =>
+            {
+                connection.AddServerResourceEvent(new ServerResourceEvent
+                {
+                    ServerId = "server",
+                    Queue = "default",
+                    EventType = "drain-requested",
+                    AllocationState = JobServerAllocationState.Draining,
+                    Reason = "deployment",
+                    CreatedAt = createdAt,
+                    Source = "operator@example.com"
+                });
+
+                return true;
+            });
+
+            var monitoring = CreateMonitoringApi();
+
+            var byServer = monitoring.ResourceEvents("server", 0, 10);
+            var byRange = monitoring.ResourceEvents(createdAt.AddSeconds(-1), createdAt.AddSeconds(1));
+
+            Assert.Single(byServer);
+            Assert.Single(byRange);
+            Assert.Equal("drain-requested", byServer[0].EventType);
+            Assert.Equal("deployment", byRange[0].Reason);
+        }
+
+        [Fact, CleanDatabase]
         public void Servers_ProducesSortedList_RegardlessOfActualAnnouncementOrder()
         {
             // Arrange

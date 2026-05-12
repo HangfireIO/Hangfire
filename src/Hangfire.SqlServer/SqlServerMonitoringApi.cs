@@ -191,7 +191,7 @@ namespace Hangfire.SqlServer
                         DrainStartedAt = data.DrainStartedAt,
                         LastCapacityCheckFailedAt = data.LastCapacityCheckFailedAt,
                         CapacityCheckFailureCount = data.CapacityCheckFailureCount ?? 0,
-                        RemoteCommandState = remoteCommand?.Command ?? data.RemoteCommandState
+                        RemoteCommandState = GetRemoteCommandState(remoteCommand) ?? data.RemoteCommandState
                     });
                 }
 
@@ -199,6 +199,25 @@ namespace Hangfire.SqlServer
 
                 return result;
             });
+        }
+
+        private static string GetRemoteCommandState(ServerResourceCommand command)
+        {
+            if (command == null) return null;
+
+            switch (command.Command)
+            {
+                case "drain":
+                    return "Drain requested";
+                case "resume":
+                    return "Resume requested";
+                case "drain-queue":
+                    return "Queue drain requested";
+                case "resume-queue":
+                    return "Queue resume requested";
+                default:
+                    return command.Command;
+            }
         }
 
         public override IList<QueueAvailabilityDto> QueueAvailability()

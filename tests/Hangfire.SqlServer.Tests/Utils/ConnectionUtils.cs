@@ -2,6 +2,7 @@ using System;
 using System.Data.Common;
 using System.Data.SqlClient;
 #if !NET452
+using System.IO;
 using System.Threading.Tasks;
 using Testcontainers.MsSql;
 #endif
@@ -79,6 +80,11 @@ namespace Hangfire.SqlServer.Tests
 #if !NET452
         private static class SqlServerTestcontainer
         {
+            private const string DockerHostVariable = "DOCKER_HOST";
+            private const string RyukDisabledVariable = "TESTCONTAINERS_RYUK_DISABLED";
+            private const string PodmanPipePath = @"\\.\pipe\podman-machine-default";
+            private const string PodmanDockerHost = "npipe://./pipe/podman-machine-default";
+
             private static readonly Lazy<MsSqlContainer> Container = new Lazy<MsSqlContainer>(StartContainer);
 
             public static string GetConnectionString(string databaseName)
@@ -93,6 +99,8 @@ namespace Hangfire.SqlServer.Tests
 
             private static MsSqlContainer StartContainer()
             {
+                ConfigureTestcontainersEnvironment();
+
                 var container = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04")
                     .Build();
 
@@ -104,6 +112,21 @@ namespace Hangfire.SqlServer.Tests
             private static async Task StartContainerAsync(MsSqlContainer container)
             {
                 await container.StartAsync().ConfigureAwait(false);
+            }
+
+            private static void ConfigureTestcontainersEnvironment()
+            {
+                if (String.IsNullOrEmpty(Environment.GetEnvironmentVariable(DockerHostVariable)) &&
+                    File.Exists(PodmanPipePath))
+                {
+                    Environment.SetEnvironmentVariable(DockerHostVariable, PodmanDockerHost);
+                }
+
+                if (String.IsNullOrEmpty(Environment.GetEnvironmentVariable(RyukDisabledVariable)) &&
+                    String.Equals(Environment.GetEnvironmentVariable(DockerHostVariable), PodmanDockerHost, StringComparison.OrdinalIgnoreCase))
+                {
+                    Environment.SetEnvironmentVariable(RyukDisabledVariable, "true");
+                }
             }
         }
 #endif

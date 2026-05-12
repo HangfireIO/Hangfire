@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Hangfire.Server;
 using Xunit;
 
 namespace Hangfire.Core.Tests
@@ -112,6 +113,57 @@ namespace Hangfire.Core.Tests
 
             var queues = resource.GetAvailableQueues(new[] { "critical", "default" });
             Assert.Equal(new[] { "critical", "default" }, queues);
+        }
+
+        [Fact]
+        public async Task CpuProvider_FailsOpen_WhenUnsupportedByDefault()
+        {
+            var resource = JobServerResource.FromCpuLoad(0.80, TimeSpan.FromSeconds(1));
+            var reporter = (IJobServerResourceReporter)resource;
+
+            var snapshot = await reporter.ComputeCapacityAsync(default);
+
+            Assert.True(snapshot.CanAllocate);
+            Assert.Equal("CPU load metric unsupported", snapshot.Reason);
+        }
+
+        [Fact]
+        public async Task CpuProvider_FailsClosed_WhenUnsupportedAndConfigured()
+        {
+            var resource = JobServerResource.FromCpuLoad(0.80, TimeSpan.FromSeconds(1), failClosedWhenUnsupported: true);
+            var reporter = (IJobServerResourceReporter)resource;
+
+            var snapshot = await reporter.ComputeCapacityAsync(default);
+
+            Assert.False(snapshot.CanAllocate);
+            Assert.Equal("CPU load metric unsupported", snapshot.Reason);
+        }
+
+        [Fact]
+        public async Task DiskProvider_ReportsAvailable_WhenFreeSpaceIsAboveThreshold()
+        {
+            var resource = JobServerResource.FromDiskFreeSpace(AppContext.BaseDirectory, 0, TimeSpan.FromSeconds(1));
+            var reporter = (IJobServerResourceReporter)resource;
+
+            var snapshot = await reporter.ComputeCapacityAsync(default);
+
+            Assert.True(snapshot.CanAllocate);
+            Assert.Null(snapshot.Reason);
+        }
+
+        [Fact]
+        public async Task CompositeProvider_ReportsFirstConstrainedChildReason()
+        {
+            var constrained = new JobServerResource();
+            constrained.Drain("Memory pressure");
+            var available = new JobServerResource();
+            var resource = JobServerResource.FromComposite(TimeSpan.FromSeconds(1), available, constrained);
+            var reporter = (IJobServerResourceReporter)resource;
+
+            var snapshot = await reporter.ComputeCapacityAsync(default);
+
+            Assert.False(snapshot.CanAllocate);
+            Assert.Equal("Memory pressure", snapshot.Reason);
         }
     }
 }
