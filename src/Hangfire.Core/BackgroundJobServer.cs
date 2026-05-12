@@ -1,4 +1,4 @@
-﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
+// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -25,6 +25,7 @@ using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.States;
+using Hangfire.Storage;
 
 namespace Hangfire
 {
@@ -33,6 +34,7 @@ namespace Hangfire
         private readonly ILog _logger = LogProvider.For<BackgroundJobServer>();
 
         private readonly BackgroundJobServerOptions _options;
+        private readonly JobStorage _storage;
         private readonly BackgroundProcessingServer _processingServer;
 
         /// <summary>
@@ -102,6 +104,7 @@ namespace Hangfire
             if (additionalProcesses == null) throw new ArgumentNullException(nameof(additionalProcesses));
 
             _options = options;
+            _storage = storage;
 
             var processes = new List<IBackgroundProcessDispatcherBuilder>();
             processes.AddRange(GetRequiredProcesses(filterProvider, activator, factory, performer, stateChanger));
@@ -217,6 +220,15 @@ namespace Hangfire
             if (_options.Resource is IJobServerResourceReporter reporter)
             {
                 processes.Add(new JobServerResourceReporterProcess(reporter).UseThreadPool(maxConcurrency: 1));
+            }
+
+            if (_options.Resource is IJobServerDrainController drainController &&
+                _storage.HasFeature(JobStorageFeatures.Connection.ServerResourceCommands))
+            {
+                processes.Add(new ServerResourceCommandProcess(
+                    drainController,
+                    _options.Resource as IJobServerQueueDrainController,
+                    _options.ResourceCommandPollingInterval).UseBackgroundPool(threadCount: 1));
             }
 
             processes.Add(new Worker(_options.Queues, performer, stateChanger, _options.Resource).UseBackgroundPool(_options.WorkerCount, _options.WorkerThreadConfigurationAction));

@@ -5,6 +5,7 @@
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
 @using Hangfire.Dashboard.Resources
+@using Hangfire.Storage
 @inherits RazorPage
 @{
     Layout = new LayoutPage(Strings.ServersPage_Title);
@@ -14,6 +15,10 @@
     var now = StorageUtcNow ?? ApplicationUtcNow;
     var inconclusiveThreshold = DashboardOptions.ServerPossiblyAbortedThreshold;
     var possiblyAbortedThreshold = TimeSpan.FromSeconds(inconclusiveThreshold.TotalSeconds * 2);
+    var canControlServers = !Context.IsReadOnly &&
+        DashboardOptions.ResourceCommandAuthorization != null &&
+        DashboardOptions.ResourceCommandAuthorization(Context) &&
+        Storage.HasFeature(JobStorageFeatures.Connection.ServerResourceCommands);
 }
 
 <div class="row">
@@ -48,6 +53,10 @@
                             <th>Checked</th>
                             <th>@Strings.ServersPage_Table_Started</th>
                             <th>@Strings.ServersPage_Table_Heartbeat</th>
+                            @if (canControlServers)
+                            {
+                                <th>Actions</th>
+                            }
                         </tr>
                     </thead>
                     <tbody>
@@ -106,6 +115,36 @@
                                         @Html.RelativeTime(server.Heartbeat.Value)
                                     }
                                 </td>
+                                @if (canControlServers)
+                                {
+                                    <td>
+                                        @if (isOffline)
+                                        {
+                                            <span class="text-muted">Unavailable</span>
+                                        }
+                                        else if (!String.IsNullOrWhiteSpace(server.RemoteCommandState))
+                                        {
+                                            <span class="label label-info">Pending @server.RemoteCommandState</span>
+                                        }
+                                        else if (server.DrainMode)
+                                        {
+                                            <button class="btn btn-xs btn-primary"
+                                                    data-ajax="@Url.To("/servers/actions/resume/" + Uri.EscapeDataString(server.Name))"
+                                                    data-loading-text="Resuming...">
+                                                Resume server
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-xs btn-warning"
+                                                    data-ajax="@Url.To("/servers/actions/drain/" + Uri.EscapeDataString(server.Name))"
+                                                    data-loading-text="Draining..."
+                                                    data-confirm="Drain this server? It will stop accepting new jobs after the command is observed.">
+                                                Drain server
+                                            </button>
+                                        }
+                                    </td>
+                                }
                             </tr>
                         }
                     </tbody>

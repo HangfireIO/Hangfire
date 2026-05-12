@@ -1,4 +1,4 @@
-﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
+// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -148,6 +148,15 @@ namespace Hangfire.SqlServer
                     .ToList();
 
                 var result = new List<ServerDto>();
+                JobStorageConnection storageConnection = null;
+                try
+                {
+                    storageConnection = _storage.GetConnection() as JobStorageConnection;
+                }
+                catch
+                {
+                    storageConnection = null;
+                }
 
                 // ReSharper disable once LoopCanBeConvertedToQuery
                 foreach (var server in servers)
@@ -158,6 +167,8 @@ namespace Hangfire.SqlServer
                     {
                         data = SerializationHelper.Deserialize<ServerData>(server.Data, SerializationOption.User);
                     }
+
+                    var remoteCommand = storageConnection?.GetServerResourceCommand(server.Id);
 
                     result.Add(new ServerDto
                     {
@@ -173,12 +184,63 @@ namespace Hangfire.SqlServer
                         AllocationReason = data.AllocationReason,
                         AllocationCheckedAt = data.AllocationCheckedAt,
                         DrainMode = data.DrainMode ?? false,
-                        QueueAllocation = data.QueueAllocation
+                        QueueAllocation = data.QueueAllocation,
+                        AllocationStateChangedAt = data.AllocationStateChangedAt,
+                        DrainStartedAt = data.DrainStartedAt,
+                        LastCapacityCheckFailedAt = data.LastCapacityCheckFailedAt,
+                        CapacityCheckFailureCount = data.CapacityCheckFailureCount ?? 0,
+                        RemoteCommandState = remoteCommand?.Command ?? data.RemoteCommandState
                     });
                 }
 
+                storageConnection?.Dispose();
+
                 return result;
             });
+        }
+
+        public override IList<QueueAvailabilityDto> QueueAvailability()
+        {
+            using (var connection = _storage.GetConnection())
+            {
+                if (!(connection is JobStorageConnection storageConnection))
+                {
+                    return new List<QueueAvailabilityDto>();
+                }
+
+                return storageConnection.GetQueueAvailability(
+                    Servers(),
+                    DateTime.UtcNow,
+                    TimeSpan.FromMinutes(5));
+            }
+        }
+
+        public override IList<ServerResourceEvent> ResourceEvents(string serverId, int from, int count)
+        {
+            if (serverId == null) throw new ArgumentNullException(nameof(serverId));
+
+            using (var connection = _storage.GetConnection())
+            {
+                if (!(connection is JobStorageConnection storageConnection))
+                {
+                    return new List<ServerResourceEvent>();
+                }
+
+                return storageConnection.GetServerResourceEvents(serverId, from, count);
+            }
+        }
+
+        public override IList<ServerResourceEvent> ResourceEvents(DateTime from, DateTime to)
+        {
+            using (var connection = _storage.GetConnection())
+            {
+                if (!(connection is JobStorageConnection storageConnection))
+                {
+                    return new List<ServerResourceEvent>();
+                }
+
+                return storageConnection.GetServerResourceEvents(from, to);
+            }
         }
 
         public override JobList<FailedJobDto> FailedJobs(int @from, int count)

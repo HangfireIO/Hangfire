@@ -14,15 +14,23 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Messaging;
 
-namespace Hangfire.SqlServer.Msmq
+namespace Hangfire
 {
-    internal interface IMsmqTransaction : IDisposable
+    public sealed class ServerResourceCommand
     {
-        Message Receive(MessageQueue queue, TimeSpan timeout);
+        public string CommandId { get; set; }
 
-        void Commit();
-        void Abort();
+        public string Command { get; set; }
+
+        public string ServerId { get; set; }
+
+        public string Queue { get; set; }
+
+        public string Reason { get; set; }
+
+        public DateTime CreatedAt { get; set; }
+
+        public string CreatedBy { get; set; }
     }
 }

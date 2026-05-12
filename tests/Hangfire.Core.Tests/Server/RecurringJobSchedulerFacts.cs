@@ -1,4 +1,4 @@
-﻿extern alias ReferencedCronos;
+extern alias ReferencedCronos;
 
 using System;
 using System.Collections.Generic;

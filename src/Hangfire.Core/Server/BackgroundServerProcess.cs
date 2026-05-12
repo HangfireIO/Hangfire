@@ -1,4 +1,4 @@
-﻿// This file is part of Hangfire. Copyright © 2017 Hangfire OÜ.
+// This file is part of Hangfire. Copyright © 2017 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -332,6 +332,10 @@ namespace Hangfire.Server
                     serverContext.AllocationCheckedAt = snapshot.CheckedAt;
                     serverContext.AllocationState = snapshot.AllocationState;
                     serverContext.DrainMode = snapshot.DrainMode;
+                    serverContext.AllocationStateChangedAt = snapshot.StateChangedAt;
+                    serverContext.DrainStartedAt = snapshot.DrainStartedAt;
+                    serverContext.LastCapacityCheckFailedAt = snapshot.LastCapacityCheckFailedAt;
+                    serverContext.CapacityCheckFailureCount = snapshot.CapacityCheckFailureCount;
                 }
                 else
                 {

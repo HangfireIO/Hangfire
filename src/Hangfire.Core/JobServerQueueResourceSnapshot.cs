@@ -17,6 +17,8 @@ using Hangfire.Annotations;
 
 namespace Hangfire
 {
+    using System;
+
     public sealed class JobServerQueueResourceSnapshot
     {
         public JobServerQueueResourceSnapshot()
@@ -38,5 +40,7 @@ namespace Hangfire
         public string Queue { get; set; }
         public bool CanAllocate { get; set; }
         public string Reason { get; set; }
+        public bool DrainMode { get; set; }
+        public DateTime? StateChangedAt { get; set; }
     }
 }

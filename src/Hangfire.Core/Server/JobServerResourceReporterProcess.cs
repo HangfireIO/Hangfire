@@ -1,4 +1,4 @@
-﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
+// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -52,13 +52,25 @@ namespace Hangfire.Server
 
             try
             {
-                await _reporter.ComputeCapacityAsync(context.ShutdownToken).ConfigureAwait(false);
+                var snapshot = await _reporter.ComputeCapacityAsync(context.ShutdownToken).ConfigureAwait(false);
 
                 using (var connection = context.Storage.GetConnection())
                 {
                     if (connection is JobStorageConnection storageConnection)
                     {
                         storageConnection.UpdateServer(context.ServerId, BackgroundServerProcess.GetServerContext(CopyProperties(context)));
+                        if (snapshot?.StateChangedAt != null && snapshot.StateChangedAt == snapshot.CheckedAt)
+                        {
+                            storageConnection.AddServerResourceEvent(new ServerResourceEvent
+                            {
+                                ServerId = context.ServerId,
+                                EventType = "allocation-state-changed",
+                                AllocationState = snapshot.AllocationState,
+                                Reason = snapshot.Reason,
+                                CreatedAt = snapshot.StateChangedAt.Value,
+                                Source = "server"
+                            });
+                        }
                     }
                 }
             }
@@ -77,6 +89,15 @@ namespace Hangfire.Server
                         if (connection is JobStorageConnection storageConnection)
                         {
                             storageConnection.UpdateServer(context.ServerId, BackgroundServerProcess.GetServerContext(CopyProperties(context)));
+                            storageConnection.AddServerResourceEvent(new ServerResourceEvent
+                            {
+                                ServerId = context.ServerId,
+                                EventType = "capacity-check-failed",
+                                AllocationState = JobServerAllocationState.ResourceConstrained,
+                                Reason = ex.Message,
+                                CreatedAt = DateTime.UtcNow,
+                                Source = "server"
+                            });
                         }
                     }
                 }

@@ -7,6 +7,7 @@ namespace Hangfire.Dashboard.Pages
     using Hangfire.Common;
     using Hangfire.Dashboard;
     using Hangfire.Dashboard.Resources;
+    using Hangfire.Storage;
 
     internal partial class ServersPage : RazorPage
     {
@@ -19,6 +20,10 @@ namespace Hangfire.Dashboard.Pages
             var now = StorageUtcNow ?? ApplicationUtcNow;
             var inconclusiveThreshold = DashboardOptions.ServerPossiblyAbortedThreshold;
             var possiblyAbortedThreshold = TimeSpan.FromSeconds(inconclusiveThreshold.TotalSeconds * 2);
+            var canControlServers = !Context.IsReadOnly &&
+                DashboardOptions.ResourceCommandAuthorization != null &&
+                DashboardOptions.ResourceCommandAuthorization(Context) &&
+                Storage.HasFeature(JobStorageFeatures.Connection.ServerResourceCommands);
 
             WriteLiteral("\r\n<div class=\"row\">\r\n    <div class=\"col-md-12\">\r\n        <h1 id=\"page-title\" class=\"page-header\">");
             Write(Strings.ServersPage_Title);
@@ -51,7 +56,13 @@ namespace Hangfire.Dashboard.Pages
                 Write(Strings.ServersPage_Table_Started);
                 WriteLiteral("</th>\r\n                            <th>");
                 Write(Strings.ServersPage_Table_Heartbeat);
-                WriteLiteral("</th>\r\n                        </tr>\r\n                    </thead>\r\n                    <tbody>\r\n");
+                WriteLiteral("</th>\r\n");
+                if (canControlServers)
+                {
+                    WriteLiteral("                                <th>Actions</th>\r\n");
+                }
+
+                WriteLiteral("                        </tr>\r\n                    </thead>\r\n                    <tbody>\r\n");
 
                 foreach (var server in servers)
                 {
@@ -124,7 +135,37 @@ namespace Hangfire.Dashboard.Pages
                         Write(Html.RelativeTime(server.Heartbeat.Value));
                     }
 
-                    WriteLiteral("                                </td>\r\n                            </tr>\r\n");
+                    WriteLiteral("                                </td>\r\n");
+                    if (canControlServers)
+                    {
+                        WriteLiteral("                                    <td>\r\n");
+                        if (isOffline)
+                        {
+                            WriteLiteral("                                            <span class=\"text-muted\">Unavailable</span>\r\n");
+                        }
+                        else if (!String.IsNullOrWhiteSpace(server.RemoteCommandState))
+                        {
+                            WriteLiteral("                                            <span class=\"label label-info\">Pending ");
+                            Write(server.RemoteCommandState);
+                            WriteLiteral("</span>\r\n");
+                        }
+                        else if (server.DrainMode)
+                        {
+                            WriteLiteral("                                            <button class=\"btn btn-xs btn-primary\"\r\n                                                    data-ajax=\"");
+                            Write(Url.To("/servers/actions/resume/" + Uri.EscapeDataString(server.Name)));
+                            WriteLiteral("\"\r\n                                                    data-loading-text=\"Resuming...\">\r\n                                                Resume server\r\n                                            </button>\r\n");
+                        }
+                        else
+                        {
+                            WriteLiteral("                                            <button class=\"btn btn-xs btn-warning\"\r\n                                                    data-ajax=\"");
+                            Write(Url.To("/servers/actions/drain/" + Uri.EscapeDataString(server.Name)));
+                            WriteLiteral("\"\r\n                                                    data-loading-text=\"Draining...\"\r\n                                                    data-confirm=\"Drain this server? It will stop accepting new jobs after the command is observed.\">\r\n                                                Drain server\r\n                                            </button>\r\n");
+                        }
+
+                        WriteLiteral("                                    </td>\r\n");
+                    }
+
+                    WriteLiteral("                            </tr>\r\n");
                 }
 
                 WriteLiteral("                    </tbody>\r\n                </table>\r\n            </div>\r\n");

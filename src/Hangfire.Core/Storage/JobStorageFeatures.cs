@@ -33,6 +33,7 @@ namespace Hangfire.Storage
             public static readonly string GetUtcDateTime = "Connection.GetUtcDateTime";
             public static readonly string GetSetContains = "Connection.GetSetContains";
             public static readonly string LimitedGetSetCount = "Connection.GetSetCount.Limited";
+            public static readonly string ServerResourceCommands = "Connection.ServerResourceCommands";
 
             public static readonly string BatchedGetFirstByLowest = "Connection.BatchedGetFirstByLowestScoreFromSet";
         }
@@ -58,6 +59,8 @@ namespace Hangfire.Storage
         {
             public static readonly string DeletedStateGraphs = "Monitoring.DeletedStateGraphs";
             public static readonly string AwaitingJobs = "Monitoring.AwaitingJobs";
+            public static readonly string ResourceEvents = "Monitoring.ResourceEvents";
+            public static readonly string ResourceQueueAvailability = "Monitoring.ResourceQueueAvailability";
         }
 
         public static Exception GetNotSupportedException([NotNull] string featureId)

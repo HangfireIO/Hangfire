@@ -1,4 +1,4 @@
-﻿using Hangfire.Common;
+using Hangfire.Common;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Xunit;

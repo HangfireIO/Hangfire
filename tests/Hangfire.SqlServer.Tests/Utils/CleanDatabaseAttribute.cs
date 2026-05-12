@@ -1,4 +1,4 @@
-﻿extern alias ReferencedDapper;
+extern alias ReferencedDapper;
 
 using System;
 using System.Data.SqlClient;

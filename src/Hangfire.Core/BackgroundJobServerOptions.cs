@@ -1,4 +1,4 @@
-﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
+// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -48,6 +48,8 @@ namespace Hangfire
             ServerTimeout = ServerWatchdog.DefaultServerTimeout;
             ServerCheckInterval = ServerWatchdog.DefaultCheckInterval;
             CancellationCheckInterval = ServerJobCancellationWatcher.DefaultCheckInterval;
+            ResourceCommandPollingInterval = TimeSpan.FromSeconds(5);
+            DrainOnApplicationStoppingReason = "Application stopping";
             
             FilterProvider = null;
             Activator = null;
@@ -170,6 +172,8 @@ namespace Hangfire
 
         public TimeSpan CancellationCheckInterval { get; set; }
 
+        public TimeSpan ResourceCommandPollingInterval { get; set; }
+
         [Obsolete("Please use `ServerTimeout` or `ServerCheckInterval` options instead. Will be removed in 2.0.0.")]
         public ServerWatchdogOptions ServerWatchdogOptions { get; set; }
 
@@ -187,6 +191,10 @@ namespace Hangfire
 
         [CanBeNull]
         public IJobServerResource Resource { get; set; }
+
+        public bool DrainOnApplicationStopping { get; set; }
+
+        public string DrainOnApplicationStoppingReason { get; set; }
         
         [CanBeNull]
         public Action<Thread> WorkerThreadConfigurationAction { get; set; }

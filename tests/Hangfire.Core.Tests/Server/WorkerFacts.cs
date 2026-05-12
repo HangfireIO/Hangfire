@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
@@ -163,7 +163,7 @@ namespace Hangfire.Core.Tests.Server
             resource.Setup(x => x.CanAllocate()).Returns(true);
             resource.As<IJobServerQueueResource>()
                 .Setup(x => x.GetAvailableQueues(It.IsAny<string[]>()))
-                .Returns(Array.Empty<string>());
+                .Returns(new string[0]);
 
             var worker = CreateWorker(resource: resource.Object);
 

@@ -1,4 +1,4 @@
-﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
+// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -20,11 +20,14 @@ using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Server;
+using Hangfire.Storage.Monitoring;
 
 namespace Hangfire.Storage
 {
     public abstract class JobStorageConnection : IStorageConnection
     {
+        private const int DefaultResourceEventLimit = 1000;
+
         public virtual void Dispose()
         {
             GC.SuppressFinalize(this);
@@ -136,5 +139,228 @@ namespace Hangfire.Storage
         {
             throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Connection.GetUtcDateTime);
         } 
+
+        public virtual ServerResourceCommand GetServerResourceCommand([NotNull] string serverId)
+        {
+            if (serverId == null) throw new ArgumentNullException(nameof(serverId));
+
+            var entries = GetAllEntriesFromHash(GetServerResourceCommandKey(serverId));
+            if (entries == null || entries.Count == 0) return null;
+
+            return new ServerResourceCommand
+            {
+                CommandId = GetValueOrDefault(entries, "commandId"),
+                Command = GetValueOrDefault(entries, "command"),
+                ServerId = GetValueOrDefault(entries, "target") ?? serverId,
+                Queue = GetValueOrDefault(entries, "queue"),
+                Reason = GetValueOrDefault(entries, "reason"),
+                CreatedAt = ParseDateTime(GetValueOrDefault(entries, "createdAt")),
+                CreatedBy = GetValueOrDefault(entries, "createdBy")
+            };
+        }
+
+        public virtual void SaveServerResourceCommand([NotNull] string serverId, [NotNull] ServerResourceCommand command)
+        {
+            if (serverId == null) throw new ArgumentNullException(nameof(serverId));
+            if (command == null) throw new ArgumentNullException(nameof(command));
+            if (String.IsNullOrWhiteSpace(command.Command)) throw new ArgumentException("Command name must be specified.", nameof(command));
+
+            var commandId = String.IsNullOrWhiteSpace(command.CommandId) ? Guid.NewGuid().ToString("N") : command.CommandId;
+            var createdAt = command.CreatedAt == default(DateTime) ? DateTime.UtcNow : command.CreatedAt.ToUniversalTime();
+
+            using (var transaction = CreateWriteTransaction())
+            {
+                transaction.SetRangeInHash(
+                    GetServerResourceCommandKey(serverId),
+                    new[]
+                    {
+                        new KeyValuePair<string, string>("commandId", commandId),
+                        new KeyValuePair<string, string>("command", command.Command),
+                        new KeyValuePair<string, string>("target", serverId),
+                        new KeyValuePair<string, string>("queue", command.Queue),
+                        new KeyValuePair<string, string>("reason", command.Reason),
+                        new KeyValuePair<string, string>("createdAt", JobHelper.SerializeDateTime(createdAt)),
+                        new KeyValuePair<string, string>("createdBy", command.CreatedBy)
+                    });
+
+                transaction.Commit();
+            }
+        }
+
+        public virtual void ClearServerResourceCommand([NotNull] string serverId, [CanBeNull] string commandId)
+        {
+            if (serverId == null) throw new ArgumentNullException(nameof(serverId));
+
+            if (!String.IsNullOrWhiteSpace(commandId))
+            {
+                var command = GetServerResourceCommand(serverId);
+                if (command != null && !String.Equals(command.CommandId, commandId, StringComparison.Ordinal))
+                {
+                    return;
+                }
+            }
+
+            using (var transaction = CreateWriteTransaction())
+            {
+                transaction.RemoveHash(GetServerResourceCommandKey(serverId));
+                transaction.Commit();
+            }
+        }
+
+        public virtual void AddServerResourceEvent([NotNull] ServerResourceEvent resourceEvent)
+        {
+            if (resourceEvent == null) throw new ArgumentNullException(nameof(resourceEvent));
+            if (String.IsNullOrWhiteSpace(resourceEvent.EventType)) throw new ArgumentException("Event type must be specified.", nameof(resourceEvent));
+
+            if (resourceEvent.CreatedAt == default(DateTime))
+            {
+                resourceEvent.CreatedAt = DateTime.UtcNow;
+            }
+
+            var serialized = SerializationHelper.Serialize(resourceEvent);
+
+            using (var transaction = CreateWriteTransaction())
+            {
+                if (!String.IsNullOrWhiteSpace(resourceEvent.ServerId))
+                {
+                    InsertAndTrim(transaction, $"resource-events:server:{resourceEvent.ServerId}", serialized);
+                }
+
+                if (!String.IsNullOrWhiteSpace(resourceEvent.Queue))
+                {
+                    InsertAndTrim(transaction, $"resource-events:queue:{resourceEvent.Queue}", serialized);
+                }
+
+                InsertAndTrim(transaction, "resource-events:recent", serialized);
+                transaction.Commit();
+            }
+        }
+
+        public virtual IList<ServerResourceEvent> GetServerResourceEvents([NotNull] string serverId, int from, int count)
+        {
+            if (serverId == null) throw new ArgumentNullException(nameof(serverId));
+            if (from < 0) throw new ArgumentOutOfRangeException(nameof(from));
+            if (count < 0) throw new ArgumentOutOfRangeException(nameof(count));
+
+            return DeserializeResourceEvents(GetRangeFromList($"resource-events:server:{serverId}", from, from + count - 1));
+        }
+
+        public virtual IList<ServerResourceEvent> GetServerResourceEvents(DateTime from, DateTime to)
+        {
+            var fromUtc = from.ToUniversalTime();
+            var toUtc = to.ToUniversalTime();
+
+            return DeserializeResourceEvents(GetRangeFromList("resource-events:recent", 0, DefaultResourceEventLimit - 1))
+                .Where(resourceEvent => resourceEvent.CreatedAt >= fromUtc && resourceEvent.CreatedAt <= toUtc)
+                .ToList();
+        }
+
+        public virtual IList<QueueAvailabilityDto> GetQueueAvailability(IList<ServerDto> servers, DateTime now, TimeSpan serverTimeout)
+        {
+            if (servers == null) throw new ArgumentNullException(nameof(servers));
+
+            var result = new Dictionary<string, QueueAvailabilityDto>(StringComparer.OrdinalIgnoreCase);
+            foreach (var server in servers)
+            {
+                if (server.Queues == null) continue;
+
+                var offline = !server.Heartbeat.HasValue || server.Heartbeat.Value < now.Subtract(serverTimeout);
+                foreach (var queue in server.Queues)
+                {
+                    if (String.IsNullOrWhiteSpace(queue)) continue;
+
+                    if (!result.TryGetValue(queue, out var availability))
+                    {
+                        availability = new QueueAvailabilityDto
+                        {
+                            Queue = queue,
+                            ConstrainedByReason = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+                        };
+                        result.Add(queue, availability);
+                    }
+
+                    if (offline)
+                    {
+                        availability.OfflineServers++;
+                        continue;
+                    }
+
+                    var canAllocate = server.CanAllocate && !server.DrainMode;
+                    var reason = server.AllocationReason;
+                    if (server.QueueAllocation != null &&
+                        server.QueueAllocation.TryGetValue(queue, out var queueAllocation) &&
+                        !queueAllocation.CanAllocate)
+                    {
+                        canAllocate = false;
+                        reason = queueAllocation.Reason;
+                        if (queueAllocation.DrainMode)
+                        {
+                            availability.DrainingServers++;
+                        }
+                    }
+                    else if (server.DrainMode)
+                    {
+                        availability.DrainingServers++;
+                    }
+
+                    if (canAllocate)
+                    {
+                        availability.AvailableServers++;
+                    }
+                    else
+                    {
+                        availability.ConstrainedServers++;
+                        IncrementReason(availability, String.IsNullOrWhiteSpace(reason) ? "Resource constrained" : reason);
+                    }
+                }
+            }
+
+            return result.Values.OrderBy(static x => x.Queue, StringComparer.OrdinalIgnoreCase).ToList();
+        }
+
+        private static string GetServerResourceCommandKey(string serverId)
+        {
+            return $"server:{serverId}:resource-command";
+        }
+
+        private static string GetValueOrDefault(IDictionary<string, string> entries, string key)
+        {
+            return entries.TryGetValue(key, out var value) ? value : null;
+        }
+
+        private static DateTime ParseDateTime(string value)
+        {
+            return String.IsNullOrWhiteSpace(value)
+                ? DateTime.UtcNow
+                : JobHelper.DeserializeDateTime(value);
+        }
+
+        private static void InsertAndTrim(IWriteOnlyTransaction transaction, string key, string value)
+        {
+            transaction.InsertToList(key, value);
+            transaction.TrimList(key, 0, DefaultResourceEventLimit - 1);
+        }
+
+        private static IList<ServerResourceEvent> DeserializeResourceEvents(IEnumerable<string> items)
+        {
+            if (items == null) return new List<ServerResourceEvent>();
+
+            return items
+                .Select(static item => SerializationHelper.Deserialize<ServerResourceEvent>(item))
+                .Where(static item => item != null)
+                .ToList();
+        }
+
+        private static void IncrementReason(QueueAvailabilityDto availability, string reason)
+        {
+            if (!availability.ConstrainedByReason.TryGetValue(reason, out var count))
+            {
+                availability.ConstrainedByReason.Add(reason, 1);
+            }
+            else
+            {
+                availability.ConstrainedByReason[reason] = count + 1;
+            }
+        }
     }
 }

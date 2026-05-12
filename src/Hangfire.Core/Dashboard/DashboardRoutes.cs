@@ -19,6 +19,7 @@ using System.Reflection;
 using Hangfire.Annotations;
 using Hangfire.Dashboard.Pages;
 using Hangfire.States;
+using Hangfire.Storage;
 
 namespace Hangfire.Dashboard
 {
@@ -187,6 +188,12 @@ namespace Hangfire.Dashboard
                 static (manager, jobId) => manager.Trigger(jobId));
 
             Routes.AddRazorPage("/servers", static _ => new ServersPage());
+            Routes.AddCommand(
+                "/servers/actions/drain/(?<ServerId>.+)",
+                static context => CreateServerResourceCommand(context, "drain"));
+            Routes.AddCommand(
+                "/servers/actions/resume/(?<ServerId>.+)",
+                static context => CreateServerResourceCommand(context, "resume"));
             Routes.AddRazorPage("/retries", static _ => new RetriesPage());
 
             #endregion
@@ -283,6 +290,52 @@ namespace Hangfire.Dashboard
         private static EnqueuedState CreateEnqueuedState()
         {
             return new EnqueuedState { Reason = "Triggered via Dashboard UI" };
+        }
+
+        private static bool CreateServerResourceCommand(DashboardContext context, string command)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            if (command == null) throw new ArgumentNullException(nameof(command));
+
+            if (context.Options.ResourceCommandAuthorization == null ||
+                !context.Options.ResourceCommandAuthorization(context) ||
+                !context.Storage.HasFeature(JobStorageFeatures.Connection.ServerResourceCommands))
+            {
+                return false;
+            }
+
+            var serverId = Uri.UnescapeDataString(context.UriMatch.Groups["ServerId"].Value);
+            if (String.IsNullOrWhiteSpace(serverId)) return false;
+
+            using (var connection = context.Storage.GetConnection())
+            {
+                if (!(connection is JobStorageConnection storageConnection))
+                {
+                    return false;
+                }
+
+                var resourceCommand = new ServerResourceCommand
+                {
+                    Command = command,
+                    ServerId = serverId,
+                    Reason = command == "drain" ? "Dashboard command" : null,
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedBy = context.GetUserName()
+                };
+
+                storageConnection.SaveServerResourceCommand(serverId, resourceCommand);
+                storageConnection.AddServerResourceEvent(new ServerResourceEvent
+                {
+                    ServerId = serverId,
+                    EventType = "command-created",
+                    AllocationState = command == "drain" ? JobServerAllocationState.Draining : JobServerAllocationState.Available,
+                    Reason = resourceCommand.Reason,
+                    CreatedAt = resourceCommand.CreatedAt,
+                    Source = String.IsNullOrWhiteSpace(resourceCommand.CreatedBy) ? "dashboard" : resourceCommand.CreatedBy
+                });
+            }
+
+            return true;
         }
     }
 }

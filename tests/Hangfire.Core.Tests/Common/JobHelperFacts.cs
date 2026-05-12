@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 #if NETCOREAPP1_0
 using System.Reflection;
 #endif

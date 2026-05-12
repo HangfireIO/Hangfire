@@ -1,4 +1,4 @@
-﻿using System.Runtime.Serialization.Formatters;
+using System.Runtime.Serialization.Formatters;
 using Newtonsoft.Json;
 
 namespace Hangfire.Core.Tests

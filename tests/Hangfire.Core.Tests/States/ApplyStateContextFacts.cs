@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Hangfire.Profiling;
 using Hangfire.States;

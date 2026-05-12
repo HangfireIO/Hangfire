@@ -1,4 +1,4 @@
-﻿namespace Hangfire.Core.Tests
+namespace Hangfire.Core.Tests
 {
     public class BackgroundJobServerFacts
     {

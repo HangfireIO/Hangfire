@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Hangfire.States;
 
 namespace Hangfire.Core.Tests

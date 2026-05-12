@@ -1,4 +1,4 @@
-﻿using Hangfire.Core.Tests.Stubs;
+using Hangfire.Core.Tests.Stubs;
 using Hangfire.Dashboard;
 using Xunit;
 

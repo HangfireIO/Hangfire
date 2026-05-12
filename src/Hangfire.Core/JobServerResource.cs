@@ -24,7 +24,7 @@ using Hangfire.Server;
 
 namespace Hangfire
 {
-    public class JobServerResource : IJobServerResource, IJobServerResourceReporter, IJobServerResourceSnapshotProvider, IJobServerQueueResource
+    public class JobServerResource : IJobServerResource, IJobServerResourceReporter, IJobServerResourceSnapshotProvider, IJobServerQueueResource, IJobServerDrainController, IJobServerQueueDrainController
     {
         private readonly object _syncRoot = new object();
         private readonly Dictionary<string, JobServerQueueResourceSnapshot> _queueSnapshots = new Dictionary<string, JobServerQueueResourceSnapshot>(StringComparer.OrdinalIgnoreCase);
@@ -64,17 +64,26 @@ namespace Hangfire
 
         public void Drain([CanBeNull] string reason)
         {
+            var now = DateTime.UtcNow;
             SetSnapshot(new JobServerResourceSnapshot(
                 false,
                 String.IsNullOrWhiteSpace(reason) ? "Manually drained" : reason,
-                DateTime.UtcNow,
+                now,
                 JobServerAllocationState.Draining,
-                drainMode: true));
+                drainMode: true)
+            {
+                StateChangedAt = now,
+                DrainStartedAt = now
+            });
         }
 
         public void Resume()
         {
-            SetSnapshot(new JobServerResourceSnapshot(true, null, DateTime.UtcNow));
+            var now = DateTime.UtcNow;
+            SetSnapshot(new JobServerResourceSnapshot(true, null, now)
+            {
+                StateChangedAt = now
+            });
         }
 
         public void SetQueueState([NotNull] string queue, bool canAllocate, [CanBeNull] string reason = null)
@@ -83,7 +92,10 @@ namespace Hangfire
 
             lock (_syncRoot)
             {
-                _queueSnapshots[queue] = new JobServerQueueResourceSnapshot(queue, canAllocate, reason);
+                _queueSnapshots[queue] = new JobServerQueueResourceSnapshot(queue, canAllocate, reason)
+                {
+                    StateChangedAt = DateTime.UtcNow
+                };
             }
         }
 
@@ -95,6 +107,30 @@ namespace Hangfire
             {
                 _queueSnapshots.Remove(queue);
             }
+        }
+
+        public void DrainQueue([NotNull] string queue, [CanBeNull] string reason)
+        {
+            if (String.IsNullOrWhiteSpace(queue)) throw new ArgumentNullException(nameof(queue));
+
+            lock (_syncRoot)
+            {
+                _queueSnapshots[queue] = new JobServerQueueResourceSnapshot(
+                    queue,
+                    false,
+                    String.IsNullOrWhiteSpace(reason) ? "Queue drained" : reason)
+                {
+                    DrainMode = true,
+                    StateChangedAt = DateTime.UtcNow
+                };
+            }
+        }
+
+        public void ResumeQueue([NotNull] string queue)
+        {
+            if (String.IsNullOrWhiteSpace(queue)) throw new ArgumentNullException(nameof(queue));
+
+            ClearQueueState(queue);
         }
 
         public JobServerResourceSnapshot GetSnapshot()
@@ -226,7 +262,22 @@ namespace Hangfire
             var computeCapacity = _computeCapacity;
             if (computeCapacity == null) return GetSnapshot();
 
+            var previous = GetSnapshot();
             var result = await computeCapacity().ConfigureAwait(false) ?? new JobServerResourceSnapshot(false, "Capacity check failed", DateTime.UtcNow);
+            if (!String.Equals(previous.AllocationState, result.AllocationState, StringComparison.OrdinalIgnoreCase) ||
+                previous.CanAllocate != result.CanAllocate ||
+                previous.DrainMode != result.DrainMode)
+            {
+                result.StateChangedAt = result.CheckedAt ?? DateTime.UtcNow;
+            }
+            else
+            {
+                result.StateChangedAt = previous.StateChangedAt;
+                result.DrainStartedAt = previous.DrainStartedAt;
+            }
+
+            result.LastCapacityCheckFailedAt = previous.LastCapacityCheckFailedAt;
+            result.CapacityCheckFailureCount = previous.CapacityCheckFailureCount;
             SetSnapshot(result);
 
             return result;
@@ -235,14 +286,26 @@ namespace Hangfire
         void IJobServerResourceReporter.ReportCapacityCheckFailure(Exception exception)
         {
             var snapshot = GetSnapshot();
+            var now = DateTime.UtcNow;
             if (!snapshot.CanAllocate && !snapshot.CheckedAt.HasValue)
             {
                 SetSnapshot(new JobServerResourceSnapshot(
                     false,
                     "Capacity check failed",
-                    DateTime.UtcNow,
+                    now,
                     JobServerAllocationState.ResourceConstrained,
-                    drainMode: false));
+                    drainMode: false)
+                {
+                    StateChangedAt = now,
+                    LastCapacityCheckFailedAt = now,
+                    CapacityCheckFailureCount = snapshot.CapacityCheckFailureCount + 1
+                });
+            }
+            else
+            {
+                snapshot.LastCapacityCheckFailedAt = now;
+                snapshot.CapacityCheckFailureCount++;
+                SetSnapshot(snapshot);
             }
         }
 

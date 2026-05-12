@@ -1,4 +1,4 @@
-﻿// This file is part of Hangfire. Copyright © 2019 Hangfire OÜ.
+// This file is part of Hangfire. Copyright © 2019 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -217,7 +217,7 @@ namespace Hangfire.Common
             serializerSettings.NullValueHandling = NullValueHandling.Ignore;
             serializerSettings.CheckAdditionalContent = true; // Default option in JsonConvert.Deserialize method
             serializerSettings.MaxDepth = 128;
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET10_0_OR_GREATER
             serializerSettings.SerializationBinder = new TypeHelperSerializationBinder();
 #else
             serializerSettings.Binder = new TypeHelperSerializationBinder();

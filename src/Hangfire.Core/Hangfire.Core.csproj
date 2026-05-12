@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net451;net46;netstandard1.3;netstandard2.0;</TargetFrameworks>
+    <TargetFramework>net10.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <RootNamespace>Hangfire</RootNamespace>
   </PropertyGroup>
@@ -35,8 +35,12 @@
     <PackageReference Include="Microsoft.CSharp" Version="4.4.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.1" NoWarn="NU1903" />
   </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='net10.0'">
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
   
-  <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.3' or '$(TargetFramework)'=='netstandard2.0'">
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.3' or '$(TargetFramework)'=='netstandard2.0' or '$(TargetFramework)'=='net10.0'">
     <Compile Remove="AppBuilderExtensions.cs" />
     <Compile Remove="Dashboard/Owin/**" />
     <Compile Remove="Obsolete/**" />
@@ -55,7 +59,7 @@
     <RazorProjectFile>Razor.build</RazorProjectFile>
   </PropertyGroup>
 
-  <Target Name="GenerateRazorClasses" BeforeTargets="Build">
+  <Target Name="GenerateRazorClasses" BeforeTargets="Build" Condition="'$(TargetFramework)'!='net10.0'">
     <Exec Command="&quot;$(MSBuildCurrentFullPath)&quot; $(RazorProjectFile) /v:quiet /nologo" Condition="Exists('$(MSBuildCurrentFullPath)')" />
     <Exec Command="&quot;$(MSBuild14FullPath)&quot; $(RazorProjectFile) /v:quiet /nologo" Condition="Exists('$(MSBuild14FullPath)') and !Exists('$(MSBuildCurrentFullPath)')" />
     <Warning Text="Classes for Razor files (*.cshtml) weren't re-generated: couldn't find the '$(MSBuild14FullPath)' or '$(MSBuildCurrentFullPath)' file" Condition="!Exists('$(MSBuild14FullPath)') and !Exists('$(MSBuildCurrentFullPath)')" />

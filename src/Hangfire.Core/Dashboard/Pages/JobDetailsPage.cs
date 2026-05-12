@@ -1,4 +1,4 @@
-﻿using Hangfire.Annotations;
+using Hangfire.Annotations;
 
 namespace Hangfire.Dashboard.Pages
 {

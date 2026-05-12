@@ -23,7 +23,24 @@ namespace Hangfire.Storage
     public abstract class JobStorageMonitor : IMonitoringApi
     {
         public abstract IList<QueueWithTopEnqueuedJobsDto> Queues();
+
+        public virtual IList<QueueAvailabilityDto> QueueAvailability()
+        {
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Monitoring.ResourceQueueAvailability);
+        }
+
         public abstract IList<ServerDto> Servers();
+
+        public virtual IList<ServerResourceEvent> ResourceEvents(string serverId, int from, int count)
+        {
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Monitoring.ResourceEvents);
+        }
+
+        public virtual IList<ServerResourceEvent> ResourceEvents(DateTime from, DateTime to)
+        {
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Monitoring.ResourceEvents);
+        }
+
         public abstract JobDetailsDto JobDetails(string jobId);
         public abstract StatisticsDto GetStatistics();
         public abstract JobList<EnqueuedJobDto> EnqueuedJobs(string queue, int from, int perPage);

@@ -55,5 +55,9 @@ namespace Hangfire
         public DateTime? CheckedAt { get; set; }
         public string AllocationState { get; set; }
         public bool DrainMode { get; set; }
+        public DateTime? StateChangedAt { get; set; }
+        public DateTime? DrainStartedAt { get; set; }
+        public DateTime? LastCapacityCheckFailedAt { get; set; }
+        public long CapacityCheckFailureCount { get; set; }
     }
 }

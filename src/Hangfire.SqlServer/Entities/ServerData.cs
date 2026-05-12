@@ -1,4 +1,4 @@
-﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
+// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -29,5 +29,10 @@ namespace Hangfire.SqlServer.Entities
         public DateTime? AllocationCheckedAt { get; set; }
         public bool? DrainMode { get; set; }
         public IDictionary<string, JobServerQueueResourceSnapshot> QueueAllocation { get; set; }
+        public DateTime? AllocationStateChangedAt { get; set; }
+        public DateTime? DrainStartedAt { get; set; }
+        public DateTime? LastCapacityCheckFailedAt { get; set; }
+        public long? CapacityCheckFailureCount { get; set; }
+        public string RemoteCommandState { get; set; }
     }
 }

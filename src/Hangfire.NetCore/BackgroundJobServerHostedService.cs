@@ -169,6 +169,12 @@ namespace Hangfire
         {
             try
             {
+                if (_options.DrainOnApplicationStopping &&
+                    _options.Resource is IJobServerDrainController drainController)
+                {
+                    drainController.Drain(_options.DrainOnApplicationStoppingReason);
+                }
+
                 _processingServer?.SendStop();
             }
             catch (ObjectDisposedException)

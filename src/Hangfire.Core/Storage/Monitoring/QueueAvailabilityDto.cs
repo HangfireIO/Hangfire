@@ -13,20 +13,22 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-namespace Hangfire.SqlServer.Msmq
-{
-    public enum MsmqTransactionType
-    {
-        /// <summary>
-        /// Internal (MSMQ) transaction will be used to fetch pending background
-        /// jobs, does not support remote queues.
-        /// </summary>
-        Internal,
+using System.Collections.Generic;
 
-        /// <summary>
-        /// External (DTC) transaction will be used to fetch pending background
-        /// jobs. Supports remote queues, but requires running MSDTC Service.
-        /// </summary>
-        Dtc
+namespace Hangfire.Storage.Monitoring
+{
+    public sealed class QueueAvailabilityDto
+    {
+        public string Queue { get; set; }
+
+        public int AvailableServers { get; set; }
+
+        public int ConstrainedServers { get; set; }
+
+        public int DrainingServers { get; set; }
+
+        public int OfflineServers { get; set; }
+
+        public IDictionary<string, int> ConstrainedByReason { get; set; }
     }
 }

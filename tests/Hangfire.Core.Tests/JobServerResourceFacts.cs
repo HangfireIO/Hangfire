@@ -58,6 +58,8 @@ namespace Hangfire.Core.Tests
             Assert.True(snapshot.DrainMode);
             Assert.Equal(JobServerAllocationState.Draining, snapshot.AllocationState);
             Assert.Equal("deployment", snapshot.Reason);
+            Assert.NotNull(snapshot.StateChangedAt);
+            Assert.NotNull(snapshot.DrainStartedAt);
         }
 
         [Fact]
@@ -81,6 +83,35 @@ namespace Hangfire.Core.Tests
             var queues = resource.GetAvailableQueues(new[] { "critical", "default" });
 
             Assert.Equal(new[] { "default" }, queues);
+        }
+
+        [Fact]
+        public void DrainQueue_FiltersOnlyDrainedQueue()
+        {
+            var resource = new JobServerResource();
+
+            resource.DrainQueue("critical", "maintenance");
+
+            var queues = resource.GetAvailableQueues(new[] { "critical", "default" });
+            var snapshots = resource.GetQueueSnapshots(new[] { "critical", "default" });
+
+            Assert.Equal(new[] { "default" }, queues);
+            Assert.False(snapshots["critical"].CanAllocate);
+            Assert.True(snapshots["critical"].DrainMode);
+            Assert.Equal("maintenance", snapshots["critical"].Reason);
+            Assert.True(snapshots["default"].CanAllocate);
+        }
+
+        [Fact]
+        public void ResumeQueue_MakesQueueAvailableAgain()
+        {
+            var resource = new JobServerResource();
+            resource.DrainQueue("critical", "maintenance");
+
+            resource.ResumeQueue("critical");
+
+            var queues = resource.GetAvailableQueues(new[] { "critical", "default" });
+            Assert.Equal(new[] { "critical", "default" }, queues);
         }
     }
 }

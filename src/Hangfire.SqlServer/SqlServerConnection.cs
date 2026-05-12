@@ -1,4 +1,4 @@
-﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
+// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -512,7 +512,12 @@ $@"select Field, Value from [{schemaName}].Hash with (forceseek) where [Key] = @
                 AllocationReason = context.AllocationReason,
                 AllocationCheckedAt = context.AllocationCheckedAt,
                 DrainMode = context.DrainMode,
-                QueueAllocation = context.QueueAllocation
+                QueueAllocation = context.QueueAllocation,
+                AllocationStateChangedAt = context.AllocationStateChangedAt,
+                DrainStartedAt = context.DrainStartedAt,
+                LastCapacityCheckFailedAt = context.LastCapacityCheckFailedAt,
+                CapacityCheckFailureCount = context.CapacityCheckFailureCount,
+                RemoteCommandState = context.RemoteCommandState
             };
 
             _storage.UseConnection(_dedicatedConnection, static (storage, connection, pair) =>
@@ -565,6 +570,11 @@ $@"select Data from [{schemaName}].Server with (forceseek) where Id = @id");
                 data.AllocationCheckedAt = pair.Value.AllocationCheckedAt;
                 data.DrainMode = pair.Value.DrainMode;
                 data.QueueAllocation = pair.Value.QueueAllocation;
+                data.AllocationStateChangedAt = pair.Value.AllocationStateChangedAt;
+                data.DrainStartedAt = pair.Value.DrainStartedAt;
+                data.LastCapacityCheckFailedAt = pair.Value.LastCapacityCheckFailedAt;
+                data.CapacityCheckFailureCount = pair.Value.CapacityCheckFailureCount;
+                data.RemoteCommandState = pair.Value.RemoteCommandState;
 
                 var updateQuery = storage.GetQueryFromTemplate(static schemaName =>
 $@"update [{schemaName}].Server set Data = @data where Id = @id");
