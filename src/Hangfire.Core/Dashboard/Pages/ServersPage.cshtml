@@ -43,6 +43,9 @@
                             <th>@Strings.ServersPage_Table_Name</th>
                             <th>@Strings.ServersPage_Table_Workers</th>
                             <th>@Strings.ServersPage_Table_Queues</th>
+                            <th>Allocation</th>
+                            <th>Reason</th>
+                            <th>Checked</th>
                             <th>@Strings.ServersPage_Table_Started</th>
                             <th>@Strings.ServersPage_Table_Heartbeat</th>
                         </tr>
@@ -50,9 +53,30 @@
                     <tbody>
                         @foreach (var server in servers)
                         {
+                            var isOffline = server.Heartbeat < now.Add(-possiblyAbortedThreshold);
+                            var allocationState = isOffline
+                                ? JobServerAllocationState.Offline
+                                : (server.AllocationState ?? (server.CanAllocate ? JobServerAllocationState.Available : JobServerAllocationState.ResourceConstrained));
+                            var allocationLabel = allocationState == JobServerAllocationState.Available
+                                ? "label-success"
+                                : (allocationState == JobServerAllocationState.Offline ? "label-danger" : "label-warning");
+                            var queueLabels = server.Queues.Select(queue =>
+                            {
+                                JobServerQueueResourceSnapshot queueAllocation;
+                                if (server.QueueAllocation != null &&
+                                    server.QueueAllocation.TryGetValue(queue, out queueAllocation) &&
+                                    !queueAllocation.CanAllocate)
+                                {
+                                    var title = String.IsNullOrWhiteSpace(queueAllocation.Reason) ? "Paused by resource policy" : queueAllocation.Reason;
+                                    return Html.QueueLabel(queue) + " <span class=\"label label-warning\" title=\"" + Html.HtmlEncode(title) + "\">paused</span>";
+                                }
+
+                                return Html.QueueLabel(queue).ToString();
+                            });
+
                             <tr>
                                 <td>
-                                    @if (server.Heartbeat < now.Add(-possiblyAbortedThreshold))
+                                    @if (isOffline)
                                     {
                                         @:<span class="glyphicon glyphicon-alert text-danger" title="@Strings.ServersPage_Possibly_Aborted"></span>&nbsp;@Html.ServerId(server.Name)
                                     }
@@ -66,7 +90,15 @@
                                     }
                                 </td>
                                 <td>@server.WorkersCount</td>
-                                <td>@Html.Raw(String.Join(", ", server.Queues.Select(Html.QueueLabel)))</td>
+                                <td>@Html.Raw(String.Join(", ", queueLabels))</td>
+                                <td><span class="label @allocationLabel">@allocationState</span></td>
+                                <td>@server.AllocationReason</td>
+                                <td>
+                                    @if (server.AllocationCheckedAt.HasValue)
+                                    {
+                                        @Html.RelativeTime(server.AllocationCheckedAt.Value)
+                                    }
+                                </td>
                                 <td>@Html.RelativeTime(server.StartedAt)</td>
                                 <td>
                                     @if (server.Heartbeat.HasValue)

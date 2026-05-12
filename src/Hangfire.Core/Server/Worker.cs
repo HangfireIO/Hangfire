@@ -135,8 +135,19 @@ namespace Hangfire.Server
                 return;
             }
 
+            var queues = _queues.ToArray();
+            if (_resource is IJobServerQueueResource queueResource)
+            {
+                queues = queueResource.GetAvailableQueues(queues);
+                if (queues.Length == 0)
+                {
+                    context.StoppingToken.WaitOrThrow(_resourcePollingInterval);
+                    return;
+                }
+            }
+
             using (var connection = context.Storage.GetConnection())
-            using (var fetchedJob = connection.FetchNextJob(_queues.ToArray(), context.StoppingToken))
+            using (var fetchedJob = connection.FetchNextJob(queues, context.StoppingToken))
             {
                 var requeueOnException = true;
 

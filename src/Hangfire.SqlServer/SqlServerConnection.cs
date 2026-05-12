@@ -507,7 +507,12 @@ $@"select Field, Value from [{schemaName}].Hash with (forceseek) where [Key] = @
                 WorkerCount = context.WorkerCount,
                 Queues = context.Queues,
                 StartedAt = DateTime.UtcNow,
-                CanAllocate = context.CanAllocate
+                CanAllocate = context.CanAllocate,
+                AllocationState = context.AllocationState,
+                AllocationReason = context.AllocationReason,
+                AllocationCheckedAt = context.AllocationCheckedAt,
+                DrainMode = context.DrainMode,
+                QueueAllocation = context.QueueAllocation
             };
 
             _storage.UseConnection(_dedicatedConnection, static (storage, connection, pair) =>
@@ -555,6 +560,11 @@ $@"select Data from [{schemaName}].Server with (forceseek) where Id = @id");
                 data.WorkerCount = pair.Value.WorkerCount;
                 data.Queues = pair.Value.Queues;
                 data.CanAllocate = pair.Value.CanAllocate;
+                data.AllocationState = pair.Value.AllocationState;
+                data.AllocationReason = pair.Value.AllocationReason;
+                data.AllocationCheckedAt = pair.Value.AllocationCheckedAt;
+                data.DrainMode = pair.Value.DrainMode;
+                data.QueueAllocation = pair.Value.QueueAllocation;
 
                 var updateQuery = storage.GetQueryFromTemplate(static schemaName =>
 $@"update [{schemaName}].Server set Data = @data where Id = @id");

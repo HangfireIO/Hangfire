@@ -136,6 +136,46 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
+        public void Execute_FetchesFromAvailableQueues_WhenQueueResourceFiltersQueues()
+        {
+            var resource = new Mock<IJobServerResource>();
+            resource.Setup(x => x.CanAllocate()).Returns(true);
+            resource.As<IJobServerQueueResource>()
+                .Setup(x => x.GetAvailableQueues(It.IsAny<string[]>()))
+                .Returns(new[] { "default" });
+            _connection
+                .Setup(x => x.FetchNextJob(new[] { "default" }, It.IsNotNull<CancellationToken>()))
+                .Returns(_fetchedJob.Object);
+
+            var worker = CreateWorker(resource: resource.Object);
+
+            worker.Execute(_context.Object);
+
+            _connection.Verify(
+                x => x.FetchNextJob(new[] { "default" }, _context.StoppingTokenSource.Token),
+                Times.Once);
+        }
+
+        [Fact]
+        public void Execute_DoesNotFetch_WhenQueueResourceFiltersAllQueues()
+        {
+            var resource = new Mock<IJobServerResource>();
+            resource.Setup(x => x.CanAllocate()).Returns(true);
+            resource.As<IJobServerQueueResource>()
+                .Setup(x => x.GetAvailableQueues(It.IsAny<string[]>()))
+                .Returns(Array.Empty<string>());
+
+            var worker = CreateWorker(resource: resource.Object);
+
+            worker.Execute(_context.Object);
+
+            _context.Storage.Verify(x => x.GetConnection(), Times.Never);
+            _connection.Verify(
+                x => x.FetchNextJob(It.IsAny<string[]>(), It.IsAny<CancellationToken>()),
+                Times.Never);
+        }
+
+        [Fact]
         public void Execute_RequeuesAJob_WhenThereWasAnException()
         {
             _stateChanger

@@ -166,7 +166,14 @@ namespace Hangfire.SqlServer
                         Queues = data.Queues,
                         StartedAt = data.StartedAt ?? DateTime.MinValue,
                         WorkersCount = data.WorkerCount,
-                        CanAllocate = data.CanAllocate ?? true
+                        CanAllocate = data.CanAllocate ?? true,
+                        AllocationState = data.AllocationState ?? ((data.CanAllocate ?? true)
+                            ? JobServerAllocationState.Available
+                            : JobServerAllocationState.ResourceConstrained),
+                        AllocationReason = data.AllocationReason,
+                        AllocationCheckedAt = data.AllocationCheckedAt,
+                        DrainMode = data.DrainMode ?? false,
+                        QueueAllocation = data.QueueAllocation
                     });
                 }
 

@@ -112,20 +112,23 @@ using (new BackgroundJobServer())
 
 **Resource-aware background servers**
 
-The implementation described in [documentations/Awareness specification.md](documentations/Awareness%20specification.md) adds an opt-in resource gate to `BackgroundJobServer`. A server can now report whether the local node has enough capacity to accept more work. When capacity is unavailable, its workers stay alive, continue to observe shutdown, and keep the server visible in monitoring, but they do not fetch or reserve new jobs. Already fetched jobs continue through the normal Hangfire processing pipeline.
+Background servers can now be made aware of local node capacity. When a server is resource constrained or intentionally draining, it stays alive, keeps heartbeating, remains visible in monitoring, and lets already fetched jobs finish normally, but workers stop fetching new jobs until capacity returns.
 
-This feature keeps existing applications compatible: if `BackgroundJobServerOptions.Resource` is not configured, the server behaves as before and always fetches jobs when workers are ready.
+Resource awareness is opt-in and backward compatible. Applications that do not configure `BackgroundJobServerOptions.Resource` keep the existing Hangfire behavior.
 
-The implementation includes:
+The feature includes:
 
-- `IJobServerResource` and the default `JobServerResource` implementation in `Hangfire.Core`.
-- `BackgroundJobServerOptions.Resource` for passing a resource provider to a server.
-- Worker-side checks before `FetchNextJob`, so constrained servers stop taking new jobs until capacity returns.
-- A periodic capacity reporter for `JobServerResource`.
-- `CanAllocate` server metadata exposed through monitoring APIs, including `ServerDto.CanAllocate`.
-- SQL Server storage support that persists `CanAllocate` in existing serialized server data without requiring a schema migration.
+- `IJobServerResource` and `JobServerResource` for reporting whether a server can allocate more work.
+- Rich resource snapshots with allocation state, reason, and last checked timestamp.
+- Graceful drain mode for deployments, node maintenance, and operational pauses.
+- Queue-level resource policies, so a server can pause constrained queues while continuing to process safe queues.
+- Built-in provider helpers for memory limits, disk free-space checks, CPU-load checks with unsupported-platform fallback, and composite resource checks.
+- Worker-side checks before `FetchNextJob`, preventing constrained servers from reserving new jobs.
+- Server metadata and monitoring support through `ServerDto`, including allocation state, reason, checked time, drain mode, and paused queues.
+- SQL Server storage support that persists resource metadata in the existing serialized server data without a schema migration.
+- Dashboard visibility on the Servers page for available, constrained, draining, and offline servers.
 
-Use the built-in `JobServerResource` when capacity can be computed periodically:
+Use `JobServerResource` when capacity can be computed periodically:
 
 ```csharp
 var resource = new JobServerResource();
@@ -140,7 +143,23 @@ services.AddHangfireServer(options =>
 });
 ```
 
-For self-hosted servers, pass the same resource through `BackgroundJobServerOptions`:
+Use drain mode to stop fetching new jobs while letting in-flight jobs finish:
+
+```csharp
+resource.Drain("Deployment in progress");
+
+// Later, when the node can accept work again:
+resource.Resume();
+```
+
+Pause individual queues when only part of the local workload is constrained:
+
+```csharp
+resource.SetQueueState("image-processing", canAllocate: false, reason: "CPU pressure");
+resource.SetQueueState("emails", canAllocate: true);
+```
+
+For self-hosted servers, pass the resource through `BackgroundJobServerOptions`:
 
 ```csharp
 var resource = new JobServerResource();
@@ -161,7 +180,16 @@ using (new BackgroundJobServer(options))
 }
 ```
 
-You can also provide your own resource provider by implementing `IJobServerResource`:
+You can also use built-in helper providers or compose several checks:
+
+```csharp
+var resource = JobServerResource.FromComposite(
+    TimeSpan.FromSeconds(5),
+    JobServerResource.FromMemoryLimit(512 * 1024 * 1024, TimeSpan.FromSeconds(5)),
+    JobServerResource.FromDiskFreeSpace("C:\\", 5L * 1024 * 1024 * 1024, TimeSpan.FromSeconds(30)));
+```
+
+Custom providers remain simple: implement `IJobServerResource` when all you need is a boolean allocation gate.
 
 ```csharp
 public sealed class MaintenanceWindowResource : IJobServerResource
@@ -185,7 +213,8 @@ var servers = JobStorage.Current.GetMonitoringApi().Servers();
 
 foreach (var server in servers)
 {
-    Console.WriteLine($"{server.Name}: can allocate = {server.CanAllocate}");
+    Console.WriteLine(
+        $"{server.Name}: {server.AllocationState}, can allocate = {server.CanAllocate}, reason = {server.AllocationReason}");
 }
 ```
 

@@ -68,6 +68,25 @@ namespace Hangfire.Server
             }
             catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
+                _reporter.ReportCapacityCheckFailure(ex);
+
+                try
+                {
+                    using (var connection = context.Storage.GetConnection())
+                    {
+                        if (connection is JobStorageConnection storageConnection)
+                        {
+                            storageConnection.UpdateServer(context.ServerId, BackgroundServerProcess.GetServerContext(CopyProperties(context)));
+                        }
+                    }
+                }
+                catch (Exception updateException) when (updateException.IsCatchableExceptionType())
+                {
+                    _logger.WarnException(
+                        $"{BackgroundServerProcess.GetServerTemplate(context.ServerId)} encountered an exception while updating failed capacity metadata",
+                        updateException);
+                }
+
                 _logger.WarnException(
                     $"{BackgroundServerProcess.GetServerTemplate(context.ServerId)} encountered an exception while reporting server capacity",
                     ex);

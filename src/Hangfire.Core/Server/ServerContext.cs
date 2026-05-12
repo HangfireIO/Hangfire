@@ -15,6 +15,9 @@
 
 namespace Hangfire.Server
 {
+    using System;
+    using System.Collections.Generic;
+
     public class ServerContext
     {
         public ServerContext()
@@ -22,10 +25,17 @@ namespace Hangfire.Server
             Queues = [];
             WorkerCount = -1;
             CanAllocate = true;
+            AllocationState = JobServerAllocationState.Available;
+            QueueAllocation = new Dictionary<string, JobServerQueueResourceSnapshot>(StringComparer.OrdinalIgnoreCase);
         }
 
         public int WorkerCount { get; set; }
         public string[] Queues { get; set; }
         public bool CanAllocate { get; set; }
+        public string AllocationState { get; set; }
+        public string AllocationReason { get; set; }
+        public DateTime? AllocationCheckedAt { get; set; }
+        public bool DrainMode { get; set; }
+        public IDictionary<string, JobServerQueueResourceSnapshot> QueueAllocation { get; set; }
     }
 }

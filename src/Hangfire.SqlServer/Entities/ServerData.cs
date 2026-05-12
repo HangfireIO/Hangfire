@@ -14,6 +14,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 
 namespace Hangfire.SqlServer.Entities
 {
@@ -23,5 +24,10 @@ namespace Hangfire.SqlServer.Entities
         public string[] Queues { get; set; }
         public DateTime? StartedAt { get; set; }
         public bool? CanAllocate { get; set; }
+        public string AllocationState { get; set; }
+        public string AllocationReason { get; set; }
+        public DateTime? AllocationCheckedAt { get; set; }
+        public bool? DrainMode { get; set; }
+        public IDictionary<string, JobServerQueueResourceSnapshot> QueueAllocation { get; set; }
     }
 }

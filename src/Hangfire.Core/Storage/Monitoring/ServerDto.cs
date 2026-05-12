@@ -26,5 +26,10 @@ namespace Hangfire.Storage.Monitoring
         public IList<string> Queues { get; set; }
         public DateTime? Heartbeat { get; set; }
         public bool CanAllocate { get; set; }
+        public string AllocationState { get; set; }
+        public string AllocationReason { get; set; }
+        public DateTime? AllocationCheckedAt { get; set; }
+        public bool DrainMode { get; set; }
+        public IDictionary<string, JobServerQueueResourceSnapshot> QueueAllocation { get; set; }
     }
 }

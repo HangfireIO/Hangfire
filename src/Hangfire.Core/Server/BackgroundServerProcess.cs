@@ -323,6 +323,27 @@ namespace Hangfire.Server
             if (properties.TryGetValue("Resource", out var resource) && resource is IJobServerResource jobServerResource)
             {
                 serverContext.CanAllocate = jobServerResource.CanAllocate();
+
+                if (resource is IJobServerResourceSnapshotProvider snapshotProvider)
+                {
+                    var snapshot = snapshotProvider.GetSnapshot();
+                    serverContext.CanAllocate = snapshot.CanAllocate;
+                    serverContext.AllocationReason = snapshot.Reason;
+                    serverContext.AllocationCheckedAt = snapshot.CheckedAt;
+                    serverContext.AllocationState = snapshot.AllocationState;
+                    serverContext.DrainMode = snapshot.DrainMode;
+                }
+                else
+                {
+                    serverContext.AllocationState = serverContext.CanAllocate
+                        ? JobServerAllocationState.Available
+                        : JobServerAllocationState.ResourceConstrained;
+                }
+
+                if (resource is IJobServerQueueResource queueResource)
+                {
+                    serverContext.QueueAllocation = queueResource.GetQueueSnapshots(serverContext.Queues);
+                }
             }
 
             return serverContext;
