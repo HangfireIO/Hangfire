@@ -1,4 +1,4 @@
-﻿// This file is part of Hangfire. Copyright © 2017 Hangfire OÜ.
+// This file is part of Hangfire. Copyright © 2017 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -306,7 +306,7 @@ namespace Hangfire.Server
             }
         }
 
-        private static ServerContext GetServerContext(IDictionary<string, object> properties)
+        internal static ServerContext GetServerContext(IDictionary<string, object> properties)
         {
             var serverContext = new ServerContext();
 
@@ -315,9 +315,49 @@ namespace Hangfire.Server
                 serverContext.Queues = array;
             }
 
+            if (properties.TryGetValue("QueuePriorities", out var queuePriorities) && queuePriorities is IDictionary<string, int> priorities)
+            {
+                serverContext.QueuePriorities = priorities;
+            }
+
+            if (properties.TryGetValue("TenantId", out var tenantId))
+            {
+                serverContext.TenantId = tenantId as string;
+            }
+
             if (properties.TryGetValue("WorkerCount", out var workerCount))
             {
                 serverContext.WorkerCount = (int)workerCount;
+            }
+
+            if (properties.TryGetValue("Resource", out var resource) && resource is IJobServerResource jobServerResource)
+            {
+                serverContext.CanAllocate = jobServerResource.CanAllocate();
+
+                if (resource is IJobServerResourceSnapshotProvider snapshotProvider)
+                {
+                    var snapshot = snapshotProvider.GetSnapshot();
+                    serverContext.CanAllocate = snapshot.CanAllocate;
+                    serverContext.AllocationReason = snapshot.Reason;
+                    serverContext.AllocationCheckedAt = snapshot.CheckedAt;
+                    serverContext.AllocationState = snapshot.AllocationState;
+                    serverContext.DrainMode = snapshot.DrainMode;
+                    serverContext.AllocationStateChangedAt = snapshot.StateChangedAt;
+                    serverContext.DrainStartedAt = snapshot.DrainStartedAt;
+                    serverContext.LastCapacityCheckFailedAt = snapshot.LastCapacityCheckFailedAt;
+                    serverContext.CapacityCheckFailureCount = snapshot.CapacityCheckFailureCount;
+                }
+                else
+                {
+                    serverContext.AllocationState = serverContext.CanAllocate
+                        ? JobServerAllocationState.Available
+                        : JobServerAllocationState.ResourceConstrained;
+                }
+
+                if (resource is IJobServerQueueResource queueResource)
+                {
+                    serverContext.QueueAllocation = queueResource.GetQueueSnapshots(serverContext.Queues);
+                }
             }
 
             return serverContext;

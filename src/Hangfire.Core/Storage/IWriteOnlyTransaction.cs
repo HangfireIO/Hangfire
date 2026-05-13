@@ -30,6 +30,7 @@ namespace Hangfire.Storage
 
         // Queue operations
         void AddToQueue([NotNull] string queue, [NotNull] string jobId);
+        void AddToQueue([CanBeNull] string tenantId, [NotNull] string queue, [NotNull] string jobId);
 
         // Counter operations
         void IncrementCounter([NotNull] string key);
@@ -50,6 +51,7 @@ namespace Hangfire.Storage
         // Hash operations
         void SetRangeInHash([NotNull] string key, [NotNull] IEnumerable<KeyValuePair<string, string>> keyValuePairs);
         void RemoveHash([NotNull] string key);
+        void SetJobParameter([NotNull] string jobId, [NotNull] string name, [CanBeNull] string value);
 
         void Commit();
     }

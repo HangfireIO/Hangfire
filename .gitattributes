@@ -1,48 +1,35 @@
-# Auto detect text files and perform LF normalization
+﻿# Auto detect text files and perform LF normalization
 * text=auto
-
-# Custom for Visual Studio
-*.cs     diff=csharp text
-*.sln    merge=union text eol=crlf
-*.csproj merge=union text eol=crlf
-*.vbproj merge=union text eol=crlf
-*.fsproj merge=union text eol=crlf
-*.dbproj merge=union text eol=crlf
-
-# Standard to msysgit
-*.doc	 diff=astextplain
-*.DOC	 diff=astextplain
-*.docx diff=astextplain
-*.DOCX diff=astextplain
-*.dot  diff=astextplain
-*.DOT  diff=astextplain
-*.pdf  diff=astextplain
-*.PDF	 diff=astextplain
-*.rtf	 diff=astextplain
-*.RTF	 diff=astextplain
-
-# Source code
-*.cshtml text
-*.css    text
-*.xml    text
-*.bat    text
-*.ps1    text
-*.nuspec text
-*.js     text
-*.json   text
-*.sql    text
+###############################################################################
+# Set default behavior to automatically normalize line endings.
+###############################################################################
+* text eol=lf working-tree-encoding=UTF-8 encoding=utf-8
+*.tt eol=lf working-tree-encoding=UTF-8 encoding=utf-8
+*.cshtml eol=lf working-tree-encoding=UTF-8 encoding=utf-8
+*.css    eol=lf working-tree-encoding=UTF-8 encoding=utf-8
+*.xml    eol=lf working-tree-encoding=UTF-8 encoding=utf-8
+*.bat	 eol=lf working-tree-encoding=UTF-8 encoding=utf-8	
+*.ps1    eol=lf working-tree-encoding=UTF-8 encoding=utf-8
+*.nuspec eol=lf working-tree-encoding=UTF-8 encoding=utf-8
+*.js     eol=lf working-tree-encoding=UTF-8 encoding=utf-8
+*.json   eol=lf working-tree-encoding=UTF-8 encoding=utf-8
+*.sql    eol=lf working-tree-encoding=UTF-8 encoding=utf-8
+*.props    eol=lf working-tree-encoding=UTF-8 encoding=utf-8
 
 # Documentation
-*.md           text
-*.txt          text
-*.manifest     text
-COPYING        text
-COPYING.LESSER text
+*.md           eol=lf working-tree-encoding=UTF-8 encoding=utf-8
+*.txt          eol=lf working-tree-encoding=UTF-8 encoding=utf-8
+*.manifest     eol=lf working-tree-encoding=UTF-8 encoding=utf-8
+COPYING        eol=lf working-tree-encoding=UTF-8 encoding=utf-8
+LICENSE_ROYALTYFREE eol=lf working-tree-encoding=UTF-8 encoding=utf-8
+LICENSE_STANDARD eol=lf working-tree-encoding=UTF-8 encoding=utf-8
+NOTICES eol=lf working-tree-encoding=UTF-8 encoding=utf-8
 
 # Configs
-*.config       text
-.editorconfig  text
-.gitattributes text
-.gitignore     text
-*.yml          text
-*.DotSettings  text
+*.config       eol=lf working-tree-encoding=UTF-8 encoding=utf-8
+.editorconfig  eol=lf working-tree-encoding=UTF-8 encoding=utf-8
+.gitattributes eol=lf working-tree-encoding=UTF-8 encoding=utf-8
+.gitignore     eol=lf working-tree-encoding=UTF-8 encoding=utf-8
+*.yml          eol=lf working-tree-encoding=UTF-8 encoding=utf-8
+*.yaml          eol=lf working-tree-encoding=UTF-8 encoding=utf-8
+*.DotSettings  eol=lf working-tree-encoding=UTF-8 encoding=utf-8

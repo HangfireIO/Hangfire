@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Hangfire.Dashboard;
 using Moq;
 using Xunit;

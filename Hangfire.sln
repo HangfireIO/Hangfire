@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.136
+# Visual Studio Version 18
+VisualStudioVersion = 18.6.11723.189 insiders
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleSample", "samples\ConsoleSample\ConsoleSample.csproj", "{C02BB718-2AE4-434C-8668-C894FF663FCE}"
 EndProject
@@ -19,9 +19,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{15E186DF-8918-44F1-9285-9756EDAECA5D}"
 	ProjectSection(SolutionItems) = preProject
 		appveyor.yml = appveyor.yml
+		src\Directory.Build.props = src\Directory.Build.props
 		psake-project.ps1 = psake-project.ps1
 		src\SharedAssemblyInfo.cs = src\SharedAssemblyInfo.cs
-		src\Directory.Build.props = src\Directory.Build.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspecs", "nuspecs", "{5E687025-A525-4534-8869-CB685C7B11C4}"
@@ -42,10 +42,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.Core.Tests", "tests\Hangfire.Core.Tests\Hangfire.Core.Tests.csproj", "{E13C3543-39A3-475C-BB43-2E311E634843}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.SqlServer.Tests", "tests\Hangfire.SqlServer.Tests\Hangfire.SqlServer.Tests.csproj", "{6DFFA275-C483-4501-823A-741AC9EC0846}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.SqlServer.Msmq", "src\Hangfire.SqlServer.Msmq\Hangfire.SqlServer.Msmq.csproj", "{762BE479-0AEC-47E0-8F9C-34FA54641749}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.SqlServer.Msmq.Tests", "tests\Hangfire.SqlServer.Msmq.Tests\Hangfire.SqlServer.Msmq.Tests.csproj", "{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{F710C9CF-69F9-4373-9B74-ABB185BF985B}"
 	ProjectSection(SolutionItems) = preProject
@@ -84,14 +80,6 @@ Global
 		{6DFFA275-C483-4501-823A-741AC9EC0846}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6DFFA275-C483-4501-823A-741AC9EC0846}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6DFFA275-C483-4501-823A-741AC9EC0846}.Release|Any CPU.Build.0 = Release|Any CPU
-		{762BE479-0AEC-47E0-8F9C-34FA54641749}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{762BE479-0AEC-47E0-8F9C-34FA54641749}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{762BE479-0AEC-47E0-8F9C-34FA54641749}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{762BE479-0AEC-47E0-8F9C-34FA54641749}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{73AFEBE0-9B11-44F6-A69C-8A51538CF18E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{73AFEBE0-9B11-44F6-A69C-8A51538CF18E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{73AFEBE0-9B11-44F6-A69C-8A51538CF18E}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -112,7 +100,6 @@ Global
 		{C02BB718-2AE4-434C-8668-C894FF663FCE} = {119DA7FA-B94C-4B63-AEC9-428EF834E0D8}
 		{E13C3543-39A3-475C-BB43-2E311E634843} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}
 		{6DFFA275-C483-4501-823A-741AC9EC0846} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}
-		{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}
 		{FA751692-20C8-4986-8164-D21F505B2172} = {119DA7FA-B94C-4B63-AEC9-428EF834E0D8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

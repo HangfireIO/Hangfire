@@ -1,3 +1,3 @@
-﻿using Xunit;
+using Xunit;
 
 [assembly: CollectionBehavior(MaxParallelThreads = 1)]

@@ -1,4 +1,4 @@
-﻿namespace Hangfire.Dashboard.Pages
+namespace Hangfire.Dashboard.Pages
 {
     partial class Paginator
     {

@@ -1,8 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net451</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <UseRidGraph>true</UseRidGraph>
     <DebugType>full</DebugType>
   </PropertyGroup>
@@ -10,7 +10,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Hangfire.Core\Hangfire.Core.csproj" />
     <ProjectReference Include="..\..\src\Hangfire.SqlServer\Hangfire.SqlServer.csproj" />
-    <ProjectReference Include="..\..\src\Hangfire.SqlServer.Msmq\Hangfire.SqlServer.Msmq.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,13 +17,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.Owin.SelfHost" Version="4.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="System.Transactions" />
+    <Compile Remove="Startup.cs" />
   </ItemGroup>
 
 </Project>

@@ -61,7 +61,7 @@ namespace Hangfire.SqlServer
 
         [Obsolete("Don't use this class directly, use SqlServerConnection.AcquireDistributedLock instead as it provides better safety. Will be removed in 2.0.0.")]
         [SuppressMessage("Performance", "CA1854:Prefer the \'IDictionary.TryGetValue(TKey, out TValue)\' method")]
-        public SqlServerDistributedLock([NotNull] SqlServerStorage storage, [NotNull] string resource, TimeSpan timeout)
+        public SqlServerDistributedLock([Hangfire.Annotations.NotNull] SqlServerStorage storage, [Hangfire.Annotations.NotNull] string resource, TimeSpan timeout)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
             if (String.IsNullOrEmpty(resource)) throw new ArgumentNullException(nameof(resource));

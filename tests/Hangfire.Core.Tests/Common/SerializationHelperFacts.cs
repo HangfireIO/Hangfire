@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.Serialization;
 using Hangfire.Common;
 using Newtonsoft.Json;

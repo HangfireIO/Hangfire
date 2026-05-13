@@ -1,4 +1,4 @@
-﻿
+
 -- This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 -- 
 -- Hangfire is free software: you can redistribute it and/or modify
@@ -148,6 +148,7 @@ BEGIN
     CREATE TABLE [HangFire].[JobQueue](
         [Id] [int] IDENTITY(1,1) NOT NULL,
         [JobId] [int] NOT NULL,
+        [TenantId] [nvarchar](100) NULL,
         [Queue] [nvarchar](20) NOT NULL,
         [FetchedAt] [datetime] NULL,
             
@@ -166,7 +167,7 @@ BEGIN
         [FetchedAt] ASC
     );
     PRINT 'Created index [IX_HangFire_JobQueue_QueueAndFetchedAt]';
-        
+
     -- Servers table
         
     CREATE TABLE [HangFire].[Server](
@@ -769,14 +770,28 @@ BEGIN
 	SET @CURRENT_SCHEMA_VERSION = 9;
 END
 
-/*IF @CURRENT_SCHEMA_VERSION = 9
+IF @CURRENT_SCHEMA_VERSION = 9
 BEGIN
 	PRINT 'Installing schema version 10';
 
-	 Insert migration here
+	IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'JobQueue' AND COLUMN_NAME = 'TenantId' AND TABLE_SCHEMA='HangFire')
+	BEGIN
+		ALTER TABLE [HangFire].[JobQueue] ADD [TenantId] NVARCHAR(100) NULL;
+		PRINT 'Created [HangFire].[JobQueue].[TenantId] column';
+	END
+
+	IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_HangFire_JobQueue_Tenant_QueueAndFetchedAt' AND object_id = OBJECT_ID('[HangFire].[JobQueue]'))
+	BEGIN
+		CREATE NONCLUSTERED INDEX [IX_HangFire_JobQueue_Tenant_QueueAndFetchedAt] ON [HangFire].[JobQueue] (
+			[TenantId] ASC,
+			[Queue] ASC,
+			[FetchedAt] ASC
+		) INCLUDE ([JobId]);
+		PRINT 'Created index [IX_HangFire_JobQueue_Tenant_QueueAndFetchedAt]';
+	END
 
 	SET @CURRENT_SCHEMA_VERSION = 10;
-END*/
+END
 
 UPDATE [HangFire].[Schema] SET [Version] = @CURRENT_SCHEMA_VERSION
 IF @@ROWCOUNT = 0 
@@ -786,4 +801,3 @@ PRINT 'Hangfire database schema installed';
 
 COMMIT TRANSACTION;
 PRINT 'Hangfire SQL objects installed';
-

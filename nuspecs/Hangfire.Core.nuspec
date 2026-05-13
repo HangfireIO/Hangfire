@@ -282,45 +282,15 @@ Internals
 ]]>
     </releaseNotes>
     <dependencies>
-      <group targetFramework="net451">
-        <dependency id="Owin" version="1.0" />
-        <dependency id="Newtonsoft.Json" version="5.0.1" />
-      </group>
-      <group targetFramework="net46">
-        <dependency id="Owin" version="1.0" />
-        <dependency id="Newtonsoft.Json" version="5.0.1" />
-      </group>
-      <group targetFramework="netstandard1.3">
-        <dependency id="NETStandard.Library" version="1.6.0" />
-        <dependency id="System.Threading.Thread" version="4.0.0" />
-        <dependency id="System.Threading.ThreadPool" version="4.0.10" />
-        <dependency id="Newtonsoft.Json" version="9.0.1" />
-      </group>
-      <group targetFramework="netstandard2.0">
-        <dependency id="Newtonsoft.Json" version="11.0.1" />
+      <group targetFramework="net10.0">
+        <dependency id="Newtonsoft.Json" version="13.0.3" />
       </group>
     </dependencies>
   </metadata>
   <files>
-    <file src="net451\Hangfire.Core.dll" target="lib\net451" />
-    <file src="net451\Hangfire.Core.xml" target="lib\net451" />
-
-    <file src="net451\**\Hangfire.Core.resources.dll" target="lib\net451" />
-
-    <file src="net46\Hangfire.Core.dll" target="lib\net46" />
-    <file src="net46\Hangfire.Core.xml" target="lib\net46" />
-
-    <file src="net46\**\Hangfire.Core.resources.dll" target="lib\net46" />
-    
-    <file src="netstandard1.3\Hangfire.Core.dll" target="lib\netstandard1.3" />
-    <file src="netstandard1.3\Hangfire.Core.xml" target="lib\netstandard1.3" />
-
-    <file src="netstandard1.3\**\Hangfire.Core.resources.dll" target="lib\netstandard1.3" />
-
-    <file src="netstandard2.0\Hangfire.Core.dll" target="lib\netstandard2.0" />
-    <file src="netstandard2.0\Hangfire.Core.xml" target="lib\netstandard2.0" />
-
-    <file src="netstandard2.0\**\Hangfire.Core.resources.dll" target="lib\netstandard2.0" />
+    <file src="net10.0\Hangfire.Core.dll" target="lib\net10.0" />
+    <file src="net10.0\Hangfire.Core.xml" target="lib\net10.0" />
+    <file src="net10.0\**\Hangfire.Core.resources.dll" target="lib\net10.0" />
 
     <file src="..\nuspecs\icon.png" />
 

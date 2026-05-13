@@ -1,4 +1,4 @@
-﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
+// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -148,6 +148,15 @@ namespace Hangfire.SqlServer
                     .ToList();
 
                 var result = new List<ServerDto>();
+                JobStorageConnection storageConnection = null;
+                try
+                {
+                    storageConnection = _storage.GetConnection() as JobStorageConnection;
+                }
+                catch
+                {
+                    storageConnection = null;
+                }
 
                 // ReSharper disable once LoopCanBeConvertedToQuery
                 foreach (var server in servers)
@@ -159,18 +168,100 @@ namespace Hangfire.SqlServer
                         data = SerializationHelper.Deserialize<ServerData>(server.Data, SerializationOption.User);
                     }
 
+                    var remoteCommand = storageConnection?.GetServerResourceCommand(server.Id);
+
                     result.Add(new ServerDto
                     {
                         Name = server.Id,
                         Heartbeat = server.LastHeartbeat,
+                        TenantId = data.TenantId,
                         Queues = data.Queues,
+                        QueuePriorities = data.QueuePriorities,
                         StartedAt = data.StartedAt ?? DateTime.MinValue,
-                        WorkersCount = data.WorkerCount
+                        WorkersCount = data.WorkerCount,
+                        CanAllocate = data.CanAllocate ?? true,
+                        AllocationState = data.AllocationState ?? ((data.CanAllocate ?? true)
+                            ? JobServerAllocationState.Available
+                            : JobServerAllocationState.ResourceConstrained),
+                        AllocationReason = data.AllocationReason,
+                        AllocationCheckedAt = data.AllocationCheckedAt,
+                        DrainMode = data.DrainMode ?? false,
+                        QueueAllocation = data.QueueAllocation,
+                        AllocationStateChangedAt = data.AllocationStateChangedAt,
+                        DrainStartedAt = data.DrainStartedAt,
+                        LastCapacityCheckFailedAt = data.LastCapacityCheckFailedAt,
+                        CapacityCheckFailureCount = data.CapacityCheckFailureCount ?? 0,
+                        RemoteCommandState = GetRemoteCommandState(remoteCommand) ?? data.RemoteCommandState
                     });
                 }
 
+                storageConnection?.Dispose();
+
                 return result;
             });
+        }
+
+        private static string GetRemoteCommandState(ServerResourceCommand command)
+        {
+            if (command == null) return null;
+
+            switch (command.Command)
+            {
+                case "drain":
+                    return "Drain requested";
+                case "resume":
+                    return "Resume requested";
+                case "drain-queue":
+                    return "Queue drain requested";
+                case "resume-queue":
+                    return "Queue resume requested";
+                default:
+                    return command.Command;
+            }
+        }
+
+        public override IList<QueueAvailabilityDto> QueueAvailability()
+        {
+            using (var connection = _storage.GetConnection())
+            {
+                if (!(connection is JobStorageConnection storageConnection))
+                {
+                    return new List<QueueAvailabilityDto>();
+                }
+
+                return storageConnection.GetQueueAvailability(
+                    Servers(),
+                    DateTime.UtcNow,
+                    TimeSpan.FromMinutes(5));
+            }
+        }
+
+        public override IList<ServerResourceEvent> ResourceEvents(string serverId, int from, int count)
+        {
+            if (serverId == null) throw new ArgumentNullException(nameof(serverId));
+
+            using (var connection = _storage.GetConnection())
+            {
+                if (!(connection is JobStorageConnection storageConnection))
+                {
+                    return new List<ServerResourceEvent>();
+                }
+
+                return storageConnection.GetServerResourceEvents(serverId, from, count);
+            }
+        }
+
+        public override IList<ServerResourceEvent> ResourceEvents(DateTime from, DateTime to)
+        {
+            using (var connection = _storage.GetConnection())
+            {
+                if (!(connection is JobStorageConnection storageConnection))
+                {
+                    return new List<ServerResourceEvent>();
+                }
+
+                return storageConnection.GetServerResourceEvents(from, to);
+            }
         }
 
         public override JobList<FailedJobDto> FailedJobs(int @from, int count)
@@ -754,4 +845,3 @@ where j.Id in @jobIds");
         }
     }
 }
-

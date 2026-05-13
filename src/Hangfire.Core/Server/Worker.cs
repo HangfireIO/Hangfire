@@ -54,18 +54,22 @@ namespace Hangfire.Server
 
         private readonly ILog _logger = LogProvider.For<Worker>();
 
-        private readonly IEnumerable<string> _queues;
+        private readonly string _tenantId;
+        private readonly QueuePriorityCollection _queues;
+        private readonly bool _useLegacyFetch;
 
         private readonly IBackgroundJobPerformer _performer;
         private readonly IBackgroundJobStateChanger _stateChanger;
         private readonly IProfiler _profiler;
+        private readonly IJobServerResource _resource;
+        private readonly TimeSpan _resourcePollingInterval;
         
         public Worker() : this(EnqueuedState.DefaultQueue)
         {
         }
 
         public Worker([NotNull] params string[] queues)
-            : this(queues, new BackgroundJobPerformer(), new BackgroundJobStateChanger())
+            : this(null, new QueuePriorityCollection(queues), new BackgroundJobPerformer(), new BackgroundJobStateChanger(), resource: null, jobInitializationTimeout: TimeSpan.FromMinutes(1), maxStateChangeAttempts: 10, resourcePollingInterval: TimeSpan.FromSeconds(1), useLegacyFetch: true)
         {
         }
 
@@ -73,7 +77,17 @@ namespace Hangfire.Server
             [NotNull] IEnumerable<string> queues,
             [NotNull] IBackgroundJobPerformer performer,
             [NotNull] IBackgroundJobStateChanger stateChanger)
-            : this(queues, performer, stateChanger, jobInitializationTimeout: TimeSpan.FromMinutes(1), maxStateChangeAttempts: 10)
+            : this(null, new QueuePriorityCollection(queues), performer, stateChanger, resource: null, jobInitializationTimeout: TimeSpan.FromMinutes(1), maxStateChangeAttempts: 10, resourcePollingInterval: TimeSpan.FromSeconds(1), useLegacyFetch: true)
+        {
+        }
+
+        public Worker(
+            [CanBeNull] string tenantId,
+            [NotNull] QueuePriorityCollection queues,
+            [NotNull] IBackgroundJobPerformer performer,
+            [NotNull] IBackgroundJobStateChanger stateChanger,
+            [CanBeNull] IJobServerResource resource)
+            : this(tenantId, queues, performer, stateChanger, resource, jobInitializationTimeout: TimeSpan.FromMinutes(1), maxStateChangeAttempts: 10, resourcePollingInterval: TimeSpan.FromSeconds(1), useLegacyFetch: false)
         {
         }
 
@@ -83,17 +97,49 @@ namespace Hangfire.Server
             [NotNull] IBackgroundJobStateChanger stateChanger,
             TimeSpan jobInitializationTimeout,
             int maxStateChangeAttempts)
+            : this(null, new QueuePriorityCollection(queues), performer, stateChanger, null, jobInitializationTimeout, maxStateChangeAttempts, TimeSpan.FromSeconds(1), useLegacyFetch: true)
+        {
+        }
+
+        internal Worker(
+            [NotNull] IEnumerable<string> queues,
+            [NotNull] IBackgroundJobPerformer performer,
+            [NotNull] IBackgroundJobStateChanger stateChanger,
+            [CanBeNull] IJobServerResource resource,
+            TimeSpan jobInitializationTimeout,
+            int maxStateChangeAttempts,
+            TimeSpan resourcePollingInterval)
+            : this(null, new QueuePriorityCollection(queues), performer, stateChanger, resource, jobInitializationTimeout, maxStateChangeAttempts, resourcePollingInterval, useLegacyFetch: true)
+        {
+        }
+
+        internal Worker(
+            [CanBeNull] string tenantId,
+            [NotNull] QueuePriorityCollection queues,
+            [NotNull] IBackgroundJobPerformer performer,
+            [NotNull] IBackgroundJobStateChanger stateChanger,
+            [CanBeNull] IJobServerResource resource,
+            TimeSpan jobInitializationTimeout,
+            int maxStateChangeAttempts,
+            TimeSpan resourcePollingInterval,
+            bool useLegacyFetch = false)
         {
             if (queues == null) throw new ArgumentNullException(nameof(queues));
             if (performer == null) throw new ArgumentNullException(nameof(performer));
             if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
+            if (resourcePollingInterval < TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(resourcePollingInterval));
+            if (tenantId != null) TenantIdValidator.Validate(nameof(tenantId), tenantId);
             
+            _tenantId = tenantId;
             _queues = queues;
+            _useLegacyFetch = useLegacyFetch;
             _performer = performer;
             _stateChanger = stateChanger;
+            _resource = resource;
 
             _jobInitializationWaitTimeout = jobInitializationTimeout;
             _maxStateChangeAttempts = maxStateChangeAttempts;
+            _resourcePollingInterval = resourcePollingInterval;
 
             _profiler = new SlowLogProfiler(_logger);
         }
@@ -103,8 +149,30 @@ namespace Hangfire.Server
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
 
+            if (_resource != null && !_resource.CanAllocate())
+            {
+                context.StoppingToken.WaitOrThrow(_resourcePollingInterval);
+                return;
+            }
+
+            var descriptors = _queues.ToDescriptors();
+            var queueNames = descriptors.Select(static x => x.Name).ToArray();
+            if (_resource is IJobServerQueueResource queueResource)
+            {
+                descriptors = queueResource.GetAvailableQueues(queueNames)
+                    .Select(queue => new QueueDescriptor(queue, _queues.TryGetValue(queue, out var priority) ? priority : Int32.MaxValue))
+                    .ToArray();
+                if (descriptors.Length == 0)
+                {
+                    context.StoppingToken.WaitOrThrow(_resourcePollingInterval);
+                    return;
+                }
+            }
+
             using (var connection = context.Storage.GetConnection())
-            using (var fetchedJob = connection.FetchNextJob(_queues.ToArray(), context.StoppingToken))
+            using (var fetchedJob = _useLegacyFetch && _tenantId == null
+                ? connection.FetchNextJob(descriptors.Select(static x => x.Name).ToArray(), context.StoppingToken)
+                : connection.FetchNextJob(_tenantId, descriptors, context.StoppingToken))
             {
                 var requeueOnException = true;
 

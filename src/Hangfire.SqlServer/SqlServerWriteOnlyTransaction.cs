@@ -219,10 +219,42 @@ values (@jobId, @name, @reason, @createdAt, @data)");
                 .AddParameter("@data", (object)SerializationHelper.Serialize(state.SerializeData()) ?? DBNull.Value, DbType.String, size: -1));
         }
 
+        public override void SetJobParameter(string jobId, string name, string value)
+        {
+            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
+            if (name == null) throw new ArgumentNullException(nameof(name));
+
+            var query = _storage.GetQueryFromTemplate(static schemaName => $@"
+set xact_abort off;
+begin try
+  update [{schemaName}].JobParameter set Value = @value where JobId = @jobId and Name = @name;
+  if @@ROWCOUNT = 0 insert into [{schemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name, @value);
+end try
+begin catch
+  declare @em nvarchar(4000), @es int, @est int;
+  select @em=error_message(),@es=error_severity(),@est=error_state();
+  IF ERROR_NUMBER() not in (2601, 2627) raiserror(@em, @es, @est);
+  update [{schemaName}].JobParameter set Value = @value where JobId = @jobId and Name = @name;
+end catch");
+
+            var longId = long.Parse(jobId, CultureInfo.InvariantCulture);
+
+            AddCommand(_jobCommands, longId, batch => batch.Create(query)
+                .AddParameter("@jobId", longId, DbType.Int64)
+                .AddParameter("@name", name, DbType.String, size: 40)
+                .AddParameter("@value", (object)value ?? DBNull.Value, DbType.String, size: -1));
+        }
+
         public override void AddToQueue(string queue, string jobId)
+        {
+            AddToQueue(null, queue, jobId);
+        }
+
+        public override void AddToQueue(string tenantId, string queue, string jobId)
         {
             if (queue == null) throw new ArgumentNullException(nameof(queue));
             if (jobId == null) throw new ArgumentNullException(nameof(jobId));
+            if (tenantId != null) TenantIdValidator.Validate(nameof(tenantId), tenantId);
 
             var provider = _storage.QueueProviders.GetProvider(queue);
             var persistentQueue = provider.GetJobQueue();
@@ -230,10 +262,11 @@ values (@jobId, @name, @reason, @createdAt, @data)");
             if (persistentQueue.GetType() == typeof(SqlServerJobQueue))
             {
                 var query = _storage.GetQueryFromTemplate(static schemaName =>
-$@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
+$@"insert into [{schemaName}].JobQueue (JobId, TenantId, Queue) values (@jobId, @tenantId, @queue)");
 
                 AddCommand(_queueCommands, queue, batch => batch.Create(query)
                     .AddParameter("@jobId", long.Parse(jobId, CultureInfo.InvariantCulture), DbType.Int64)
+                    .AddParameter("@tenantId", (object)tenantId ?? DBNull.Value, DbType.String, size: 100)
                     .AddParameter("@queue", queue, DbType.String));
 
                 _queuesToSignal.Add(queue);
@@ -246,13 +279,30 @@ $@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
                     throw new NotSupportedException($"`{nameof(SqlServerStorageOptions.DisableTransactionScope)}` option does not support external queue providers");
                 }
 #endif
-                _queueCommandQueue.Enqueue((connection, transaction) => persistentQueue.Enqueue(
-                    connection,
+                _queueCommandQueue.Enqueue((connection, transaction) =>
+                {
+                    if (tenantId == null)
+                    {
+                        persistentQueue.Enqueue(
+                            connection,
 #if !FEATURE_TRANSACTIONSCOPE
-                    transaction,
+                            transaction,
 #endif
-                    queue,
-                    jobId));
+                            queue,
+                            jobId);
+                    }
+                    else
+                    {
+                        persistentQueue.Enqueue(
+                            connection,
+#if !FEATURE_TRANSACTIONSCOPE
+                            transaction,
+#endif
+                            tenantId,
+                            queue,
+                            jobId);
+                    }
+                });
             }
         }
 

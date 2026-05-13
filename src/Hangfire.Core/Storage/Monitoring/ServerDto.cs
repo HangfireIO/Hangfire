@@ -1,4 +1,4 @@
-﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
+// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -21,9 +21,22 @@ namespace Hangfire.Storage.Monitoring
     public class ServerDto
     {
         public string Name { get; set; }
+        public string TenantId { get; set; }
         public int WorkersCount { get; set; }
         public DateTime StartedAt { get; set; }
         public IList<string> Queues { get; set; }
+        public IDictionary<string, int> QueuePriorities { get; set; }
         public DateTime? Heartbeat { get; set; }
+        public bool CanAllocate { get; set; }
+        public string AllocationState { get; set; }
+        public string AllocationReason { get; set; }
+        public DateTime? AllocationCheckedAt { get; set; }
+        public bool DrainMode { get; set; }
+        public IDictionary<string, JobServerQueueResourceSnapshot> QueueAllocation { get; set; }
+        public DateTime? AllocationStateChangedAt { get; set; }
+        public DateTime? DrainStartedAt { get; set; }
+        public DateTime? LastCapacityCheckFailedAt { get; set; }
+        public long CapacityCheckFailureCount { get; set; }
+        public string RemoteCommandState { get; set; }
     }
 }

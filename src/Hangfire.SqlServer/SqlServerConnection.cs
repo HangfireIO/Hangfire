@@ -1,4 +1,4 @@
-﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
+// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -81,9 +81,28 @@ namespace Hangfire.SqlServer
                 throw new InvalidOperationException(
                     $"Multiple provider instances registered for queues: {String.Join(", ", queues)}. You should choose only one type of persistent queues per server instance.");
             }
-            
+
             var persistentQueue = providers[0].GetJobQueue();
             return persistentQueue.Dequeue(queues, cancellationToken);
+        }
+
+        public override IFetchedJob FetchNextJob(string tenantId, QueueDescriptor[] queues, CancellationToken cancellationToken)
+        {
+            if (queues == null || queues.Length == 0) throw new ArgumentNullException(nameof(queues));
+
+            var providers = queues
+                .Select(queue => _storage.QueueProviders.GetProvider(queue.Name))
+                .Distinct()
+                .ToArray();
+
+            if (providers.Length != 1)
+            {
+                throw new InvalidOperationException(
+                    $"Multiple provider instances registered for queues: {String.Join(", ", queues)}. You should choose only one type of persistent queues per server instance.");
+            }
+            
+            var persistentQueue = providers[0].GetJobQueue();
+            return persistentQueue.Dequeue(tenantId, queues, cancellationToken);
         }
 
         public override string CreateExpiredJob(
@@ -505,8 +524,21 @@ $@"select Field, Value from [{schemaName}].Hash with (forceseek) where [Key] = @
             var data = new ServerData
             {
                 WorkerCount = context.WorkerCount,
+                TenantId = context.TenantId,
                 Queues = context.Queues,
+                QueuePriorities = context.QueuePriorities,
                 StartedAt = DateTime.UtcNow,
+                CanAllocate = context.CanAllocate,
+                AllocationState = context.AllocationState,
+                AllocationReason = context.AllocationReason,
+                AllocationCheckedAt = context.AllocationCheckedAt,
+                DrainMode = context.DrainMode,
+                QueueAllocation = context.QueueAllocation,
+                AllocationStateChangedAt = context.AllocationStateChangedAt,
+                DrainStartedAt = context.DrainStartedAt,
+                LastCapacityCheckFailedAt = context.LastCapacityCheckFailedAt,
+                CapacityCheckFailureCount = context.CapacityCheckFailureCount,
+                RemoteCommandState = context.RemoteCommandState
             };
 
             _storage.UseConnection(_dedicatedConnection, static (storage, connection, pair) =>
@@ -523,6 +555,65 @@ when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source
                     new { id = pair.Key, data = pair.Value },
                     commandTimeout: storage.CommandTimeout);
             }, new KeyValuePair<string, string>(serverId, SerializationHelper.Serialize(data)));
+        }
+
+        public override void UpdateServer(string serverId, ServerContext context)
+        {
+            if (serverId == null) throw new ArgumentNullException(nameof(serverId));
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
+            _storage.UseConnection(_dedicatedConnection, static (storage, connection, pair) =>
+            {
+                var selectQuery = storage.GetQueryFromTemplate(static schemaName =>
+$@"select Data from [{schemaName}].Server with (forceseek) where Id = @id");
+
+                var existingData = connection.QuerySingleOrDefault<string>(
+                    selectQuery,
+                    new { id = pair.Key },
+                    commandTimeout: storage.CommandTimeout);
+
+                if (existingData == null)
+                {
+                    throw new BackgroundServerGoneException();
+                }
+
+                var data = SerializationHelper.Deserialize<ServerData>(existingData);
+                if (data.Queues == null && data.StartedAt == null && data.WorkerCount == 0)
+                {
+                    data = SerializationHelper.Deserialize<ServerData>(existingData, SerializationOption.User);
+                }
+
+                data.WorkerCount = pair.Value.WorkerCount;
+                data.TenantId = pair.Value.TenantId;
+                data.Queues = pair.Value.Queues;
+                data.QueuePriorities = pair.Value.QueuePriorities;
+                data.CanAllocate = pair.Value.CanAllocate;
+                data.AllocationState = pair.Value.AllocationState;
+                data.AllocationReason = pair.Value.AllocationReason;
+                data.AllocationCheckedAt = pair.Value.AllocationCheckedAt;
+                data.DrainMode = pair.Value.DrainMode;
+                data.QueueAllocation = pair.Value.QueueAllocation;
+                data.AllocationStateChangedAt = pair.Value.AllocationStateChangedAt;
+                data.DrainStartedAt = pair.Value.DrainStartedAt;
+                data.LastCapacityCheckFailedAt = pair.Value.LastCapacityCheckFailedAt;
+                data.CapacityCheckFailureCount = pair.Value.CapacityCheckFailureCount;
+                data.RemoteCommandState = pair.Value.RemoteCommandState;
+
+                var updateQuery = storage.GetQueryFromTemplate(static schemaName =>
+$@"update [{schemaName}].Server set Data = @data where Id = @id");
+
+                var affected = connection.Execute(
+                    updateQuery,
+                    new { id = pair.Key, data = SerializationHelper.Serialize(data) },
+                    commandTimeout: storage.CommandTimeout);
+
+                if (affected == 0)
+                {
+                    throw new BackgroundServerGoneException();
+                }
+
+                return affected;
+            }, new KeyValuePair<string, ServerContext>(serverId, context));
         }
 
         public override void RemoveServer(string serverId)
@@ -624,9 +715,9 @@ $@"select count(*) from (
             {
                 var query = storage.GetQueryFromTemplate(static schemaName =>
 $@"select [Value] from (
-	select [Value], row_number() over (order by [Score] ASC) as row_num
-	from [{schemaName}].[Set] with (forceseek)
-	where [Key] = @key 
+    select [Value], row_number() over (order by [Score] ASC) as row_num
+    from [{schemaName}].[Set] with (forceseek)
+    where [Key] = @key 
 ) as s where s.row_num between @startingFrom and @endingAt");
 
                 return connection
@@ -756,9 +847,9 @@ where [Key] = @key");
             {
                 var query = storage.GetQueryFromTemplate(static schemaName =>
 $@"select [Value] from (
-	select [Value], row_number() over (order by [Id] desc) as row_num 
-	from [{schemaName}].List with (forceseek)
-	where [Key] = @key 
+    select [Value], row_number() over (order by [Id] desc) as row_num 
+    from [{schemaName}].List with (forceseek)
+    where [Key] = @key 
 ) as s where s.row_num between @startingFrom and @endingAt");
 
                 return connection

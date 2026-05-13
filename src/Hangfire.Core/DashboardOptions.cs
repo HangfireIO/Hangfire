@@ -1,4 +1,4 @@
-﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
+// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -34,6 +34,7 @@ namespace Hangfire
             _asyncAuthorization = [];
             Authorization = DefaultAuthorization;
             IsReadOnlyFunc = static _ => false;
+            ResourceCommandAuthorization = static _ => true;
             StatsPollingInterval = 2000;
             DisplayStorageConnectionString = true;
             DashboardTitle = "Hangfire Dashboard";
@@ -75,6 +76,12 @@ namespace Hangfire
         }
 
         public Func<DashboardContext, bool> IsReadOnlyFunc { get; set; }
+
+        /// <summary>
+        /// Gets or sets a callback that controls whether the current dashboard request
+        /// is allowed to issue resource commands, such as draining or resuming servers.
+        /// </summary>
+        public Func<DashboardContext, bool> ResourceCommandAuthorization { get; set; }
         
         /// <summary>
         /// The interval the /stats endpoint should be polled with.

@@ -13,41 +13,34 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using Hangfire.Annotations;
-using Hangfire.Storage;
 
-namespace Hangfire.SqlServer.Msmq
+namespace Hangfire
 {
-    internal sealed class MsmqFetchedJob : IFetchedJob
+    using System;
+
+    public sealed class JobServerQueueResourceSnapshot
     {
-        private readonly IMsmqTransaction _transaction;
-
-        public MsmqFetchedJob([NotNull] IMsmqTransaction transaction, [NotNull] string jobId)
+        public JobServerQueueResourceSnapshot()
         {
-            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
-            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
-
-            _transaction = transaction;
-
-            JobId = jobId;
         }
 
-        public string JobId { get; }
-
-        public void RemoveFromQueue()
+        public JobServerQueueResourceSnapshot([NotNull] string queue, bool canAllocate)
+            : this(queue, canAllocate, null)
         {
-            _transaction.Commit();
         }
 
-        public void Requeue()
+        public JobServerQueueResourceSnapshot([NotNull] string queue, bool canAllocate, [CanBeNull] string reason)
         {
-            _transaction.Abort();
+            Queue = queue;
+            CanAllocate = canAllocate;
+            Reason = reason;
         }
 
-        public void Dispose()
-        {
-            _transaction.Dispose();
-        }
+        public string Queue { get; set; }
+        public bool CanAllocate { get; set; }
+        public string Reason { get; set; }
+        public bool DrainMode { get; set; }
+        public DateTime? StateChangedAt { get; set; }
     }
 }

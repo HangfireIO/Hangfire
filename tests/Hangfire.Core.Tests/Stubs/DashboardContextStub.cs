@@ -1,4 +1,4 @@
-﻿using Hangfire.Dashboard;
+using Hangfire.Dashboard;
 
 namespace Hangfire.Core.Tests.Stubs
 {

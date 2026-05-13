@@ -1,4 +1,4 @@
-﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
+// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -25,6 +25,7 @@ using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.States;
+using Hangfire.Storage;
 
 namespace Hangfire
 {
@@ -33,6 +34,7 @@ namespace Hangfire
         private readonly ILog _logger = LogProvider.For<BackgroundJobServer>();
 
         private readonly BackgroundJobServerOptions _options;
+        private readonly JobStorage _storage;
         private readonly BackgroundProcessingServer _processingServer;
 
         /// <summary>
@@ -102,6 +104,12 @@ namespace Hangfire
             if (additionalProcesses == null) throw new ArgumentNullException(nameof(additionalProcesses));
 
             _options = options;
+            _storage = storage;
+
+            if (options.TenantId != null && !storage.HasFeature(JobStorageFeatures.Connection.TenantAwareQueueFetch))
+            {
+                throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Connection.TenantAwareQueueFetch);
+            }
 
             var processes = new List<IBackgroundProcessDispatcherBuilder>();
             processes.AddRange(GetRequiredProcesses(filterProvider, activator, factory, performer, stateChanger));
@@ -109,9 +117,16 @@ namespace Hangfire
 
             var properties = new Dictionary<string, object>
             {
-                { "Queues", options.Queues },
+                { "Queues", options.Queues.ToQueueArray() },
+                { "QueuePriorities", options.Queues },
+                { "TenantId", options.TenantId },
                 { "WorkerCount", options.WorkerCount }
             };
+
+            if (options.Resource != null)
+            {
+                properties.Add("Resource", options.Resource);
+            }
 
             _logger.Info($"Starting Hangfire Server using job storage: '{storage}'");
 
@@ -119,12 +134,13 @@ namespace Hangfire
 
             _logger.Info("Using the following options for Hangfire Server:\r\n" +
                 $"    Worker count: {options.WorkerCount}\r\n" +
-                $"    Listening queues: {String.Join(", ", options.Queues.Select(static x => "'" + x + "'"))}\r\n" +
+                $"    Tenant id: {options.TenantId ?? "global"}\r\n" +
+                $"    Listening queues: {String.Join(", ", options.Queues.ToDescriptors().Select(static x => $"'{x.Name}' (priority {x.Priority})"))}\r\n" +
                 $"    Shutdown timeout: {options.ShutdownTimeout}\r\n" +
                 $"    Schedule polling interval: {options.SchedulePollingInterval}");
 
             var wrongQueues = new HashSet<string>(StringComparer.Ordinal);
-            foreach (var queue in options.Queues)
+            foreach (var queue in options.Queues.Keys)
             {
                 if (!EnqueuedState.TryValidateQueueName(queue))
                 {
@@ -209,7 +225,21 @@ namespace Hangfire
                 if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
             }
 
-            processes.Add(new Worker(_options.Queues, performer, stateChanger).UseBackgroundPool(_options.WorkerCount, _options.WorkerThreadConfigurationAction));
+            if (_options.Resource is IJobServerResourceReporter reporter)
+            {
+                processes.Add(new JobServerResourceReporterProcess(reporter).UseThreadPool(maxConcurrency: 1));
+            }
+
+            if (_options.Resource is IJobServerDrainController drainController &&
+                _storage.HasFeature(JobStorageFeatures.Connection.ServerResourceCommands))
+            {
+                processes.Add(new ServerResourceCommandProcess(
+                    drainController,
+                    _options.Resource as IJobServerQueueDrainController,
+                    _options.ResourceCommandPollingInterval).UseBackgroundPool(threadCount: 1));
+            }
+
+            processes.Add(new Worker(_options.TenantId, _options.Queues, performer, stateChanger, _options.Resource).UseBackgroundPool(_options.WorkerCount, _options.WorkerThreadConfigurationAction));
 
             if (!_options.IsLightweightServer)
             {

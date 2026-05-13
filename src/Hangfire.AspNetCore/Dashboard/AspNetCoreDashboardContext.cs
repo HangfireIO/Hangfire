@@ -1,4 +1,4 @@
-﻿// This file is part of Hangfire. Copyright © 2016 Hangfire OÜ.
+// This file is part of Hangfire. Copyright © 2016 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -68,6 +68,13 @@ namespace Hangfire.Dashboard
             }
 
             return HttpContext.RequestServices.GetService<IRecurringJobManager>() ?? base.GetRecurringJobManager();
+        }
+
+        public override string GetUserName()
+        {
+            return HttpContext.User?.Identity?.IsAuthenticated == true
+                ? HttpContext.User.Identity.Name
+                : null;
         }
     }
 }

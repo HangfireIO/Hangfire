@@ -1,4 +1,4 @@
-﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
+// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -33,6 +33,15 @@ namespace Hangfire.Storage
         public abstract void SetJobState(string jobId, IState state);
         public abstract void AddJobState(string jobId, IState state);
         public abstract void AddToQueue(string queue, string jobId);
+        public virtual void AddToQueue(string tenantId, string queue, string jobId)
+        {
+            if (tenantId != null)
+            {
+                throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Transaction.TenantAwareQueueEnqueue);
+            }
+
+            AddToQueue(queue, jobId);
+        }
         public abstract void IncrementCounter(string key);
         public abstract void IncrementCounter(string key, TimeSpan expireIn);
         public abstract void DecrementCounter(string key);

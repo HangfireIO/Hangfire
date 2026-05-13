@@ -23,14 +23,22 @@ namespace Hangfire.SqlServer
     public interface IPersistentJobQueue
     {
         IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken);
+        IFetchedJob Dequeue(string tenantId, QueueDescriptor[] queues, CancellationToken cancellationToken);
 
 #if FEATURE_TRANSACTIONSCOPE
         void Enqueue(System.Data.IDbConnection connection, string queue, string jobId);
+        void Enqueue(System.Data.IDbConnection connection, string tenantId, string queue, string jobId);
 #else
         void Enqueue(
             System.Data.Common.DbConnection connection, 
             System.Data.Common.DbTransaction transaction, 
             string queue, 
+            string jobId);
+        void Enqueue(
+            System.Data.Common.DbConnection connection,
+            System.Data.Common.DbTransaction transaction,
+            string tenantId,
+            string queue,
             string jobId);
 #endif
     }

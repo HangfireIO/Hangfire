@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using Hangfire.States;
 using Xunit;
 

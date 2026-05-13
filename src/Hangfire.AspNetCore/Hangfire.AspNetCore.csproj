@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net451;net461;netstandard1.3;netstandard2.0;netcoreapp3.0</TargetFrameworks>
+    <TargetFramework>net10.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
     <RootNamespace>Hangfire</RootNamespace>
@@ -24,7 +24,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Antiforgery" Version="2.0.0" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp3.0'">
+  <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp3.0' or '$(TargetFramework)'=='net10.0'">
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 </Project>

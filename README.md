@@ -110,6 +110,314 @@ using (new BackgroundJobServer())
 }
 ```
 
+**Resource-aware background servers and operational controls**
+
+Background servers can be made aware of local capacity. When a server is resource constrained or intentionally draining, it stays alive, keeps heartbeating, remains visible in monitoring and lets already fetched jobs finish normally, but workers stop fetching new jobs until capacity returns.
+
+Resource awareness is opt-in and backward compatible. Applications that do not configure `BackgroundJobServerOptions.Resource` keep the existing Hangfire behavior.
+
+The feature includes:
+
+- `IJobServerResource` and `JobServerResource` for reporting whether a server can allocate more work.
+- Rich resource snapshots with allocation state, reason, timestamps, drain state and capacity-check failure counters.
+- Graceful server drain mode for deployments, node maintenance and operational pauses.
+- Per-queue resource and drain policies, so a server can pause one risky queue while continuing to process safe queues.
+- Dashboard drain and resume commands from the Servers page, protected by dedicated resource-command authorization.
+- Resource history events and queue availability summaries exposed through monitoring APIs.
+- Built-in provider helpers for memory limits, disk free-space checks, CPU-load checks and composite resource checks.
+- Worker-side checks before `FetchNextJob`, preventing constrained servers from reserving new jobs.
+- ASP.NET Core hosted-service integration that can enter drain mode when the host starts shutting down.
+- SQL Server storage support for operational resource metadata using existing storage primitives.
+
+Use `JobServerResource` when capacity can be computed periodically:
+
+```csharp
+var resource = new JobServerResource();
+
+resource.CapacityReporter(
+    computeCapacity: async () => await localCapacityProbe.CanAcceptMoreJobs(),
+    interval: TimeSpan.FromSeconds(5));
+
+services.AddHangfireServer(options =>
+{
+    options.Resource = resource;
+});
+```
+
+For self-hosted servers, pass the resource through `BackgroundJobServerOptions`:
+
+```csharp
+var resource = new JobServerResource();
+
+resource.CapacityReporter(
+    computeCapacity: () => Task.FromResult(Environment.WorkingSet < 512 * 1024 * 1024),
+    interval: TimeSpan.FromSeconds(10));
+
+var options = new BackgroundJobServerOptions
+{
+    Resource = resource
+};
+
+using (new BackgroundJobServer(options))
+{
+    Console.WriteLine("Hangfire Server started. Press ENTER to exit...");
+    Console.ReadLine();
+}
+```
+
+Use local drain mode to stop fetching new jobs while letting in-flight jobs finish:
+
+```csharp
+resource.Drain("Deployment in progress");
+
+// Later, when the node can accept work again:
+resource.Resume();
+```
+
+Pause or drain individual queues when only part of the local workload is constrained:
+
+```csharp
+resource.SetQueueState("image-processing", canAllocate: false, reason: "CPU pressure");
+resource.SetQueueState("emails", canAllocate: true);
+
+resource.DrainQueue("video-transcoding", "GPU maintenance");
+resource.ResumeQueue("video-transcoding");
+```
+
+Allow authorized dashboard users to request drain and resume from the Servers page:
+
+```csharp
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    ResourceCommandAuthorization = context =>
+    {
+        var user = context.GetHttpContext().User;
+        return user.Identity?.IsAuthenticated == true &&
+               user.IsInRole("Hangfire Operators");
+    }
+});
+```
+
+For Kubernetes or other orchestrators, enter drain mode on host shutdown before the server stops:
+
+```csharp
+services.AddHangfireServer(options =>
+{
+    options.Resource = resource;
+    options.DrainOnApplicationStopping = true;
+    options.DrainOnApplicationStoppingReason = "Host is stopping";
+    options.ShutdownTimeout = TimeSpan.FromMinutes(2);
+});
+```
+
+Use built-in resource probes directly or compose several checks:
+
+```csharp
+var resource = JobServerResource.FromComposite(
+    TimeSpan.FromSeconds(5),
+    JobServerResource.FromMemoryLimit(512 * 1024 * 1024, TimeSpan.FromSeconds(5)),
+    JobServerResource.FromDiskFreeSpace("C:\\", 5L * 1024 * 1024 * 1024, TimeSpan.FromSeconds(30)),
+    JobServerResource.FromCpuLoad(maxCpuLoad: 0.85, interval: TimeSpan.FromSeconds(5)));
+```
+
+Custom providers remain simple: implement `IJobServerResource` when all you need is a boolean allocation gate.
+
+```csharp
+public sealed class MaintenanceWindowResource : IJobServerResource
+{
+    public bool CanAllocate()
+    {
+        return !maintenanceWindow.IsActive;
+    }
+
+    public void CapacityReporter(Func<Task<bool>> computeCapacity, TimeSpan interval)
+    {
+        throw new NotSupportedException("This resource is checked directly.");
+    }
+}
+```
+
+Monitoring code can inspect server state, resource history and queue availability through the monitoring API:
+
+```csharp
+var monitor = JobStorage.Current.GetMonitoringApi();
+
+foreach (var server in monitor.Servers())
+{
+    Console.WriteLine(
+        $"{server.Name}: {server.AllocationState}, can allocate = {server.CanAllocate}, reason = {server.AllocationReason}");
+}
+
+foreach (var queue in monitor.QueueAvailability())
+{
+    Console.WriteLine(
+        $"{queue.Queue}: {queue.AvailableServers} available, {queue.ConstrainedServers} constrained");
+}
+
+foreach (var resourceEvent in monitor.ResourceEvents(DateTime.UtcNow.AddHours(-1), DateTime.UtcNow))
+{
+    Console.WriteLine(
+        $"{resourceEvent.CreatedAt:o} {resourceEvent.ServerId} {resourceEvent.EventType}: {resourceEvent.Reason}");
+}
+```
+
+Lower-level integrations can also issue commands through storage:
+
+```csharp
+using (var connection = JobStorage.Current.GetConnection())
+{
+    ((JobStorageConnection)connection).SaveServerResourceCommand(
+        "worker-01:12345:abcdef",
+        new ServerResourceCommand
+        {
+            Command = "drain",
+            Reason = "Manual maintenance",
+            CreatedAt = DateTime.UtcNow,
+            CreatedBy = "ops@example.com"
+        });
+}
+```
+
+Queue-specific operational commands use the same storage command path:
+
+```csharp
+using (var connection = JobStorage.Current.GetConnection())
+{
+    ((JobStorageConnection)connection).SaveServerResourceCommand(
+        "worker-01:12345:abcdef",
+        new ServerResourceCommand
+        {
+            Command = "drain",
+            Queue = "video-transcoding",
+            Reason = "GPU maintenance",
+            CreatedAt = DateTime.UtcNow,
+            CreatedBy = "ops@example.com"
+        });
+}
+```
+
+**Priority-aware and multitenant queues**
+
+Hangfire queues can now be declared with explicit priorities, and SQL Server storage can keep queue identity separate per tenant. This is opt-in: when no `TenantId` is configured, jobs continue to use the existing global queue namespace.
+
+The feature includes:
+
+- `BackgroundJobServerOptions.Queues` as a priority-aware `QueuePriorityCollection`.
+- Deterministic SQL Server dequeue ordering by queue priority, then `JobQueue.Id`.
+- Optional `BackgroundJobServerOptions.TenantId` for one-tenant-per-server workers.
+- `HangfireTenantContext` for flowing tenant id through async job creation.
+- Tenant-aware `EnqueuedState.TenantId` for explicit job creation.
+- SQL Server `JobQueue.TenantId` storage, where `NULL` means the legacy global queue namespace.
+- Server and queue-availability monitoring fields that include tenant scope.
+- Storage feature flags for tenant-aware enqueue, fetch, monitoring and dashboard support.
+- SQL Server schema version 10 adds the nullable `JobQueue.TenantId` column and the tenant-aware queue index.
+
+Declare queue priorities for a global server:
+
+```csharp
+services.AddHangfireServer(options =>
+{
+    options.Queues = new QueuePriorityCollection
+    {
+        ["critical"] = 1,
+        ["default"] = 2,
+        ["bulk"] = 3
+    };
+});
+```
+
+Run one server for tenant `xyz` and the same logical queues:
+
+```csharp
+services.AddHangfireServer(options =>
+{
+    options.TenantId = "xyz";
+    options.Queues = new QueuePriorityCollection
+    {
+        ["emails"] = 1,
+        ["reports"] = 2
+    };
+});
+```
+
+Run another server for tenant `abc` with the same queue names, without sharing jobs with `xyz`:
+
+```csharp
+services.AddHangfireServer(options =>
+{
+    options.TenantId = "abc";
+    options.Queues = new QueuePriorityCollection
+    {
+        ["emails"] = 1,
+        ["reports"] = 2
+    };
+});
+```
+
+Enqueue jobs for the current tenant with a scoped tenant context:
+
+```csharp
+using (HangfireTenantContext.Use("xyz"))
+{
+    BackgroundJob.Enqueue(() => SendWelcomeEmail(userId));
+}
+```
+
+Create a tenant-scoped job explicitly when infrastructure code already knows the tenant:
+
+```csharp
+var client = new BackgroundJobClient();
+
+client.Create(
+    Job.FromExpression(() => GenerateTenantReport("xyz")),
+    new EnqueuedState("reports")
+    {
+        TenantId = "xyz"
+    });
+```
+
+Global jobs keep working as before and are fetched only by global servers:
+
+```csharp
+BackgroundJob.Enqueue(() => RebuildSearchIndex());
+
+services.AddHangfireServer(options =>
+{
+    options.Queues = new QueuePriorityCollection
+    {
+        ["default"] = 1
+    };
+});
+```
+
+The same queue name can safely exist in both global and tenant scopes:
+
+```csharp
+BackgroundJob.Enqueue(() => SendGlobalDigest());
+
+using (HangfireTenantContext.Use("xyz"))
+{
+    BackgroundJob.Enqueue(() => SendTenantDigest("xyz"));
+}
+```
+
+Inspect tenant-aware server and queue availability data from monitoring:
+
+```csharp
+var monitor = JobStorage.Current.GetMonitoringApi();
+
+foreach (var server in monitor.Servers())
+{
+    Console.WriteLine($"{server.Name}: tenant = {server.TenantId ?? "global"}");
+}
+
+foreach (var queue in monitor.QueueAvailability())
+{
+    Console.WriteLine(
+        $"{queue.TenantId ?? "global"} / {queue.Queue}: {queue.AvailableServers} available");
+}
+```
+
 Questions? Problems?
 ---------------------
 

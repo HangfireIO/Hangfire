@@ -282,20 +282,160 @@ namespace Hangfire.SqlServer.Tests
             var server1 = result.Single(x => x.Name == "server1");
             Assert.Equal(new [] { "default" }, server1.Queues);
             Assert.Equal(100, server1.WorkersCount);
+            Assert.True(server1.CanAllocate);
             AssertWithinSecond(_utcNow, server1.StartedAt);
             AssertWithinSecond(_utcNow, server1.Heartbeat);
 
             var server2 = result.Single(x => x.Name == "server2");
             Assert.Equal(new[] { "critical" }, server2.Queues);
             Assert.Equal(17, server2.WorkersCount);
+            Assert.True(server2.CanAllocate);
             AssertWithinSecond(_utcNow, server2.StartedAt);
             AssertWithinSecond(_utcNow, server2.Heartbeat);
 
             var server3 = result.Single(x => x.Name == "server3");
             Assert.Equal(new[] { "alpha", "beta" }, server3.Queues);
             Assert.Equal(0, server3.WorkersCount);
+            Assert.True(server3.CanAllocate);
             AssertWithinSecond(_utcNow, server3.StartedAt);
             AssertWithinSecond(_utcNow, server3.Heartbeat);
+        }
+
+        [Fact, CleanDatabase]
+        public void Servers_TreatsMissingCanAllocateValue_AsTrue()
+        {
+            UseSqlConnection(sql =>
+            {
+                var serverData = SerializationHelper.Serialize(new ServerData
+                {
+                    Queues = new[] { "default" },
+                    WorkerCount = 1,
+                    StartedAt = _utcNow
+                });
+
+                sql.Execute($@"
+insert into [{Constants.DefaultSchema}].Server (Id, Data, LastHeartbeat)
+values ('server', @data, @heartbeat)",
+                    new { data = serverData, heartbeat = _utcNow });
+            });
+
+            var monitoring = CreateMonitoringApi();
+
+            var result = monitoring.Servers().Single();
+
+            Assert.True(result.CanAllocate);
+        }
+
+        [Fact, CleanDatabase]
+        public void Servers_ShowsPendingRemoteCommandState()
+        {
+            UseConnection(connection =>
+            {
+                connection.AnnounceServer("server", new ServerContext { Queues = new[] { "default" }, WorkerCount = 1 });
+                connection.SaveServerResourceCommand("server", new ServerResourceCommand
+                {
+                    CommandId = "command-1",
+                    Command = "drain",
+                    Reason = "deployment"
+                });
+
+                return true;
+            });
+
+            var monitoring = CreateMonitoringApi();
+
+            var result = monitoring.Servers().Single();
+
+            Assert.Equal("Drain requested", result.RemoteCommandState);
+        }
+
+        [Fact, CleanDatabase]
+        public void QueueAvailability_ReturnsAvailableConstrainedDrainingAndOfflineCounts()
+        {
+            var now = DateTime.UtcNow;
+
+            UseConnection(connection =>
+            {
+                connection.AnnounceServer("available", new ServerContext
+                {
+                    Queues = new[] { "default" },
+                    WorkerCount = 1,
+                    CanAllocate = true
+                });
+                connection.AnnounceServer("constrained", new ServerContext
+                {
+                    Queues = new[] { "default" },
+                    WorkerCount = 1,
+                    CanAllocate = false,
+                    AllocationReason = "CPU pressure"
+                });
+                connection.AnnounceServer("draining", new ServerContext
+                {
+                    Queues = new[] { "default" },
+                    WorkerCount = 1,
+                    CanAllocate = true,
+                    DrainMode = true,
+                    AllocationReason = "deployment"
+                });
+                connection.AnnounceServer("offline", new ServerContext
+                {
+                    Queues = new[] { "default" },
+                    WorkerCount = 1,
+                    CanAllocate = true
+                });
+
+                return true;
+            });
+
+            UseSqlConnection(sql => sql.Execute($@"
+update [{Constants.DefaultSchema}].Server
+set LastHeartbeat = @heartbeat
+where Id = 'offline'",
+                new { heartbeat = now.AddHours(-1) }));
+
+            var monitoring = CreateMonitoringApi();
+
+            var result = monitoring.QueueAvailability().Single();
+
+            Assert.Equal("default", result.Queue);
+            Assert.Equal(1, result.AvailableServers);
+            Assert.Equal(2, result.ConstrainedServers);
+            Assert.Equal(1, result.DrainingServers);
+            Assert.Equal(1, result.OfflineServers);
+            Assert.Equal(1, result.ConstrainedByReason["CPU pressure"]);
+            Assert.Equal(1, result.ConstrainedByReason["deployment"]);
+        }
+
+        [Fact, CleanDatabase]
+        public void ResourceEvents_ReturnsEventsForServerAndDateRange()
+        {
+            var createdAt = new DateTime(2026, 05, 12, 10, 20, 30, DateTimeKind.Utc);
+
+            UseConnection(connection =>
+            {
+                connection.AddServerResourceEvent(new ServerResourceEvent
+                {
+                    ServerId = "server",
+                    Queue = "default",
+                    EventType = "drain-requested",
+                    AllocationState = JobServerAllocationState.Draining,
+                    Reason = "deployment",
+                    CreatedAt = createdAt,
+                    Source = "operator@example.com"
+                });
+
+                return true;
+            });
+
+            var monitoring = CreateMonitoringApi();
+
+            var byServer = monitoring.ResourceEvents("server", 0, 10);
+            var byRange = monitoring.ResourceEvents(createdAt.AddSeconds(-1), createdAt.AddSeconds(1));
+
+            Assert.Single(byServer);
+            Assert.Single(byRange);
+            Assert.Equal("drain-requested", byServer[0].EventType);
+            Assert.Equal("deployment", byRange[0].Reason);
         }
 
         [Fact, CleanDatabase]

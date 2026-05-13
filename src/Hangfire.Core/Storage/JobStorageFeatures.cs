@@ -33,6 +33,9 @@ namespace Hangfire.Storage
             public static readonly string GetUtcDateTime = "Connection.GetUtcDateTime";
             public static readonly string GetSetContains = "Connection.GetSetContains";
             public static readonly string LimitedGetSetCount = "Connection.GetSetCount.Limited";
+            public static readonly string ServerResourceCommands = "Connection.ServerResourceCommands";
+            public static readonly string TenantAwareQueueFetch = "Connection.TenantAwareQueueFetch";
+            public static readonly string PriorityAwareQueues = "Connection.PriorityAwareQueues";
 
             public static readonly string BatchedGetFirstByLowest = "Connection.BatchedGetFirstByLowestScoreFromSet";
         }
@@ -43,6 +46,7 @@ namespace Hangfire.Storage
 
             public static readonly string CreateJob = "Transaction.CreateJob";
             public static readonly string SetJobParameter = "Transaction.SetJobParameter";
+            public static readonly string TenantAwareQueueEnqueue = "Transaction.TenantAwareQueueEnqueue";
 
             private static readonly ConcurrentDictionary<Type, string> RemoveFromQueueFeatureCache = new(); 
 
@@ -58,6 +62,11 @@ namespace Hangfire.Storage
         {
             public static readonly string DeletedStateGraphs = "Monitoring.DeletedStateGraphs";
             public static readonly string AwaitingJobs = "Monitoring.AwaitingJobs";
+            public static readonly string ResourceEvents = "Monitoring.ResourceEvents";
+            public static readonly string ResourceQueueAvailability = "Monitoring.ResourceQueueAvailability";
+            public static readonly string TenantAwareQueueMonitoring = "Monitoring.TenantAwareQueueMonitoring";
+            public static readonly string TenantAwareDashboard = "Monitoring.TenantAwareDashboard";
+            public static readonly string TenantAwareRecurringJobs = "Monitoring.TenantAwareRecurringJobs";
         }
 
         public static Exception GetNotSupportedException([NotNull] string featureId)

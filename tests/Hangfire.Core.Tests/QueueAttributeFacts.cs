@@ -1,4 +1,4 @@
-﻿using Hangfire.States;
+using Hangfire.States;
 using Moq;
 using Xunit;
 

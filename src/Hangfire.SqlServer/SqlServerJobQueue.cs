@@ -62,25 +62,45 @@ namespace Hangfire.SqlServer
             if (queues == null) throw new ArgumentNullException(nameof(queues));
             if (queues.Length == 0) throw new ArgumentException("Queue array must be non-empty.", nameof(queues));
 
+            return Dequeue(null, new QueuePriorityCollection(queues).ToDescriptors(), cancellationToken);
+        }
+
+        [NotNull]
+        public IFetchedJob Dequeue(string tenantId, QueueDescriptor[] queues, CancellationToken cancellationToken)
+        {
+            if (queues == null) throw new ArgumentNullException(nameof(queues));
+            if (queues.Length == 0) throw new ArgumentException("Queue array must be non-empty.", nameof(queues));
+
             if (_options.SlidingInvisibilityTimeout.HasValue)
             {
-                return DequeueUsingSlidingInvisibilityTimeout(queues, cancellationToken);
+                return DequeueUsingSlidingInvisibilityTimeout(tenantId, queues, cancellationToken);
             }
 
-            return DequeueUsingTransaction(queues, cancellationToken);
+            return DequeueUsingTransaction(tenantId, queues, cancellationToken);
         }
 
 #if FEATURE_TRANSACTIONSCOPE
         public void Enqueue(IDbConnection connection, string queue, string jobId)
+        {
+            Enqueue(connection, null, queue, jobId);
+        }
+
+        public void Enqueue(IDbConnection connection, string tenantId, string queue, string jobId)
 #else
         public void Enqueue(DbConnection connection, DbTransaction transaction, string queue, string jobId)
+        {
+            Enqueue(connection, transaction, null, queue, jobId);
+        }
+
+        public void Enqueue(DbConnection connection, DbTransaction transaction, string tenantId, string queue, string jobId)
 #endif
         {
             var query = _storage.GetQueryFromTemplate(static schemaName =>
-$@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
+$@"insert into [{schemaName}].JobQueue (JobId, TenantId, Queue) values (@jobId, @tenantId, @queue)");
 
             using var command = ((DbConnection)connection).Create(query, timeout: _storage.CommandTimeout);
             command.AddParameter("@jobId", long.Parse(jobId, CultureInfo.InvariantCulture), DbType.Int64);
+            command.AddParameter("@tenantId", (object)tenantId ?? DBNull.Value, DbType.String, size: 100);
             command.AddParameter("@queue", queue, DbType.String);
 
 #if !FEATURE_TRANSACTIONSCOPE
@@ -90,7 +110,7 @@ $@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
             command.ExecuteNonQuery();
         }
 
-        private SqlServerTimeoutJob DequeueUsingSlidingInvisibilityTimeout(string[] queues, CancellationToken cancellationToken)
+        private SqlServerTimeoutJob DequeueUsingSlidingInvisibilityTimeout(string tenantId, QueueDescriptor[] queues, CancellationToken cancellationToken)
         {
             if (queues == null) throw new ArgumentNullException(nameof(queues));
             if (queues.Length == 0) throw new ArgumentException("Queue array must be non-empty.", nameof(queues));
@@ -100,7 +120,7 @@ $@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
             // First we will check if our queues has any background jobs in it and
             // return if any. In this case we don't need any additional logic like
             // semaphores or waiting.
-            var fetchedJob = FetchJob(queues);
+            var fetchedJob = FetchJob(tenantId, queues);
             if (fetchedJob != null) return fetchedJob;
 
             // Then we determine whether we should use the long polling feature,
@@ -122,11 +142,12 @@ $@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
                         PollingQuantumMs))
                 : configuredPollInterval;
 
-            var queuesString = String.Join("_", queues.OrderBy(static x => x));
+            var queueNames = queues.Select(static x => x.Name).ToArray();
+            var queuesString = String.Join("_", queueNames.OrderBy(static x => x));
             var resource = Tuple.Create(_storage, queuesString);
 
             using var cancellationEvent = cancellationToken.GetCancellationEvent();
-            var waitArray = GetWaitArrayForQueueSignals(_storage, queues, cancellationEvent);
+            var waitArray = GetWaitArrayForQueueSignals(_storage, queueNames, cancellationEvent);
 
             SemaphoreSlim semaphore = null;
 
@@ -140,7 +161,7 @@ $@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
                     // For non-first attempts we just trying again and again with
                     // the determined delay between attempts, until shutdown
                     // request is received.
-                    fetchedJob = FetchJob(queues);
+                    fetchedJob = FetchJob(tenantId, queues);
                     if (fetchedJob != null) return fetchedJob;
 
                     WaitHandle.WaitAny(waitArray, pollingDelayMs);
@@ -164,9 +185,9 @@ $@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
             return new SemaphoreSlim(initialCount: 1);
         }
 
-        private SqlServerTimeoutJob FetchJob(string[] queues)
+        private SqlServerTimeoutJob FetchJob(string tenantId, QueueDescriptor[] queues)
         {
-            return _storage.UseConnection(null, static (storage, connection, queues) =>
+            return _storage.UseConnection(null, static (storage, connection, ctx) =>
             {
                 if (!storage.Options.SlidingInvisibilityTimeout.HasValue)
                 {
@@ -175,7 +196,7 @@ $@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
 
                 var invisibilityTimeout = (int)storage.Options.SlidingInvisibilityTimeout.Value.Negate().TotalSeconds;
 
-                using var command = CreateNonBlockingFetchCommand(storage, connection, queues, invisibilityTimeout);
+                using var command = CreateNonBlockingFetchCommand(storage, connection, ctx.TenantId, ctx.Queues, invisibilityTimeout);
                 using var reader = command.ExecuteReader();
 
                 if (!reader.Read()) return null;
@@ -191,31 +212,44 @@ $@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
                 }
 
                 return new SqlServerTimeoutJob(storage, id, jobId.ToString(CultureInfo.InvariantCulture), queue, fetchedAt);
-            }, queues);
+            }, new QueueFetchContext(tenantId, queues));
         }
 
         private static DbCommand CreateNonBlockingFetchCommand(
             SqlServerStorage storage,
             DbConnection connection,
-            string[] queues,
+            string tenantId,
+            QueueDescriptor[] queues,
             int invisibilityTimeout)
         {
-            var template = storage.GetQueryFromTemplate(static schemaName => $@"
+            var priorityTable = CreatePriorityTableExpression(queues);
+            var template = storage.GetQueryFromTemplate(schemaName => $@"
 set nocount on;set xact_abort on;set tran isolation level read committed;
 
-update top (1) JQ
+with QueuePriority(Queue, Priority) as ({priorityTable}),
+Candidate as (
+    select top (1) JQ.Id
+    from [{schemaName}].JobQueue JQ with (readpast, updlock, rowlock)
+    inner join QueuePriority QP on JQ.Queue = QP.Queue
+    where ((@tenantId is null and JQ.TenantId is null) or JQ.TenantId = @tenantId)
+      and (JQ.FetchedAt is null or JQ.FetchedAt < DATEADD(second, @timeoutSs, GETUTCDATE()))
+    order by QP.Priority asc, JQ.Id asc
+)
+update JQ
 set FetchedAt = GETUTCDATE()
 output INSERTED.Id, INSERTED.JobId, INSERTED.Queue, INSERTED.FetchedAt
-from [{schemaName}].JobQueue JQ with (forceseek, readpast, updlock, rowlock)
-where Queue in @queues and
-(FetchedAt is null or FetchedAt < DATEADD(second, @timeoutSs, GETUTCDATE()));");
+from [{schemaName}].JobQueue JQ
+inner join Candidate C on JQ.Id = C.Id;");
 
-            return connection.Create(template, timeout: storage.CommandTimeout)
+            var command = connection.Create(template, timeout: storage.CommandTimeout)
                 .AddParameter("@timeoutSs", invisibilityTimeout, DbType.Int32)
-                .AddExpandedParameter("@queues", queues, DbType.String);
+                .AddParameter("@tenantId", (object)tenantId ?? DBNull.Value, DbType.String, size: 100);
+
+            AddQueuePriorityParameters(command, queues);
+            return command;
         }
 
-        private SqlServerTransactionJob DequeueUsingTransaction(string[] queues, CancellationToken cancellationToken)
+        private SqlServerTransactionJob DequeueUsingTransaction(string tenantId, QueueDescriptor[] queues, CancellationToken cancellationToken)
         {
             DbTransaction transaction = null;
 
@@ -224,7 +258,8 @@ where Queue in @queues and
                 : TimeSpan.FromSeconds(1);
 
             using var cancellationEvent = cancellationToken.GetCancellationEvent();
-            var waitArray = GetWaitArrayForQueueSignals(_storage, queues, cancellationEvent);
+            var queueNames = queues.Select(static x => x.Name).ToArray();
+            var waitArray = GetWaitArrayForQueueSignals(_storage, queueNames, cancellationEvent);
 
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -235,7 +270,7 @@ where Queue in @queues and
                     transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
 
 #pragma warning disable 618
-                    using var command = CreateTransactionalFetchCommand(_storage, connection, queues, (int)_options.InvisibilityTimeout.Negate().TotalSeconds);
+                    using var command = CreateTransactionalFetchCommand(_storage, connection, tenantId, queues, (int)_options.InvisibilityTimeout.Negate().TotalSeconds);
 #pragma warning restore 618
                     command.Transaction = transaction;
 
@@ -293,19 +328,33 @@ where Queue in @queues and
         private static DbCommand CreateTransactionalFetchCommand(
             SqlServerStorage storage,
             DbConnection connection,
-            string[] queues,
+            string tenantId,
+            QueueDescriptor[] queues,
             int invisibilityTimeout)
         {
-            var template = storage.GetQueryFromTemplate(static schemaName => 
-                $@"delete top (1) JQ
+            var priorityTable = CreatePriorityTableExpression(queues);
+            var template = storage.GetQueryFromTemplate(schemaName => 
+                $@"with QueuePriority(Queue, Priority) as ({priorityTable}),
+Candidate as (
+    select top (1) JQ.Id
+    from [{schemaName}].JobQueue JQ with (readpast, updlock, rowlock)
+    inner join QueuePriority QP on JQ.Queue = QP.Queue
+    where ((@tenantId is null and JQ.TenantId is null) or JQ.TenantId = @tenantId)
+      and (JQ.FetchedAt is null or JQ.FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))
+    order by QP.Priority asc, JQ.Id asc
+)
+delete JQ
 output DELETED.Id, DELETED.JobId, DELETED.Queue
-from [{schemaName}].JobQueue JQ with (readpast, updlock, rowlock, forceseek)
-where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))");
+from [{schemaName}].JobQueue JQ
+inner join Candidate C on JQ.Id = C.Id");
             
-            return connection
+            var command = connection
                 .Create(template, timeout: storage.CommandTimeout)
                 .AddParameter("@timeout", invisibilityTimeout, DbType.Int32)
-                .AddExpandedParameter("@queues", queues, DbType.String);
+                .AddParameter("@tenantId", (object)tenantId ?? DBNull.Value, DbType.String, size: 100);
+
+            AddQueuePriorityParameters(command, queues);
+            return command;
         }
 
         private static WaitHandle[] GetWaitArrayForQueueSignals(SqlServerStorage storage, string[] queues, CancellationTokenExtentions.CancellationEvent cancellationEvent)
@@ -321,6 +370,34 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
             }
 
             return waitList.ToArray();
+        }
+
+        private static string CreatePriorityTableExpression(QueueDescriptor[] queues)
+        {
+            return String.Join(
+                " union all ",
+                queues.Select(static (_, index) => $"select @queue{index}, @priority{index}"));
+        }
+
+        private static void AddQueuePriorityParameters(DbCommand command, QueueDescriptor[] queues)
+        {
+            for (var i = 0; i < queues.Length; i++)
+            {
+                command.AddParameter("@queue" + i, queues[i].Name, DbType.String);
+                command.AddParameter("@priority" + i, queues[i].Priority, DbType.Int32);
+            }
+        }
+
+        private sealed class QueueFetchContext
+        {
+            public QueueFetchContext(string tenantId, QueueDescriptor[] queues)
+            {
+                TenantId = tenantId;
+                Queues = queues;
+            }
+
+            public string TenantId { get; }
+            public QueueDescriptor[] Queues { get; }
         }
 
         [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]

@@ -1,4 +1,4 @@
-﻿// This file is part of Hangfire. Copyright © 2017 Hangfire OÜ.
+// This file is part of Hangfire. Copyright © 2017 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -363,6 +363,7 @@ namespace Hangfire.Processing
             // It's better to reassure this can't happen under all circumstances.
             if ((Thread.CurrentThread.ThreadState & ThreadState.AbortRequested) != 0 && !AppDomainUnloadMonitor.IsUnloading)
             {
+#if !NET10_0_OR_GREATER
                 try
                 {
                     Thread.ResetAbort();
@@ -374,6 +375,7 @@ namespace Hangfire.Processing
                     // we shouldn't hide the original exception.
                     _logger.ErrorException($"{GetExecutionLoopTemplate(executionId)} was unable to reset thread abort request due to an exception. Background execution can be prematurely stopped.", ex);
                 }
+#endif
             }
 #endif
 

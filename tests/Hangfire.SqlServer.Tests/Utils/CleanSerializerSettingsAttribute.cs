@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Hangfire.Common;
 using Newtonsoft.Json;
 using Xunit.Sdk;

@@ -22,7 +22,10 @@ namespace Hangfire.Storage
     public interface IMonitoringApi
     {
         IList<QueueWithTopEnqueuedJobsDto> Queues();
+        IList<QueueAvailabilityDto> QueueAvailability();
         IList<ServerDto> Servers();
+        IList<ServerResourceEvent> ResourceEvents(string serverId, int from, int count);
+        IList<ServerResourceEvent> ResourceEvents(DateTime from, DateTime to);
         JobDetailsDto JobDetails(string jobId);
         StatisticsDto GetStatistics();
 

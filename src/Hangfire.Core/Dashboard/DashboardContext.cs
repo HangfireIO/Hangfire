@@ -1,4 +1,4 @@
-﻿// This file is part of Hangfire. Copyright © 2016 Hangfire OÜ.
+// This file is part of Hangfire. Copyright © 2016 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -114,6 +114,15 @@ namespace Hangfire.Dashboard
                 Storage,
                 JobFilterProviders.Providers,
                 Options.TimeZoneResolver ?? new DefaultTimeZoneResolver());
+        }
+
+        /// <summary>
+        /// Gets the best-effort user identity name for auditable dashboard operations.
+        /// </summary>
+        /// <returns>The authenticated user name when available; otherwise <see langword="null" />.</returns>
+        public virtual string GetUserName()
+        {
+            return null;
         }
     }
 }

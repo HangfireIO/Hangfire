@@ -14,7 +14,7 @@
     <summary>An easy way to perform fire-and-forget, delayed and recurring tasks inside ASP.NET applications. No Windows Service required.</summary>
     <description>
 An easy and reliable way to perform fire-and-forget, delayed and recurring, long-running, short-running, CPU or I/O intensive tasks inside ASP.NET applications. No Windows Service / Task Scheduler required. Even ASP.NET is not required.
-Backed by Redis, SQL Server, SQL Azure or MSMQ. This is a .NET alternative to Sidekiq, Resque and Celery.
+Backed by Redis, SQL Server or SQL Azure. This is a .NET alternative to Sidekiq, Resque and Celery.
 https://www.hangfire.io/
     </description>
     <copyright>Copyright © 2013-2026 Hangfire OÜ</copyright>
@@ -527,17 +527,7 @@ Hangfire.SqlServer.Msmq
 ]]>
     </releaseNotes>
     <dependencies>
-      <group targetFramework="net451">
-        <dependency id="Hangfire.Core" version="[%version%]" />
-        <dependency id="Hangfire.SqlServer" version="[%version%]" />
-        <dependency id="Microsoft.Owin.Host.SystemWeb" version="3.0.0" />
-      </group>
-      <group targetFramework="netstandard1.3">
-        <dependency id="Hangfire.Core" version="[%version%]" />
-        <dependency id="Hangfire.SqlServer" version="[%version%]" />
-        <dependency id="Hangfire.AspNetCore" version="[%version%]" />
-      </group>
-      <group targetFramework="netstandard2.0">
+      <group targetFramework="net10.0">
         <dependency id="Hangfire.Core" version="[%version%]" />
         <dependency id="Hangfire.SqlServer" version="[%version%]" />
         <dependency id="Hangfire.AspNetCore" version="[%version%]" />

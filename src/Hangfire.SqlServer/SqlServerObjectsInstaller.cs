@@ -1,4 +1,4 @@
-﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
+// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -27,7 +27,7 @@ namespace Hangfire.SqlServer
         [Obsolete("This field is unused and will be removed in 2.0.0.")]
         public static readonly int RequiredSchemaVersion = 5;
 
-        public static readonly int LatestSchemaVersion = 9;
+        public static readonly int LatestSchemaVersion = 10;
 
         public static void Install(DbConnection connection)
         {
