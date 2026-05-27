@@ -11,7 +11,7 @@ version: 1.7.37-build-0{build}
 
 image:
   - Visual Studio 2019
-  - Ubuntu
+  - Ubuntu2004
 
 #---------------------------------#
 #    environment configuration    #
