@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using Hangfire.Logging;
 using Hangfire.Profiling;
 using Moq;
@@ -88,8 +89,12 @@ namespace Hangfire.Core.Tests.Profiling
         [Fact]
         internal void SlowLog_GeneratesLogMessage_WhenThresholdReached_WithNullMessage()
         {
-            var profiler = CreateSlowLogProfiler(_logger, TimeSpan.FromSeconds(-1));
-            profiler.InvokeMeasured(_instance, x => x.ToString());
+            var profiler = CreateSlowLogProfiler(_logger, TimeSpan.FromSeconds(0));
+            profiler.InvokeMeasured(_instance, x =>
+            {
+                Thread.Sleep(10);
+                return x.ToString();
+            });
 
             _logger.Verify(x => x.Log(LogLevel.Warn, It.IsNotNull<Func<string>>(), null), Times.Once);
         }
@@ -97,8 +102,8 @@ namespace Hangfire.Core.Tests.Profiling
         [Fact]
         internal void SlowLog_GeneratesLogMessage_WhenThresholdReached_WithNullInstance()
         {
-            var profiler = CreateSlowLogProfiler(_logger, TimeSpan.FromSeconds(-1));
-            profiler.InvokeMeasured((object)null, x => true);
+            var profiler = CreateSlowLogProfiler(_logger, TimeSpan.FromSeconds(0));
+            profiler.InvokeMeasured((object)null, x => { Thread.Sleep(10); return true; });
 
             _logger.Verify(x => x.Log(LogLevel.Warn, It.IsNotNull<Func<string>>(), null), Times.Once);
         }
@@ -106,8 +111,12 @@ namespace Hangfire.Core.Tests.Profiling
         [Fact]
         internal void SlowLog_GeneratesLogMessage_WhenThresholdReached_WithNonNullMessage()
         {
-            var profiler = CreateSlowLogProfiler(_logger, TimeSpan.FromSeconds(-1));
-            profiler.InvokeMeasured(_instance, x => x.ToString(), _ => "message");
+            var profiler = CreateSlowLogProfiler(_logger, TimeSpan.FromSeconds(0));
+            profiler.InvokeMeasured(_instance, x =>
+            {
+                Thread.Sleep(10);
+                return x.ToString();
+            }, _ => "message");
 
             _logger.Verify(x => x.Log(LogLevel.Warn, It.IsNotNull<Func<string>>(), null), Times.Once);
         }
@@ -124,7 +133,7 @@ namespace Hangfire.Core.Tests.Profiling
         public static IEnumerable<object[]> GetProfilers()
         {
             yield return new object[] { EmptyProfiler.Instance };
-            yield return new object[] { CreateSlowLogProfiler(new Mock<ILog>(), TimeSpan.FromSeconds(-1)) };
+            yield return new object[] { CreateSlowLogProfiler(new Mock<ILog>(), TimeSpan.FromSeconds(0)) };
         }
 
         private static SlowLogProfiler CreateSlowLogProfiler(Mock<ILog> logger, TimeSpan threshold)

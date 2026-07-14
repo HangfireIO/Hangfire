@@ -14,7 +14,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Diagnostics;
+using System.Threading;
 using Hangfire.Logging;
 
 namespace Hangfire.Profiling
@@ -23,7 +23,7 @@ namespace Hangfire.Profiling
     {
         private static readonly TimeSpan DefaultThreshold = TimeSpan.FromMinutes(1);
 
-        private readonly int _thresholdMs;
+        private readonly TimeSpan _threshold;
         private readonly ILog _logger;
 
         public SlowLogProfiler(ILog logger)
@@ -33,7 +33,7 @@ namespace Hangfire.Profiling
 
         public SlowLogProfiler(ILog logger, TimeSpan threshold)
         {
-            _thresholdMs = (int)threshold.TotalMilliseconds;
+            _threshold = threshold;
             _logger = logger;
         }
 
@@ -44,19 +44,22 @@ namespace Hangfire.Profiling
         {
             if (action == null) throw new ArgumentNullException(nameof(action));
 
-            var started = Environment.TickCount;
+            var startedAt = Environment.TickCount;
 
-            try
+            // TODO: Change implementation to thread-based, once it is possible to query custom services everywhere
+            using (new Timer(LogWarningMessage, null, _threshold, _threshold))
             {
                 return action(instance);
             }
-            finally
+
+            void LogWarningMessage(object state)
             {
-                var elapsed = unchecked(Environment.TickCount - started); 
-                if (elapsed >= _thresholdMs)
-                {
-                    _logger.Warn($"Slow log: {instance?.ToString() ?? typeof(TInstance).ToString()} performed \"{messageFunc?.Invoke(instance)}\" in {elapsed / 1000} sec");
-                }
+                var elapsedSec = unchecked(Environment.TickCount - startedAt) / 1_000;
+
+                var type = instance?.ToString() ?? typeof(TInstance).ToString();
+                var message = messageFunc?.Invoke(instance) ?? "(null)";
+
+                _logger.Warn($"Slow log: {type} is still performing \"{message}\" after {elapsedSec} sec");
             }
         }
     }
