@@ -92,9 +92,8 @@ namespace Hangfire.Core.Tests.Profiling
             using (var mre = new ManualResetEventSlim(initialState: false))
             {
                 _logger
-                    .Setup(x => x.Log(It.IsAny<LogLevel>(), It.IsAny<Func<string>>(), It.IsAny<Exception>()))
-                    .Callback(mre.Set)
-                    .Returns(true);
+                    .Setup(x => x.Log(It.IsAny<LogLevel>(), It.IsNotNull<Func<string>>(), It.IsAny<Exception>()))
+                    .Callback(mre.Set);
 
                 var profiler = CreateSlowLogProfiler(_logger, TimeSpan.Zero);
                 profiler.InvokeMeasured(_instance, x =>
@@ -113,9 +112,8 @@ namespace Hangfire.Core.Tests.Profiling
             using (var mre = new ManualResetEventSlim(initialState: false))
             {
                 _logger
-                    .Setup(x => x.Log(It.IsAny<LogLevel>(), It.IsAny<Func<string>>(), It.IsAny<Exception>()))
-                    .Callback(mre.Set)
-                    .Returns(true);
+                    .Setup(x => x.Log(It.IsAny<LogLevel>(), It.IsNotNull<Func<string>>(), It.IsAny<Exception>()))
+                    .Callback(mre.Set);
 
                 var profiler = CreateSlowLogProfiler(_logger, TimeSpan.Zero);
                 profiler.InvokeMeasured((object)null, x => mre.Wait(TimeSpan.FromSeconds(15)));
@@ -130,9 +128,8 @@ namespace Hangfire.Core.Tests.Profiling
             using (var mre = new ManualResetEventSlim(initialState: false))
             {
                 _logger
-                    .Setup(x => x.Log(It.IsAny<LogLevel>(), It.IsAny<Func<string>>(), It.IsAny<Exception>()))
-                    .Callback(mre.Set)
-                    .Returns(true);
+                    .Setup(x => x.Log(It.IsAny<LogLevel>(), It.IsNotNull<Func<string>>(), It.IsAny<Exception>()))
+                    .Callback(mre.Set);
 
                 var profiler = CreateSlowLogProfiler(_logger, TimeSpan.Zero);
                 profiler.InvokeMeasured(_instance, x =>
