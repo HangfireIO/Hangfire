@@ -89,7 +89,7 @@ namespace Hangfire.Core.Tests.Profiling
         [Fact]
         internal void SlowLog_GeneratesLogMessage_WhenThresholdReached_WithNullMessage()
         {
-            var profiler = CreateSlowLogProfiler(_logger, TimeSpan.FromSeconds(0));
+            var profiler = CreateSlowLogProfiler(_logger, TimeSpan.FromMilliseconds(1));
             profiler.InvokeMeasured(_instance, x =>
             {
                 Thread.Sleep(100);
@@ -102,7 +102,7 @@ namespace Hangfire.Core.Tests.Profiling
         [Fact]
         internal void SlowLog_GeneratesLogMessage_WhenThresholdReached_WithNullInstance()
         {
-            var profiler = CreateSlowLogProfiler(_logger, TimeSpan.FromSeconds(0));
+            var profiler = CreateSlowLogProfiler(_logger, TimeSpan.FromMilliseconds(1));
             profiler.InvokeMeasured((object)null, x => { Thread.Sleep(100); return true; });
 
             _logger.Verify(x => x.Log(LogLevel.Warn, It.IsNotNull<Func<string>>(), null), Times.Once);
@@ -111,7 +111,7 @@ namespace Hangfire.Core.Tests.Profiling
         [Fact]
         internal void SlowLog_GeneratesLogMessage_WhenThresholdReached_WithNonNullMessage()
         {
-            var profiler = CreateSlowLogProfiler(_logger, TimeSpan.FromSeconds(0));
+            var profiler = CreateSlowLogProfiler(_logger, TimeSpan.FromMilliseconds(1));
             profiler.InvokeMeasured(_instance, x =>
             {
                 Thread.Sleep(100);
@@ -133,7 +133,7 @@ namespace Hangfire.Core.Tests.Profiling
         public static IEnumerable<object[]> GetProfilers()
         {
             yield return new object[] { EmptyProfiler.Instance };
-            yield return new object[] { CreateSlowLogProfiler(new Mock<ILog>(), TimeSpan.FromSeconds(0)) };
+            yield return new object[] { CreateSlowLogProfiler(new Mock<ILog>(), TimeSpan.FromMilliseconds(1)) };
         }
 
         private static SlowLogProfiler CreateSlowLogProfiler(Mock<ILog> logger, TimeSpan threshold)
