@@ -92,7 +92,7 @@ namespace Hangfire.Core.Tests.Profiling
             var profiler = CreateSlowLogProfiler(_logger, TimeSpan.FromSeconds(0));
             profiler.InvokeMeasured(_instance, x =>
             {
-                Thread.Sleep(50);
+                Thread.Sleep(100);
                 return x.ToString();
             });
 
@@ -103,7 +103,7 @@ namespace Hangfire.Core.Tests.Profiling
         internal void SlowLog_GeneratesLogMessage_WhenThresholdReached_WithNullInstance()
         {
             var profiler = CreateSlowLogProfiler(_logger, TimeSpan.FromSeconds(0));
-            profiler.InvokeMeasured((object)null, x => { Thread.Sleep(50); return true; });
+            profiler.InvokeMeasured((object)null, x => { Thread.Sleep(100); return true; });
 
             _logger.Verify(x => x.Log(LogLevel.Warn, It.IsNotNull<Func<string>>(), null), Times.Once);
         }
@@ -114,7 +114,7 @@ namespace Hangfire.Core.Tests.Profiling
             var profiler = CreateSlowLogProfiler(_logger, TimeSpan.FromSeconds(0));
             profiler.InvokeMeasured(_instance, x =>
             {
-                Thread.Sleep(50);
+                Thread.Sleep(100);
                 return x.ToString();
             }, _ => "message");
 
