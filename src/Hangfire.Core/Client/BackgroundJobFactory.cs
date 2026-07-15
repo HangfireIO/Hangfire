@@ -164,7 +164,7 @@ namespace Hangfire.Client
                 postContext.Profiler.InvokeMeasured(
                     new KeyValuePair<IClientFilter, CreatedContext>(filter, postContext),
                     InvokeOnCreated,
-                    static ctx => $"OnCreated for {ctx.Value.BackgroundJob?.Id ?? "(null)"}");
+                    static ctx => $"OnCreated for job {ctx.Value.BackgroundJob?.Id ?? "(null)"}");
 
                 if (!postContext.ExceptionHandled)
                 {
@@ -177,7 +177,7 @@ namespace Hangfire.Client
                 postContext.Profiler.InvokeMeasured(
                     new KeyValuePair<IClientFilter, CreatedContext>(filter, postContext),
                     InvokeOnCreated,
-                    static ctx => $"OnCreated for {ctx.Value.BackgroundJob?.Id ?? "(null)"}");
+                    static ctx => $"OnCreated for job {ctx.Value.BackgroundJob?.Id ?? "(null)"}");
             }
 
             return postContext;

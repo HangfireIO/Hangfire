@@ -145,7 +145,7 @@ namespace Hangfire.Server
             preContext.Profiler.InvokeMeasured(
                 new KeyValuePair<IServerFilter, PerformingContext>(filter, preContext),
                 InvokeOnPerforming,
-                static ctx => $"OnPerforming for {ctx.Value.BackgroundJob.Id}" );
+                static ctx => $"OnPerforming for job {ctx.Value.BackgroundJob.Id}" );
             
             if (preContext.Canceled)
             {
@@ -172,7 +172,7 @@ namespace Hangfire.Server
                 postContext.Profiler.InvokeMeasured(
                     new KeyValuePair<IServerFilter, PerformedContext>(filter, postContext),
                     InvokeOnPerformed,
-                    static ctx => $"OnPerformed for {ctx.Value.BackgroundJob.Id}");
+                    static ctx => $"OnPerformed for job {ctx.Value.BackgroundJob.Id}");
 
                 if (!postContext.ExceptionHandled)
                 {
@@ -185,7 +185,7 @@ namespace Hangfire.Server
                 postContext.Profiler.InvokeMeasured(
                     new KeyValuePair<IServerFilter, PerformedContext>(filter, postContext),
                     InvokeOnPerformed,
-                    static ctx => $"OnPerformed for {ctx.Value.BackgroundJob.Id}");
+                    static ctx => $"OnPerformed for job {ctx.Value.BackgroundJob.Id}");
             }
 
             return postContext;
