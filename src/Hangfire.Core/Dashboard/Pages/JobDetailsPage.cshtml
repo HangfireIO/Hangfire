@@ -108,7 +108,7 @@
                 </div>
             }
 
-            var displayParameters = job.Properties.Where(x => !x.Key.StartsWith("DBG_") && x.Key != "Continuations").ToArray();
+            var displayParameters = job.Properties.Where(x => !x.Key.StartsWith("DBG_") && !x.Key.StartsWith("SRC_") && x.Key != "Continuations").ToArray();
 
             if (displayParameters.Length > 0)
             {
@@ -188,6 +188,21 @@
                         <pre class="stack-trace">@Html.StackTrace(ex.StackTrace)</pre>
                     }
                 }
+            }
+
+            var srcParameters = job.Properties.Where(x => x.Key.StartsWith("SRC_")).ToArray();
+            if (job.Job != null && srcParameters.Length > 0)
+            {
+                <h3 id="job-details-source">@Strings.JobDetailsPage_Source</h3>
+                <table class="table table-condensed job-snippet-properties" aria-describedby="job-details-source">
+                    @foreach (var parameter in srcParameters)
+                    {
+                        <tr>
+                            <td class="width-20 word-break">@parameter.Key.Substring(4)</td>
+                            <td><pre><code>@parameter.Value</code></pre></td>
+                        </tr>
+                    }
+                </table>
             }
 
             <h3>

@@ -382,6 +382,9 @@ select * from [{schemaName}].State with (nolock, forceseek) where JobId = @id or
                         .Select(static grp => grp.First())
                         .ToDictionary(static x => x.Name, static x => x.Value);
 
+                    parameters.Add("SRC_InvocationData", job.InvocationData);
+                    parameters.Add("SRC_Arguments", job.Arguments);
+
                     var deserializedJob = DeserializeJob(job.InvocationData, job.Arguments, out var payload, out var exception);
 
                     if (deserializedJob == null)
