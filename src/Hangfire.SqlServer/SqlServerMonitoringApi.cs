@@ -43,6 +43,11 @@ namespace Hangfire.SqlServer
             _jobListLimit = jobListLimit;
         }
 
+        public override long JobCount(string stateName)
+        {
+            return UseConnection(connection => GetNumberOfJobsByStateName(connection, stateName));
+        }
+
         public override long ScheduledCount()
         {
             return UseConnection(connection => 
