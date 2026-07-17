@@ -113,7 +113,7 @@ namespace Hangfire.Client
                         // when its state is null, and since we shouldn't do anything when it's non-null,
                         // there will be no any race conditions.
                         var data = ctx.Context.Connection.GetJobData(ctx.BackgroundJob.Id);
-                        if (data == null) throw new InvalidOperationException($"Was unable to initialize a background job '{ctx.BackgroundJob.Id}', because it doesn't exists.");
+                        if (data == null) throw new InvalidOperationException($"Was unable to initialize a background job '{ctx.BackgroundJob.Id}', because it doesn't exist.");
 
                         if (!String.IsNullOrEmpty(data.State)) return;
                     }

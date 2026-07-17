@@ -378,7 +378,7 @@ namespace Hangfire
             if (LogEvents)
             {
                 _logger.WarnException(
-                    $"Failed to process the job '{context.BackgroundJob.Id}': an exception occured. Job was automatically deleted because the retry attempt count exceeded {Attempts}.",
+                    $"Failed to process the job '{context.BackgroundJob.Id}': an exception occurred. Job was automatically deleted because the retry attempt count exceeded {Attempts}.",
                     failedState.Exception);
             }
         }
