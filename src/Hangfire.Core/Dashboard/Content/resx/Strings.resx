@@ -542,7 +542,7 @@
     <value>Disabled</value>
   </data>
   <data name="RecurringJobsPage_RecurringJobDisabled_Tooltip" xml:space="preserve">
-    <value>Cron expression is invalid or don't have any occurrences over the next 100 years</value>
+    <value>Cron expression is invalid or doesn't have any occurrences over the next 100 years</value>
   </data>
   <data name="ServersPage_Note_Text" xml:space="preserve">
     <value>Some of the servers don't have heartbeat reported within the last minute and may be aborted. If they don't report heartbeat in the near future, they will be removed automatically after timeout is exceeded, no manual action is required.

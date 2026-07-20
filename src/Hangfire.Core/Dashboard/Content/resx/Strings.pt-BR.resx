@@ -544,6 +544,25 @@
   <data name="Common_Disabled" xml:space="preserve">
     <value>Inativo</value>
   </data>
+  <data name="RecurringJobsPage_RecurringJobDisabled_Tooltip" xml:space="preserve">
+    <value>A expressão Cron é inválida ou não possui nenhuma ocorrência nos próximos 100 anos</value>
+  </data>
+  <data name="ServersPage_Note_Text" xml:space="preserve">
+    <value>Alguns servidores não reportaram sinal no último minuto e podem ter sido abortados. Se não reportarem sinal em breve, serão removidos automaticamente após o tempo limite ser excedido, sem necessidade de ação manual.
+                    Tarefas incompletas em execução nesses servidores serão reenfileiradas automaticamente, mas você pode acelerar o processo verificando a página &lt;a href="{0}"&gt;Tarefas em processamento&lt;/a&gt;.</value>
+  </data>
+  <data name="ServersPage_Note_Title" xml:space="preserve">
+    <value>Servidores abortados serão removidos automaticamente</value>
+  </data>
+  <data name="ServersPage_Active" xml:space="preserve">
+    <value>Ativo</value>
+  </data>
+  <data name="ServersPage_Possibly_Aborted" xml:space="preserve">
+    <value>Possivelmente abortado</value>
+  </data>
+  <data name="Common_Error" xml:space="preserve">
+    <value>Erro</value>
+  </data>
   <data name="JobDetailsPage_Parameters" xml:space="preserve">
     <value>Parâmetros</value>
   </data>
