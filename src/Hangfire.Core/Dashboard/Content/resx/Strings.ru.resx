@@ -210,6 +210,9 @@
   <data name="DeletedJobsPage_Table_Deleted" xml:space="preserve">
     <value>Удалено</value>
   </data>
+  <data name="DeletedJobsPage_Table_Exception" xml:space="preserve">
+    <value>Исключение</value>
+  </data>
   <data name="DeletedJobsPage_Title" xml:space="preserve">
     <value>Удалённые задания</value>
   </data>
@@ -218,6 +221,10 @@
   </data>
   <data name="EnqueuedJobsPage_Title" xml:space="preserve">
     <value>Задания в очереди</value>
+  </data>
+  <data name="FailedJobsPage_FailedJobsNotExpire_Warning_Html" xml:space="preserve">
+    <value>&lt;strong&gt;Срок действия завершённых с ошибкой заданий не ограничен.&lt;/strong&gt; Это позволяет повторно размещать их в очереди без ограничений по времени. Вы должны вручную повторно поместить их в очередь либо удалить. Также можно использовать в коде атрибут &lt;code&gt;AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Delete)&lt;/code&gt;
+                для автоматического удаления таких заданий.</value>
   </data>
   <data name="FailedJobsPage_NoJobs" xml:space="preserve">
     <value>У вас нет завершённых с ошибкой заданий.</value>
@@ -252,6 +259,10 @@
   <data name="JobDetailsPage_State" xml:space="preserve">
     <value>Состояние</value>
   </data>
+  <data name="JobDetailsPage_JobAbortedNotActive_Warning_Html" xml:space="preserve">
+    <value>&lt;strong&gt;Выполнение задания было прервано&lt;/strong&gt; – оно выполняется сервером &lt;code&gt;{0}&lt;/code&gt;, которого нет в списке 
+           &lt;a href="{1}"&gt;активных серверов&lt;/a&gt;. Задание будет запущено повторно после периода невидимости, но вы можете перезапустить или удалить его вручную.</value>
+  </data>
   <data name="JobDetailsPage_JobAbortedWithHeartbeat_Warning_Html" xml:space="preserve">
     <value>&lt;strong&gt;Кажется, выполнение задания было прервано&lt;/strong&gt; – оно выполняется сервером &lt;code&gt;{0}&lt;/code&gt;, который последний раз отправлял heartbeat-сообщение более минуты назад. Задание будет запущено повторно после периода невидимости, но вы можете перезапустить или удалить его вручную.</value>
   </data>
@@ -273,14 +284,14 @@
   <data name="LayoutPage_Footer_Generatedms" xml:space="preserve">
     <value>Сгенерировано за {0}мс</value>
   </data>
-  <data name="LayoutPage_Footer_Time" xml:space="preserve">
-    <value>Время приложения:</value>
+  <data name="LayoutPage_Footer_StorageTime" xml:space="preserve">
+    <value>Время хранилища:</value>
   </data>
   <data name="LayoutPage_Footer_TimeIsOutOfSync" xml:space="preserve">
     <value>Время приложения отличается от времени хранилища</value>
   </data>
-  <data name="LayoutPage_Footer_StorageTime" xml:space="preserve">
-    <value>Время хранилища:</value>
+  <data name="LayoutPage_Footer_Time" xml:space="preserve">
+    <value>Время приложения:</value>
   </data>
   <data name="Paginator_Next" xml:space="preserve">
     <value>Далее</value>
@@ -356,6 +367,15 @@
   </data>
   <data name="RetriesPage_Title" xml:space="preserve">
     <value>Повторные запуски</value>
+  </data>
+  <data name="RetriesPage_Warning_Html" xml:space="preserve">
+    <value>&lt;h4&gt;Повторные запуски работают, но страница не может быть отображена&lt;/h4&gt;
+        &lt;p&gt;
+            Не волнуйтесь, повторные запуски работают как положено. Но ваше текущее хранилище заданий не поддерживает некоторые запросы, требуемые для отображения данной страницы. Пожалуйста, попробуйте обновить ваше хранилище или подождите, пока не будет реализован полный набор инструкций.
+        &lt;/p&gt;
+        &lt;p&gt;
+            Пожалуйста, перейдите на страницу &lt;a href="{0}"&gt;Запланированные задания&lt;/a&gt; для получения списка запланированных заданий (включая запущенные повторно).
+        &lt;/p&gt;</value>
   </data>
   <data name="ScheduledJobsPage_EnqueueNow" xml:space="preserve">
     <value>Поместить в очередь сейчас</value>
@@ -502,10 +522,10 @@
     <value>Найдено {0} завершённых с ошибкой заданий. Запустите их заново, либо удалите их вручную.</value>
   </data>
   <data name="HomePage_GraphHover_Failed" xml:space="preserve">
-    <value>Завершено с ошибкой</value>
+    <value>Завершены с ошибкой</value>
   </data>
   <data name="HomePage_GraphHover_Succeeded" xml:space="preserve">
-    <value>Выполнено</value>
+    <value>Выполнены</value>
   </data>
   <data name="Common_Disabled" xml:space="preserve">
     <value>Отключено</value>
@@ -530,5 +550,20 @@
   </data>
   <data name="JobDetailsPage_Parameters" xml:space="preserve">
     <value>Параметры</value>
+  </data>
+  <data name="Metrics_SQLServer_SchemaVersion" xml:space="preserve">
+    <value>Версия схемы</value>
+  </data>
+  <data name="AwaitingJobsPage_Table_Since" xml:space="preserve">
+    <value>С</value>
+  </data>
+  <data name="Metrics_SQLServer_ActiveTransactions" xml:space="preserve">
+    <value>Активные транзакции</value>
+  </data>
+  <data name="Metrics_SQLServer_DataFilesSize" xml:space="preserve">
+    <value>Размер файлов данных БД (МБ)</value>
+  </data>
+  <data name="Metrics_SQLServer_LogFilesSize" xml:space="preserve">
+    <value>Размер файлов логов БД (МБ)</value>
   </data>
 </root>
