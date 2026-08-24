@@ -16,6 +16,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
@@ -385,15 +386,19 @@ namespace Hangfire.Server
         private void RetryRecurringJob(string recurringJobId, RecurringJobEntity recurringJob, DateTime now, Exception error)
         {
             var errorString = error.ToStringWithOriginalStackTrace(States.FailedState.MaxLinesInExceptionDetails, includeFileInfo: false);
+            var isTransientStorageException = IsTransientStorageException(error);
 
-            if (recurringJob.RetryAttempt < MaxRetryAttemptCount)
+            if (isTransientStorageException || recurringJob.RetryAttempt < MaxRetryAttemptCount)
             {
                 var delay = _pollingDelay > TimeSpan.Zero ? _pollingDelay : TimeSpan.FromMinutes(1);
 
                 _logger.WarnException(
                     $"Recurring job '{recurringJobId}' can't be scheduled due to an error and will be retried in {delay}.",
                     error);
-                recurringJob.ScheduleRetry(now.Add(delay), errorString);
+                recurringJob.ScheduleRetry(
+                    now.Add(delay),
+                    errorString,
+                    incrementRetryAttempt: !isTransientStorageException);
             }
             else
             {
@@ -401,6 +406,18 @@ namespace Hangfire.Server
                     $"Recurring job '{recurringJobId}' can't be scheduled due to an error and will be disabled.", error);
                 recurringJob.Disable(errorString);
             }
+        }
+
+        private static bool IsTransientStorageException(Exception exception)
+        {
+            while (exception != null)
+            {
+                if (exception is DbException) return true;
+
+                exception = exception.InnerException;
+            }
+
+            return false;
         }
 
         private void RemoveRecurringJob(IStorageConnection connection, string recurringJobId)

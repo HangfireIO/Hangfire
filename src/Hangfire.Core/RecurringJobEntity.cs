@@ -186,9 +186,13 @@ namespace Hangfire
             return changedFields.Count > 0;
         }
 
-        public void ScheduleRetry(DateTime nextAttempt, string error)
+        public void ScheduleRetry(DateTime nextAttempt, string error, bool incrementRetryAttempt = true)
         {
-            RetryAttempt++;
+            if (incrementRetryAttempt)
+            {
+                RetryAttempt++;
+            }
+
             Error = error;
             NextExecution = nextAttempt;
         }
