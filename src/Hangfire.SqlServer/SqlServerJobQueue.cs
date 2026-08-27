@@ -132,8 +132,11 @@ $@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
 
             try
             {
-                semaphore = Semaphores.GetOrAdd(resource, CreateSemaphoreFunc);
-                semaphore.Wait(cancellationToken);
+                if (!_options.DisableFetchSemaphores)
+                {
+                    semaphore = Semaphores.GetOrAdd(resource, CreateSemaphoreFunc);
+                    semaphore.Wait(cancellationToken);
+                }
 
                 while (!cancellationToken.IsCancellationRequested)
                 {

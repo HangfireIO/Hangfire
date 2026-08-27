@@ -230,5 +230,12 @@ namespace Hangfire.SqlServer
         /// </remarks>
         public bool DisableTransactionScope { get; set; }
 #endif
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to disable semaphores used to limit the number
+        /// of queries when listening on empty queues. Using this option may increase the overall
+        /// throughput for bursty workloads, at the cost of increasing the number of queries.
+        /// </summary>
+        public bool DisableFetchSemaphores { get; set; }
     }
 }
