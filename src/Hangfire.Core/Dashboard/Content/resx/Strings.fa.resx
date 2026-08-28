@@ -210,6 +210,9 @@
   <data name="DeletedJobsPage_Table_Deleted" xml:space="preserve">
     <value>حذف شده</value>
   </data>
+  <data name="DeletedJobsPage_Table_Exception" xml:space="preserve">
+    <value>استثناء</value>
+  </data>
   <data name="DeletedJobsPage_Title" xml:space="preserve">
     <value>کارهای حذف شده</value>
   </data>
@@ -285,6 +288,12 @@
   </data>
   <data name="LayoutPage_Footer_Generatedms" xml:space="preserve">
     <value>ایجاد شد{0}میلی ثانیه</value>
+  </data>
+  <data name="LayoutPage_Footer_StorageTime" xml:space="preserve">
+    <value>زمان ذخیره‌سازی:</value>
+  </data>
+  <data name="LayoutPage_Footer_TimeIsOutOfSync" xml:space="preserve">
+    <value>زمان برنامه با زمان ذخیره‌سازی همگام نیست.</value>
   </data>
   <data name="LayoutPage_Footer_Time" xml:space="preserve">
     <value>زمان:</value>
@@ -418,6 +427,12 @@
   <data name="SucceededJobsPage_Table_TotalDuration" xml:space="preserve">
     <value>زمان کل اجرا</value>
   </data>
+  <data name="SucceededJobsPage_Table_Latency" xml:space="preserve">
+    <value>تأخیر</value>
+  </data>
+  <data name="SucceededJobsPage_Table_Duration" xml:space="preserve">
+    <value>مدت زمان</value>
+  </data>
   <data name="SucceededJobsPage_Title" xml:space="preserve">
     <value>کارهای موفق شده</value>
   </data>
@@ -516,5 +531,45 @@
   </data>
   <data name="HomePage_GraphHover_Succeeded" xml:space="preserve">
     <value>موفقیت آمیز</value>
+  </data>
+  <data name="Common_Disabled" xml:space="preserve">
+    <value>غیرفعال</value>
+  </data>
+  <data name="RecurringJobsPage_RecurringJobDisabled_Tooltip" xml:space="preserve">
+    <value>عبارت Cron نامعتبر است یا در ۱۰۰ سال آینده هیچ زمان اجرایی برای آن وجود ندارد.</value>
+  </data>
+  <data name="ServersPage_Note_Text" xml:space="preserve">
+    <value>برخی از سرورها در یک دقیقه گذشته سیگنال سلامت (Heartbeat) ارسال نکرده‌اند و ممکن است متوقف شده باشند. اگر در آینده نزدیک سیگنال سلامت ارسال نکنند، پس از پایان مهلت تعیین‌شده به‌صورت خودکار حذف خواهند شد و نیازی به اقدام دستی نیست.
+وظایف پس‌زمینه ناتمام که روی این سرورها در حال اجرا بوده‌اند، به‌صورت خودکار دوباره در صف قرار می‌گیرند؛ اما می‌توانید با بررسی صفحه &amp;lt;a href="{0}"&amp;gt;وظایف در حال پردازش&amp;lt;/a&amp;gt; این فرآیند را سریع‌تر کنید.</value>
+  </data>
+  <data name="ServersPage_Note_Title" xml:space="preserve">
+    <value>سرورهای متوقف‌شده به‌صورت خودکار حذف خواهند شد.</value>
+  </data>
+  <data name="ServersPage_Active" xml:space="preserve">
+    <value>فعال</value>
+  </data>
+  <data name="ServersPage_Possibly_Aborted" xml:space="preserve">
+    <value>احتمالاً متوقف شده</value>
+  </data>
+  <data name="Common_Error" xml:space="preserve">
+    <value>خطا</value>
+  </data>
+  <data name="JobDetailsPage_Parameters" xml:space="preserve">
+    <value>پارامترها</value>
+  </data>
+  <data name="Metrics_SQLServer_SchemaVersion" xml:space="preserve">
+    <value>نسخه ساختار پایگاه داده</value>
+  </data>
+  <data name="AwaitingJobsPage_Table_Since" xml:space="preserve">
+    <value>از</value>
+  </data>
+  <data name="Metrics_SQLServer_ActiveTransactions" xml:space="preserve">
+    <value>تراکنش‌های فعال</value>
+  </data>
+  <data name="Metrics_SQLServer_DataFilesSize" xml:space="preserve">
+    <value>حجم فایل(های) داده استفاده‌شده (مگابایت)</value>
+  </data>
+  <data name="Metrics_SQLServer_LogFilesSize" xml:space="preserve">
+    <value>حجم فایل(های) لاگ استفاده‌شده (مگابایت)</value>
   </data>
 </root>
