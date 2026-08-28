@@ -555,7 +555,7 @@
     <value>Lyckade</value>
   </data>
   <data name="Common_Disabled" xml:space="preserve">
-    <value>Avtängd</value>
+    <value>Avstängd</value>
   </data>
   <data name="RecurringJobsPage_RecurringJobDisabled_Tooltip" xml:space="preserve">
     <value>Cron-uttrycket är ogiligt eller inträffar inte dom närmaste hundra åren</value>
