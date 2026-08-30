@@ -16,7 +16,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
@@ -369,7 +368,7 @@ namespace Hangfire.Server
 
                 if (exception != null)
                 {
-                    RetryRecurringJob(recurringJobId, recurringJob, now, exception);
+                    RetryRecurringJob(context.Storage, recurringJobId, recurringJob, now, exception);
                 }
 
                 recurringJob.IsChanged(now, out var changedFields);
@@ -383,12 +382,12 @@ namespace Hangfire.Server
             }
         }
 
-        private void RetryRecurringJob(string recurringJobId, RecurringJobEntity recurringJob, DateTime now, Exception error)
+        private void RetryRecurringJob(JobStorage storage, string recurringJobId, RecurringJobEntity recurringJob, DateTime now, Exception error)
         {
             var errorString = error.ToStringWithOriginalStackTrace(States.FailedState.MaxLinesInExceptionDetails, includeFileInfo: false);
-            var isTransientStorageException = IsTransientStorageException(error);
+            var isTransientException = storage.IsTransientException(error);
 
-            if (isTransientStorageException || recurringJob.RetryAttempt < MaxRetryAttemptCount)
+            if (isTransientException || recurringJob.RetryAttempt < MaxRetryAttemptCount)
             {
                 var delay = _pollingDelay > TimeSpan.Zero ? _pollingDelay : TimeSpan.FromMinutes(1);
 
@@ -398,7 +397,7 @@ namespace Hangfire.Server
                 recurringJob.ScheduleRetry(
                     now.Add(delay),
                     errorString,
-                    incrementRetryAttempt: !isTransientStorageException);
+                    incrementRetryAttempt: !isTransientException);
             }
             else
             {
@@ -406,18 +405,6 @@ namespace Hangfire.Server
                     $"Recurring job '{recurringJobId}' can't be scheduled due to an error and will be disabled.", error);
                 recurringJob.Disable(errorString);
             }
-        }
-
-        private static bool IsTransientStorageException(Exception exception)
-        {
-            while (exception != null)
-            {
-                if (exception is DbException) return true;
-
-                exception = exception.InnerException;
-            }
-
-            return false;
         }
 
         private void RemoveRecurringJob(IStorageConnection connection, string recurringJobId)

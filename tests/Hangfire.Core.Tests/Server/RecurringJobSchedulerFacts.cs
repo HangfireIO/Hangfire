@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -1201,25 +1200,19 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Theory]
-        [InlineData(false, false), InlineData(false, true)]
-        [InlineData(true, false), InlineData(true, true)]
-        public void Execute_ReschedulesRecurringJob_WhenFactoryThrowsDbException_AndRetryAttemptsExceeded(
-            bool batching,
-            bool wrapException)
+        [InlineData(false), InlineData(true)]
+        public void Execute_ReschedulesRecurringJob_WithoutIncrementingRetryAttempt_WhenStorageReportsTransientException_AndRetryAttemptsExceeded(
+            bool batching)
         {
             // Arrange
             SetupConnection(batching);
+            _context.Storage.Setup(x => x.IsTransientException(It.IsAny<Exception>())).Returns(true);
             _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
             _recurringJob["V"] = "2";
             _recurringJob["RetryAttempt"] = "10";
 
-            Exception exception = new TestDbException("Database unavailable");
-            if (wrapException)
-            {
-                exception = new InvalidOperationException("Storage operation failed", exception);
-            }
-
-            _factory.Setup(x => x.Create(It.IsAny<CreateContext>())).Throws(exception);
+            _factory.Setup(x => x.Create(It.IsAny<CreateContext>()))
+                .Throws(new InvalidOperationException("Storage operation failed"));
 
             var scheduler = CreateScheduler();
 
@@ -1241,6 +1234,32 @@ namespace Hangfire.Core.Tests.Server
                 RecurringJobId,
                 JobHelper.ToTimestamp(_nowInstant.Add(_delay))));
             _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, -1), Times.Never);
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
+        public void Execute_DisablesRecurringJob_WhenStorageReportsNonTransientException_AndRetryAttemptsExceeded()
+        {
+            // Arrange
+            SetupConnection(false);
+            _recurringJob["RetryAttempt"] = "10";
+            _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
+            _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant);
+            _factory.Setup(x => x.Create(It.IsAny<CreateContext>()))
+                .Throws(new InvalidOperationException("Storage operation failed"));
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict =>
+                dict.Count == 3 &&
+                dict["NextExecution"] == String.Empty &&
+                dict["Error"].StartsWith("System.InvalidOperationException") &&
+                dict["V"] == "2")));
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, -1));
             _transaction.Verify(x => x.Commit());
         }
         
@@ -1369,14 +1388,6 @@ namespace Hangfire.Core.Tests.Server
             }
 
             return scheduler;
-        }
-
-        private sealed class TestDbException : DbException
-        {
-            public TestDbException(string message)
-                : base(message)
-            {
-            }
         }
     }
 }
