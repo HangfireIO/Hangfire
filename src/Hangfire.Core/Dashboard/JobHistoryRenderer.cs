@@ -195,8 +195,8 @@ namespace Hangfire.Dashboard
 
             if (stateData.TryGetValue("Result", out var resultString) && !String.IsNullOrWhiteSpace(resultString))
             {
-                var result = stateData["Result"];
-                builder.Append($"<dt>Result:</dt><dd>{html.HtmlEncode(result)}</dd>");
+                var result = stateData["Result"].PrettyJsonString();
+                builder.Append($"<dt>Result:</dt><dd>{html.HtmlEncode(result).Replace("\n", "<br>")}</dd>");
 
                 itemsAdded = true;
             }
