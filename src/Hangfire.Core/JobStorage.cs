@@ -127,7 +127,7 @@ namespace Hangfire
         /// storage-level failure (connection drop, timeout, deadlock victim, failover, etc.)
         /// that is expected to succeed on a later retry. Storage implementations should
         /// override this to recognise their own transient failure conditions, since a
-        /// generic exception type alone (for example <see cref="System.Data.Common.DbException"/>)
+        /// generic exception type alone (for example <c>System.Data.Common.DbException</c>)
         /// is not enough to tell transient and permanent errors apart.
         /// </summary>
         /// <param name="exception">The exception to inspect. May be <see langword="null"/>.</param>
