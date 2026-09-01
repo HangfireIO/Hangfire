@@ -368,7 +368,7 @@ namespace Hangfire.Server
 
                 if (exception != null)
                 {
-                    RetryRecurringJob(recurringJobId, recurringJob, now, exception);
+                    RetryRecurringJob(context.Storage, recurringJobId, recurringJob, now, exception);
                 }
 
                 recurringJob.IsChanged(now, out var changedFields);
@@ -382,18 +382,22 @@ namespace Hangfire.Server
             }
         }
 
-        private void RetryRecurringJob(string recurringJobId, RecurringJobEntity recurringJob, DateTime now, Exception error)
+        private void RetryRecurringJob(JobStorage storage, string recurringJobId, RecurringJobEntity recurringJob, DateTime now, Exception error)
         {
             var errorString = error.ToStringWithOriginalStackTrace(States.FailedState.MaxLinesInExceptionDetails, includeFileInfo: false);
+            var isTransientException = storage.IsTransientException(error);
 
-            if (recurringJob.RetryAttempt < MaxRetryAttemptCount)
+            if (isTransientException || recurringJob.RetryAttempt < MaxRetryAttemptCount)
             {
                 var delay = _pollingDelay > TimeSpan.Zero ? _pollingDelay : TimeSpan.FromMinutes(1);
 
                 _logger.WarnException(
                     $"Recurring job '{recurringJobId}' can't be scheduled due to an error and will be retried in {delay}.",
                     error);
-                recurringJob.ScheduleRetry(now.Add(delay), errorString);
+                recurringJob.ScheduleRetry(
+                    now.Add(delay),
+                    errorString,
+                    incrementRetryAttempt: !isTransientException);
             }
             else
             {

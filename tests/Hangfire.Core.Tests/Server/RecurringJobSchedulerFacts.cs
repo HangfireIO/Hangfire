@@ -1198,6 +1198,70 @@ namespace Hangfire.Core.Tests.Server
             
             _transaction.Verify(x => x.Commit());
         }
+
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_ReschedulesRecurringJob_WithoutIncrementingRetryAttempt_WhenStorageReportsTransientException_AndRetryAttemptsExceeded(
+            bool batching)
+        {
+            // Arrange
+            SetupConnection(batching);
+            _context.Storage.Setup(x => x.IsTransientException(It.IsAny<Exception>())).Returns(true);
+            _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
+            _recurringJob["V"] = "2";
+            _recurringJob["RetryAttempt"] = "10";
+
+            _factory.Setup(x => x.Create(It.IsAny<CreateContext>()))
+                .Throws(new InvalidOperationException("Storage operation failed"));
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            Assert.True(_delay > TimeSpan.Zero);
+
+            _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Once);
+
+            _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict =>
+                dict.Count == 2 &&
+                dict["NextExecution"] == JobHelper.SerializeDateTime(_nowInstant.Add(_delay)) &&
+                dict.ContainsKey("Error"))));
+
+            _transaction.Verify(x => x.AddToSet(
+                "recurring-jobs",
+                RecurringJobId,
+                JobHelper.ToTimestamp(_nowInstant.Add(_delay))));
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, -1), Times.Never);
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
+        public void Execute_DisablesRecurringJob_WhenStorageReportsNonTransientException_AndRetryAttemptsExceeded()
+        {
+            // Arrange
+            SetupConnection(false);
+            _recurringJob["RetryAttempt"] = "10";
+            _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
+            _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant);
+            _factory.Setup(x => x.Create(It.IsAny<CreateContext>()))
+                .Throws(new InvalidOperationException("Storage operation failed"));
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict =>
+                dict.Count == 3 &&
+                dict["NextExecution"] == String.Empty &&
+                dict["Error"].StartsWith("System.InvalidOperationException") &&
+                dict["V"] == "2")));
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, -1));
+            _transaction.Verify(x => x.Commit());
+        }
         
         [Theory]
         [InlineData(false), InlineData(true)]
