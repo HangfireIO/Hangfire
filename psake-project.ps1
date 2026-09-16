@@ -1,5 +1,5 @@
 Framework 4.5.1
-Include "packages\Hangfire.Build.0.2.6\tools\psake-common.ps1"
+Include "packages\Hangfire.Build.0.5.0\tools\psake-common.ps1"
 
 Task Default -Depends Collect
 Task CI -Depends Pack
