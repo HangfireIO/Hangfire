@@ -2,7 +2,6 @@
 using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
-using ConsoleSample;
 using Hangfire;
 using Hangfire.Annotations;
 using Hangfire.Client;
@@ -140,8 +139,6 @@ namespace NetCoreSample
         {
             try
             {
-                _backgroundJobs.Enqueue<Services>(x => x.LongRunning(JobCancellationToken.Null));
-
                 _recurringJobs.AddOrUpdate("seconds", () => Console.WriteLine("Hello, seconds!"), "*/15 * * * * *");
                 _recurringJobs.AddOrUpdate("minutely", () => Console.WriteLine("Hello, world!"), Cron.Minutely);
                 _recurringJobs.AddOrUpdate("hourly", () => Console.WriteLine("Hello"), "25 15 * * *");

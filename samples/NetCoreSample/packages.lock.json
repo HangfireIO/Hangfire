@@ -33,6 +33,12 @@
           "Microsoft.Extensions.Logging.Configuration": "3.1.8"
         }
       },
+      "Newtonsoft.Json": {
+        "type": "Direct",
+        "requested": "[13.0.1, )",
+        "resolved": "13.0.1",
+        "contentHash": "ppPFpBcvxdsfUonNcvITKqLl3bqxWbDCZIzDWHzjpdAHRFfZe0Dw9HmA0+za13IdyrgJwpkDTDA9fHaxOrt20A=="
+      },
       "Cronos": {
         "type": "Transitive",
         "resolved": "0.7.1",
@@ -253,49 +259,6 @@
         "resolved": "1.1.0",
         "contentHash": "aOZA3BWfz9RXjpzt0sRJJMjAscAUm3Hoa4UWAfceV9UTYxgwZ1lZt5nO2myFf+/jetYQo4uTP7zS8sJY67BBxg=="
       },
-      "Microsoft.Owin": {
-        "type": "Transitive",
-        "resolved": "4.0.0",
-        "contentHash": "3TNVMkgF+yhesPYwq67ZOcLGtfKEupNNXcqVO4FRNjkQ1v0gBNb3k8CSuJonrCC8EAUp+OeUYrDTQePiyaVzpw==",
-        "dependencies": {
-          "Owin": "1.0.0"
-        }
-      },
-      "Microsoft.Owin.Diagnostics": {
-        "type": "Transitive",
-        "resolved": "4.0.0",
-        "contentHash": "96t+ud+Ai2kPnkdThUPL8wM9C1MAzZ80zlfTvjK0VwJsy+9F2rylFrsRx+dD7KSsN+ANKAuxSQlaYuzU9O8pZA==",
-        "dependencies": {
-          "Microsoft.Owin": "4.0.0",
-          "Owin": "1.0.0"
-        }
-      },
-      "Microsoft.Owin.Host.HttpListener": {
-        "type": "Transitive",
-        "resolved": "4.0.0",
-        "contentHash": "AC0fcRPFg/gf6AmATmCJBGnD14URhCYOHtAW0g248YzZ4ByIkVA7jHBQbfij+zyIOeOya8uaAwFPCIN1wyiOQw=="
-      },
-      "Microsoft.Owin.Hosting": {
-        "type": "Transitive",
-        "resolved": "4.0.0",
-        "contentHash": "rAkxeyiIliRbMZyPxo83QE+UY7HNTsFOH9+wqQTcQyWBVbYkBQp373meNt4+DpupMB56A1BopLDeyoX9DZJrbA==",
-        "dependencies": {
-          "Microsoft.Owin": "4.0.0",
-          "Owin": "1.0.0"
-        }
-      },
-      "Microsoft.Owin.SelfHost": {
-        "type": "Transitive",
-        "resolved": "4.0.0",
-        "contentHash": "Gsxjg466eKBykIMZyrPP1IA8MIbYPd/1gcSWc6JLGb+CUO/elctCJomSbOJFceh9YU9hj9qURjpx0ns6/AghSA==",
-        "dependencies": {
-          "Microsoft.Owin": "4.0.0",
-          "Microsoft.Owin.Diagnostics": "4.0.0",
-          "Microsoft.Owin.Host.HttpListener": "4.0.0",
-          "Microsoft.Owin.Hosting": "4.0.0",
-          "Owin": "1.0.0"
-        }
-      },
       "Microsoft.Win32.Registry": {
         "type": "Transitive",
         "resolved": "4.7.0",
@@ -309,16 +272,6 @@
         "type": "Transitive",
         "resolved": "1.0.1",
         "contentHash": "N1bmYqxItSwixZ72KJ/V4e3mEnIO5AtMcmjtilqe+Ulp4GpSje9DP+1Cv4j01s3uG4h7P4G1axUEODL1yWB5Og=="
-      },
-      "Newtonsoft.Json": {
-        "type": "Transitive",
-        "resolved": "12.0.1",
-        "contentHash": "pBR3wCgYWZGiaZDYP+HHYnalVnPJlpP1q55qvVb+adrDHmFMDc1NAKio61xTwftK3Pw5h7TZJPJEEVMd6ty8rg=="
-      },
-      "Owin": {
-        "type": "Transitive",
-        "resolved": "1.0.0",
-        "contentHash": "OseTFniKmyp76mEzOBwIKGBRS5eMoYNkMKaMXOpxx9jv88+b6mh1rSaw43vjBOItNhaLFG3d0a20PfHyibH5sw=="
       },
       "runtime.native.System.Data.SqlClient.sni": {
         "type": "Transitive",
@@ -486,16 +439,6 @@
           "System.Runtime": "4.3.0"
         }
       },
-      "consolesample": {
-        "type": "Project",
-        "dependencies": {
-          "Hangfire.Core": "[1.0.0, )",
-          "Hangfire.SqlServer": "[1.0.0, )",
-          "Hangfire.SqlServer.Msmq": "[1.0.0, )",
-          "Microsoft.Owin.SelfHost": "[4.0.0, )",
-          "Newtonsoft.Json": "[12.0.1, )"
-        }
-      },
       "hangfire.aspnetcore": {
         "type": "Project",
         "dependencies": {
@@ -520,13 +463,6 @@
           "Dapper": "[2.0.4, )",
           "Hangfire.Core": "[1.0.0, )",
           "System.Data.SqlClient": "[4.4.0, )"
-        }
-      },
-      "hangfire.sqlserver.msmq": {
-        "type": "Project",
-        "dependencies": {
-          "Hangfire.Core": "[1.0.0, )",
-          "Hangfire.SqlServer": "[1.0.0, )"
         }
       }
     }
