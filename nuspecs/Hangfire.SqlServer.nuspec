@@ -10,6 +10,7 @@
     <repository type="git" url="https://github.com/HangfireIO/Hangfire.git" />
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
+    <icon>icon.png</icon>
     <description>SQL Server 2008+ (including Express), SQL Server LocalDB and SQL Azure storage support for Hangfire (background job system for ASP.NET applications).</description>
     <copyright>Copyright © 2013-2026 Hangfire OÜ</copyright>
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
@@ -191,6 +192,8 @@ migration in Hangfire 1.8.0.
     
     <file src="Tools\DefaultInstall.sql" target="tools\install.sql" />
     <file src="..\src\Hangfire.SqlServer\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
+
+    <file src="..\nuspecs\icon.png" />
 
     <file src="LICENSE.md" />
     <file src="COPYING" />
