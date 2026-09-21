@@ -22,9 +22,9 @@
       },
       "Microsoft.Owin": {
         "type": "Direct",
-        "requested": "[3.0.1, )",
-        "resolved": "3.0.1",
-        "contentHash": "64yZsGN9uRnXNVAyAT4F6KWmdDUJ6yX4uqzxKTdGANKH1oMt0IKZ7THRRa3mXIOo8iSu4tq/DCBUycUY9pXZzw==",
+        "requested": "[4.2.3, )",
+        "resolved": "4.2.3",
+        "contentHash": "uoOKm7Ouj06+ULS7Ss60tRM2E5t0ku7rQ7cJk864jArtE35WTJKMzUxgHxs7gdiqHZYnC3ddZSr9zj8yRjguEA==",
         "dependencies": {
           "Owin": "1.0.0"
         }
@@ -85,9 +85,9 @@
       },
       "Microsoft.Owin": {
         "type": "Direct",
-        "requested": "[3.0.1, )",
-        "resolved": "3.0.1",
-        "contentHash": "64yZsGN9uRnXNVAyAT4F6KWmdDUJ6yX4uqzxKTdGANKH1oMt0IKZ7THRRa3mXIOo8iSu4tq/DCBUycUY9pXZzw==",
+        "requested": "[4.2.3, )",
+        "resolved": "4.2.3",
+        "contentHash": "uoOKm7Ouj06+ULS7Ss60tRM2E5t0ku7rQ7cJk864jArtE35WTJKMzUxgHxs7gdiqHZYnC3ddZSr9zj8yRjguEA==",
         "dependencies": {
           "Owin": "1.0.0"
         }
