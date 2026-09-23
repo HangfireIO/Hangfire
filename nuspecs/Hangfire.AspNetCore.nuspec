@@ -14,7 +14,13 @@
     <description>ASP.NET Core support for Hangfire (background job system for ASP.NET applications).</description>
     <copyright>Copyright © 2017-2026 Hangfire OÜ</copyright>
     <tags>hangfire aspnetcore</tags>
-    <releaseNotes>https://www.hangfire.io/blog/
+    <releaseNotes><![CDATA[https://www.hangfire.io/blog/
+	
+1.7.38
+• Project – Use code signing process for build artifacts.
+• Project – Require signature validation in NuGet packages.
+• Project – Use `packages.lock.json` files when restoring dependencies.
+• Project – Updgrade build system-related files.
 
 1.7.36
 • Changed – Set processing server to `null` in hosted service to avoid `ObjectDisposedException`.
@@ -59,7 +65,7 @@
 • Added – `BackgroundJobServerHostedService` class based on `IHostedService` interface.
 • Added – `IServiceCollection.AddHangfireServer` method to register the server during configuration.
 • Changed – Custom services for factory, performer and state changer interfaces will be picked up only when all of them registered.
-
+]]>
     </releaseNotes>
     <dependencies>
       <group targetFramework="net451">

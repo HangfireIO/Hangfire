@@ -14,7 +14,13 @@
     <description>MSMQ queues support for SQL Server job storage implementation for Hangfire (background job system for ASP.NET applications).</description>
     <copyright>Copyright © 2014-2026 Hangfire OÜ</copyright>
     <tags>Hangfire SqlServer MSMQ</tags>
-    <releaseNotes>https://www.hangfire.io/blog/
+    <releaseNotes><![CDATA[https://www.hangfire.io/blog/
+	
+1.7.38
+• Project – Use code signing process for build artifacts.
+• Project – Require signature validation in NuGet packages.
+• Project – Use `packages.lock.json` files when restoring dependencies.
+• Project – Updgrade build system-related files.
     
 1.6.3
 • Fixed – Prevent MSMQ transactions from timing out after 1 minute of processing.
@@ -34,6 +40,7 @@
 1.4.0
 • Changed – Speed up `GetCount` method with native implementation.
 • Fixed – Incorrect order of fetching when multiple queues used.
+]]>
     </releaseNotes>
     <dependencies>
       <dependency id="Hangfire.Core" version="[0.0.0]" />

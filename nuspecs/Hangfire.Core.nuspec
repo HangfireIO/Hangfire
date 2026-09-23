@@ -19,9 +19,18 @@ https://www.hangfire.io/
     </description>
     <copyright>Copyright © 2013-2026 Hangfire OÜ</copyright>
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
-    <releaseNotes>https://www.hangfire.io/blog/
+    <releaseNotes><![CDATA[https://www.hangfire.io/blog/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
+
+1.7.38
+• Fixed – Small typo fixed in the `tr-TR` translation (by @ismkdc).
+• Changed – Update bootstrap to the custom version of 3.4.2.
+• Changed – Bump Microsoft.Owin to 4.2.3.
+• Project – Use code signing process for build artifacts.
+• Project – Require signature validation in NuGet packages.
+• Project – Use `packages.lock.json` files when restoring dependencies.
+• Project – Updgrade build system-related files.
 
 1.7.37
 • Fixed – Recurring job is scheduled to the past after recovering from error with `AddOrUpdate` (backported).
@@ -58,6 +67,7 @@ Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfi
 • Fixed – Better ASP.NET shutdown detection with yet another check based on internal state.
 • Fixed – Decrease `AspNetShutdownDetector`'s check intervals to detect shutdowns earlier.
 • Fixed – Don't wait for server stop on AppDomain unloads when hosting in IIS to avoid delaying them.
+]]>
     </releaseNotes>
     <dependencies>
       <group targetFramework="net45">
