@@ -99,21 +99,21 @@
       "hangfire.core": {
         "type": "Project",
         "dependencies": {
-          "CronExpressionDescriptor": "[1.21.0, )",
-          "Cronos": "[0.7.1, )",
-          "LibLog": "[1.5.0, )",
-          "Microsoft.Owin": "[4.2.3, )",
-          "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, )",
+          "CronExpressionDescriptor": "[1.21.0, 1.21.0]",
+          "Cronos": "[0.7.1, 0.7.1]",
+          "LibLog": "[1.5.0, 1.5.0]",
+          "Microsoft.Owin": "[4.2.3, 4.2.3]",
+          "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, 1.0.1]",
           "Newtonsoft.Json": "[5.0.1, )",
           "Owin": "[1.0.0, )",
-          "StackTraceFormatter.Source": "[1.1.0, )",
-          "StackTraceParser.Source": "[1.3.0, )"
+          "StackTraceFormatter.Source": "[1.1.0, 1.1.0]",
+          "StackTraceParser.Source": "[1.3.0, 1.3.0]"
         }
       },
       "hangfire.sqlserver": {
         "type": "Project",
         "dependencies": {
-          "Dapper": "[1.50.1, )",
+          "Dapper": "[1.50.1, 1.50.1]",
           "Hangfire.Core": "[1.0.0, )"
         }
       },

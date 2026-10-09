@@ -4,7 +4,7 @@
     ".NETFramework,Version=v4.5": {
       "Dapper": {
         "type": "Direct",
-        "requested": "[1.50.1, )",
+        "requested": "[1.50.1, 1.50.1]",
         "resolved": "1.50.1",
         "contentHash": "NIE9+9/Dqh0SF1MWBvuMGg0A8bgTdu8S0HMRrpFvlpnpIO/WklVVcaLS4ZtdI3dvxMmYiJoKBn7se3mgndUV9A=="
       },
@@ -63,22 +63,22 @@
       "hangfire.core": {
         "type": "Project",
         "dependencies": {
-          "CronExpressionDescriptor": "[1.21.0, )",
-          "Cronos": "[0.7.1, )",
-          "LibLog": "[1.5.0, )",
-          "Microsoft.Owin": "[4.2.3, )",
-          "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, )",
+          "CronExpressionDescriptor": "[1.21.0, 1.21.0]",
+          "Cronos": "[0.7.1, 0.7.1]",
+          "LibLog": "[1.5.0, 1.5.0]",
+          "Microsoft.Owin": "[4.2.3, 4.2.3]",
+          "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, 1.0.1]",
           "Newtonsoft.Json": "[5.0.1, )",
           "Owin": "[1.0.0, )",
-          "StackTraceFormatter.Source": "[1.1.0, )",
-          "StackTraceParser.Source": "[1.3.0, )"
+          "StackTraceFormatter.Source": "[1.1.0, 1.1.0]",
+          "StackTraceParser.Source": "[1.3.0, 1.3.0]"
         }
       }
     },
     ".NETStandard,Version=v1.3": {
       "Dapper": {
         "type": "Direct",
-        "requested": "[1.50.7, )",
+        "requested": "[1.50.7, 1.50.7]",
         "resolved": "1.50.7",
         "contentHash": "3ZHVc9uiUnKLaigSNtk79F2riLl32BtE7Za/kV/cjdfA6jbGiVZbxJ851aA3AbjTIG+MDFP8y19deJ6wW8nVSQ==",
         "dependencies": {
@@ -1207,13 +1207,13 @@
       "hangfire.core": {
         "type": "Project",
         "dependencies": {
-          "Cronos": "[0.7.1, )",
-          "LibLog": "[1.5.0, )",
-          "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, )",
+          "Cronos": "[0.7.1, 0.7.1]",
+          "LibLog": "[1.5.0, 1.5.0]",
+          "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, 1.0.1]",
           "NETStandard.Library": "[1.6.1, )",
           "Newtonsoft.Json": "[9.0.1, )",
-          "StackTraceFormatter.Source": "[1.1.0, )",
-          "StackTraceParser.Source": "[1.3.0, )",
+          "StackTraceFormatter.Source": "[1.1.0, 1.1.0]",
+          "StackTraceParser.Source": "[1.3.0, 1.3.0]",
           "System.Threading.Thread": "[4.0.0, )",
           "System.Threading.ThreadPool": "[4.0.10, )"
         }
@@ -1222,7 +1222,7 @@
     ".NETStandard,Version=v2.0": {
       "Dapper": {
         "type": "Direct",
-        "requested": "[2.0.4, )",
+        "requested": "[2.0.4, 2.0.4]",
         "resolved": "2.0.4",
         "contentHash": "DrNPDqK3nR4RpwAPX2R0R34YhlT+k5Fbw7UnqxQ2aH+wSWvEIj+fCDXB8RJWgw6fGFZLavq7nuJ6J/eAqSrIpw==",
         "dependencies": {
@@ -1502,13 +1502,13 @@
       "hangfire.core": {
         "type": "Project",
         "dependencies": {
-          "Cronos": "[0.7.1, )",
-          "LibLog": "[1.5.0, )",
+          "Cronos": "[0.7.1, 0.7.1]",
+          "LibLog": "[1.5.0, 1.5.0]",
           "Microsoft.CSharp": "[4.4.0, )",
-          "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, )",
+          "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, 1.0.1]",
           "Newtonsoft.Json": "[11.0.1, )",
-          "StackTraceFormatter.Source": "[1.1.0, )",
-          "StackTraceParser.Source": "[1.3.0, )"
+          "StackTraceFormatter.Source": "[1.1.0, 1.1.0]",
+          "StackTraceParser.Source": "[1.3.0, 1.3.0]"
         }
       }
     }

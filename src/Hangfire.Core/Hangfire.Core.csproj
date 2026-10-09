@@ -18,29 +18,29 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="MoreLinq.Source.MoreEnumerable.Pairwise" Version="1.0.1" />
-    <PackageReference Include="LibLog" Version="1.5.0" />
-    <PackageReference Include="Cronos" Version="0.7.1" />
-    <PackageReference Include="StackTraceFormatter.Source" Version="1.1.0" />
-    <PackageReference Include="StackTraceParser.Source" Version="1.3.0" />
+    <PackageReference Include="MoreLinq.Source.MoreEnumerable.Pairwise" Version="[1.0.1]" />
+    <PackageReference Include="LibLog" Version="[1.5.0]" />
+    <PackageReference Include="Cronos" Version="[0.7.1]" />
+    <PackageReference Include="StackTraceFormatter.Source" Version="[1.1.0]" />
+    <PackageReference Include="StackTraceParser.Source" Version="[1.3.0]" />
   </ItemGroup>
   
   <ItemGroup Condition="'$(TargetFramework)'=='net45' or '$(TargetFramework)'=='net46'">
-    <PackageReference Include="Owin" Version="1.0" />
-    <PackageReference Include="CronExpressionDescriptor" Version="1.21.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="5.0.1" />
-    <PackageReference Include="Microsoft.Owin" Version="4.2.3" />
+    <PackageReference Include="Owin" Version="[1.0,)" />
+    <PackageReference Include="CronExpressionDescriptor" Version="[1.21.0]" />
+    <PackageReference Include="Newtonsoft.Json" Version="[5.0.1,)" />
+    <PackageReference Include="Microsoft.Owin" Version="[4.2.3]" />
   </ItemGroup>
   
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
-    <PackageReference Include="System.Threading.Thread" Version="4.0.0" />
-    <PackageReference Include="System.Threading.ThreadPool" Version="4.0.10" />
-    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+    <PackageReference Include="System.Threading.Thread" Version="[4.0.0,)" />
+    <PackageReference Include="System.Threading.ThreadPool" Version="[4.0.10,)" />
+    <PackageReference Include="Newtonsoft.Json" Version="[9.0.1,)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
-    <PackageReference Include="Microsoft.CSharp" Version="4.4.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
+    <PackageReference Include="Microsoft.CSharp" Version="[4.4.0,)" />
+    <PackageReference Include="Newtonsoft.Json" Version="[11.0.1,)" />
   </ItemGroup>
   
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.3' or '$(TargetFramework)'=='netstandard2.0'">
