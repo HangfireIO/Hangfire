@@ -71,21 +71,21 @@ Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfi
     </releaseNotes>
     <dependencies>
       <group targetFramework="net45">
-        <dependency id="Owin" version="1.0" />
-        <dependency id="Newtonsoft.Json" version="5.0.1" />
+        <dependency id="Owin" version="[1.0,)" />
+        <dependency id="Newtonsoft.Json" version="[5.0.1,)" />
       </group>
       <group targetFramework="net46">
         <dependency id="Owin" version="1.0" />
-        <dependency id="Newtonsoft.Json" version="5.0.1" />
+        <dependency id="Newtonsoft.Json" version="[5.0.1,)" />
       </group>
       <group targetFramework="netstandard1.3">
-        <dependency id="NETStandard.Library" version="1.6.0" />
-        <dependency id="System.Threading.Thread" version="4.0.0" />
-        <dependency id="System.Threading.ThreadPool" version="4.0.10" />
-        <dependency id="Newtonsoft.Json" version="9.0.1" />
+        <dependency id="NETStandard.Library" version="[1.6.0,)" />
+        <dependency id="System.Threading.Thread" version="[4.0.0,)" />
+        <dependency id="System.Threading.ThreadPool" version="[4.0.10,)" />
+        <dependency id="Newtonsoft.Json" version="[9.0.1,)" />
       </group>
       <group targetFramework="netstandard2.0">
-        <dependency id="Newtonsoft.Json" version="11.0.1" />
+        <dependency id="Newtonsoft.Json" version="[11.0.1,)" />
       </group>
     </dependencies>
   </metadata>
