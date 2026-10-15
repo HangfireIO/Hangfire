@@ -179,7 +179,9 @@ $@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
                 var invisibilityTimeout = (int)storage.Options.SlidingInvisibilityTimeout.Value.Negate().TotalSeconds;
 
                 using var command = CreateNonBlockingFetchCommand(storage, connection, queues, invisibilityTimeout);
-                using var reader = command.ExecuteReader();
+
+                // SequentialAccess - https://stackoverflow.com/a/42210774, as in Dapper
+                using var reader = command.ExecuteReader(CommandBehavior.SequentialAccess);
 
                 if (!reader.Read()) return null;
 
@@ -242,7 +244,8 @@ where Queue in @queues and
 #pragma warning restore 618
                     command.Transaction = transaction;
 
-                    using (var reader = command.ExecuteReader())
+                    // SequentialAccess - https://stackoverflow.com/a/42210774, as in Dapper
+                    using (var reader = command.ExecuteReader(CommandBehavior.SequentialAccess))
                     {
                         if (reader.Read())
                         {
