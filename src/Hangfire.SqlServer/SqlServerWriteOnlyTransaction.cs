@@ -195,9 +195,9 @@ update [{schemaName}].Job set StateId = SCOPE_IDENTITY(), StateName = @name wher
             AddCommand(_jobCommands, longId, batch => batch.Create(query)
                 .AddParameter("@jobId", longId, DbType.Int64)
                 .AddParameter("@name", state.Name, DbType.String, size: 20)
-                .AddParameter("@reason", (object)state.Reason?.Substring(0, Math.Min(99, state.Reason.Length)) ?? DBNull.Value, DbType.String, size: 100)
+                .AddParameter("@reason", state.Reason?.Substring(0, Math.Min(99, state.Reason.Length)), DbType.String, size: 100)
                 .AddParameter("@createdAt", DateTime.UtcNow, DbType.DateTime)
-                .AddParameter("@data", (object)SerializationHelper.Serialize(state.SerializeData()) ?? DBNull.Value, DbType.String, size: -1));
+                .AddParameter("@data", SerializationHelper.Serialize(state.SerializeData()), DbType.String));
         }
 
         public override void AddJobState(string jobId, IState state)
@@ -214,9 +214,9 @@ values (@jobId, @name, @reason, @createdAt, @data)");
             AddCommand(_jobCommands, longId, batch => batch.Create(query)
                 .AddParameter("@jobId", longId, DbType.Int64)
                 .AddParameter("@name", state.Name, DbType.String, size: 20)
-                .AddParameter("@reason", (object)state.Reason?.Substring(0, Math.Min(99, state.Reason.Length)) ?? DBNull.Value, DbType.String, size: 100)
+                .AddParameter("@reason", state.Reason?.Substring(0, Math.Min(99, state.Reason.Length)), DbType.String, size: 100)
                 .AddParameter("@createdAt", DateTime.UtcNow, DbType.DateTime)
-                .AddParameter("@data", (object)SerializationHelper.Serialize(state.SerializeData()) ?? DBNull.Value, DbType.String, size: -1));
+                .AddParameter("@data", SerializationHelper.Serialize(state.SerializeData()), DbType.String));
         }
 
         public override void AddToQueue(string queue, string jobId)
@@ -360,7 +360,7 @@ insert into [{schemaName}].List ([Key], Value) values (@key, @value);");
             AcquireListLock(key);
             AddCommand(_listCommands, key, batch => batch.Create(query)
                 .AddParameter("@key", key, DbType.String)
-                .AddParameter("@value", value, DbType.String, size: -1));
+                .AddParameter("@value", value, DbType.String));
         }
 
         public override void RemoveFromList(string key, string value)
@@ -374,7 +374,7 @@ $@"delete L from [{schemaName}].List L with (forceseek) where [Key] = @key and V
             AcquireListLock(key);
             AddCommand(_listCommands, key, batch => batch.Create(query)
                 .AddParameter("@key", key, DbType.String)
-                .AddParameter("@value", value, DbType.String, size: -1));
+                .AddParameter("@value", value, DbType.String));
         }
 
         public override void TrimList(string key, int keepStartingFrom, int keepEndingAt)
@@ -418,7 +418,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
                 AddCommand(_hashCommands, key, batch => batch.Create(query)
                     .AddParameter("@key", key, DbType.String)
                     .AddParameter("@field", pair.Key, DbType.String, size: 100)
-                    .AddParameter("@value", (object)pair.Value ?? DBNull.Value, DbType.String, size: -1));
+                    .AddParameter("@value", pair.Value, DbType.String));
             }
         }
 

@@ -104,8 +104,8 @@ values (@invocationData, @arguments, @createdAt, @expireAt)");
             var payload = invocationData.SerializePayload(excludeArguments: true);
 
             Action<DbCommand> queryParameters = cmd => cmd
-                .AddParameter("@invocationData", payload, DbType.String, size: -1)
-                .AddParameter("@arguments", invocationData.Arguments, DbType.String, size: -1)
+                .AddParameter("@invocationData", payload, DbType.String)
+                .AddParameter("@arguments", invocationData.Arguments, DbType.String)
                 .AddParameter("@createdAt", createdAt, DbType.DateTime)
                 .AddParameter("@expireAt", createdAt.Add(expireIn), DbType.DateTime);
 
@@ -126,7 +126,7 @@ insert into [{schemaName}].JobParameter (JobId, Name, Value) values (@jobId, @na
 commit tran;");
                     additionalParameters = cmd => cmd
                         .AddParameter("@name", parametersArray[0].Key, DbType.String, size: 40)
-                        .AddParameter("@value", parametersArray[0].Value, DbType.String, size: -1);
+                        .AddParameter("@value", parametersArray[0].Value, DbType.String);
                 }
                 else if (parametersArray.Length == 2)
                 {
@@ -139,9 +139,9 @@ insert into [{schemaName}].JobParameter (JobId, Name, Value) values (@jobId, @na
 commit tran;");
                     additionalParameters = cmd => cmd
                         .AddParameter("@name1", parametersArray[0].Key, DbType.String, size: 40)
-                        .AddParameter("@value1", parametersArray[0].Value, DbType.String, size: -1)
+                        .AddParameter("@value1", parametersArray[0].Value, DbType.String)
                         .AddParameter("@name2", parametersArray[1].Key, DbType.String, size: 40)
-                        .AddParameter("@value2", parametersArray[1].Value, DbType.String, size: -1);
+                        .AddParameter("@value2", parametersArray[1].Value, DbType.String);
                 }
                 else if (parametersArray.Length == 3)
                 {
@@ -154,11 +154,11 @@ insert into [{schemaName}].JobParameter (JobId, Name, Value) values (@jobId, @na
 commit tran;");
                     additionalParameters = cmd => cmd
                         .AddParameter("@name1", parametersArray[0].Key, DbType.String, size: 40)
-                        .AddParameter("@value1", parametersArray[0].Value, DbType.String, size: -1)
+                        .AddParameter("@value1", parametersArray[0].Value, DbType.String)
                         .AddParameter("@name2", parametersArray[1].Key, DbType.String, size: 40)
-                        .AddParameter("@value2", parametersArray[1].Value, DbType.String, size: -1)
+                        .AddParameter("@value2", parametersArray[1].Value, DbType.String)
                         .AddParameter("@name3", parametersArray[2].Key, DbType.String, size: 40)
-                        .AddParameter("@value3", parametersArray[2].Value, DbType.String, size: -1);
+                        .AddParameter("@value3", parametersArray[2].Value, DbType.String);
                 }
                 else if (parametersArray.Length == 4)
                 {
@@ -171,13 +171,13 @@ insert into [{schemaName}].JobParameter (JobId, Name, Value) values (@jobId, @na
 commit tran;");
                     additionalParameters = cmd => cmd
                         .AddParameter("@name1", parametersArray[0].Key, DbType.String, size: 40)
-                        .AddParameter("@value1", parametersArray[0].Value, DbType.String, size: -1)
+                        .AddParameter("@value1", parametersArray[0].Value, DbType.String)
                         .AddParameter("@name2", parametersArray[1].Key, DbType.String, size: 40)
-                        .AddParameter("@value2", parametersArray[1].Value, DbType.String, size: -1)
+                        .AddParameter("@value2", parametersArray[1].Value, DbType.String)
                         .AddParameter("@name3", parametersArray[2].Key, DbType.String, size: 40)
-                        .AddParameter("@value3", parametersArray[2].Value, DbType.String, size: -1)
+                        .AddParameter("@value3", parametersArray[2].Value, DbType.String)
                         .AddParameter("@name4", parametersArray[3].Key, DbType.String, size: 40)
-                        .AddParameter("@value4", parametersArray[3].Value, DbType.String, size: -1);
+                        .AddParameter("@value4", parametersArray[3].Value, DbType.String);
                 }
 
                 return _storage.UseConnection(_dedicatedConnection, static (storage, connection, ctx) =>
@@ -215,7 +215,7 @@ $@"insert into [{schemaName}].JobParameter (JobId, Name, Value) values (@jobId, 
                         var command = connection.Create(query)
                             .AddParameter("@jobId", long.Parse(jobId, CultureInfo.InvariantCulture), DbType.Int64)
                             .AddParameter("@name", parameter.Key, DbType.String, size: 40)
-                            .AddParameter("@value", (object)parameter.Value ?? DBNull.Value, DbType.String, size: -1);
+                            .AddParameter("@value", parameter.Value, DbType.String);
 
                         commandBatch.Append(command);
                     }
@@ -458,7 +458,7 @@ end catch");
                         var command = connection.Create(query)
                             .AddParameter("@key", pair.Key, DbType.String)
                             .AddParameter("@field", keyValuePair.Key, DbType.String, size: 100)
-                            .AddParameter("@value", (object)keyValuePair.Value ?? DBNull.Value, DbType.String, size: -1);
+                            .AddParameter("@value", keyValuePair.Value, DbType.String);
                         commandBatch.Append(command);
                     }
 
