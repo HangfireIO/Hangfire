@@ -26,7 +26,8 @@ namespace Hangfire.SqlServer
 {
     internal static class DbCommandExtensions
     {
-        private const int DefaultStringSize = 4_000;
+        private const int DefaultStringSize1 = 256;
+        private const int DefaultStringSize2 = 4_000;
         
         private static readonly ConcurrentDictionary<KeyValuePair<string, KeyValuePair<string, int>>, string> ExpandedQueries =
             new ConcurrentDictionary<KeyValuePair<string, KeyValuePair<string, int>>, string>();
@@ -139,9 +140,12 @@ namespace Hangfire.SqlServer
             
             if (value is string strValue)
             {
-                parameter.Size = strValue.Length <= DefaultStringSize
-                    ? DefaultStringSize
-                    : -1;
+                parameter.Size = strValue.Length switch
+                {
+                    <= DefaultStringSize1 => DefaultStringSize1,
+                    <= DefaultStringSize2 => DefaultStringSize2,
+                    _ => -1
+                };
             }
 
             if (size.HasValue)
