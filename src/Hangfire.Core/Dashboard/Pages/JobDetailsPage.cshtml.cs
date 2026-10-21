@@ -473,7 +473,7 @@ WriteLiteral("</td>\r\n                            <td><pre><code>");
 
             
             #line 121 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                      Write(parameter.Value);
+                                      Write(parameter.Value.PrettyJsonString());
 
             
             #line default
