@@ -183,19 +183,24 @@ $@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
                 // SequentialAccess - https://stackoverflow.com/a/42210774, as in Dapper
                 using var reader = command.ExecuteReader(CommandBehavior.SequentialAccess);
 
-                if (!reader.Read()) return null;
+                SqlServerTimeoutJob result = null;
 
-                var id = Convert.ToInt64(reader.GetValue(reader.GetOrdinal("Id")), CultureInfo.InvariantCulture); // Can be Int32 in older schemas
-                var jobId = Convert.ToInt64(reader.GetValue(reader.GetOrdinal("JobId")), CultureInfo.InvariantCulture); // Can be Int32 in older schemas
-                var queue = reader.GetString(reader.GetOrdinal("Queue"));
-                var fetchedAt = reader.GetDateTime(reader.GetOrdinal("FetchedAt"));
-
-                if (reader.Read())
+                do
                 {
-                    throw new InvalidOperationException("Multiple rows returned from SQL Server, while expecting single or none.");
-                }
+                    while (reader.Read())
+                    {
+                        var id = Convert.ToInt64(reader.GetValue(reader.GetOrdinal("Id")), CultureInfo.InvariantCulture); // Can be Int32 in older schemas
+                        var jobId = Convert.ToInt64(reader.GetValue(reader.GetOrdinal("JobId")), CultureInfo.InvariantCulture); // Can be Int32 in older schemas
+                        var queue = reader.GetString(reader.GetOrdinal("Queue"));
+                        var fetchedAt = reader.GetDateTime(reader.GetOrdinal("FetchedAt"));
 
-                return new SqlServerTimeoutJob(storage, id, jobId.ToString(CultureInfo.InvariantCulture), queue, fetchedAt);
+                        result = result == null
+                            ? new SqlServerTimeoutJob(storage, id, jobId.ToString(CultureInfo.InvariantCulture), queue, fetchedAt)
+                            : throw new InvalidOperationException("Multiple rows returned from SQL Server, while expecting single or none.");
+                    }
+                } while (reader.NextResult());
+
+                return result;
             }, queues);
         }
 
@@ -247,20 +252,23 @@ where Queue in @queues and
                     // SequentialAccess - https://stackoverflow.com/a/42210774, as in Dapper
                     using (var reader = command.ExecuteReader(CommandBehavior.SequentialAccess))
                     {
-                        if (reader.Read())
+                        SqlServerTransactionJob result = null;
+                        
+                        do
                         {
-                            var jobId = Convert.ToInt64(reader.GetValue(reader.GetOrdinal("JobId")), CultureInfo.InvariantCulture); // Can be Int32 in older schemas
-                            var queue = reader.GetString(reader.GetOrdinal("Queue"));
-
-                            if (reader.Read())
+                            while (reader.Read())
                             {
-                                throw new InvalidOperationException(
-                                    "Multiple rows returned from SQL Server, while expecting single or none.");
+                                var jobId = Convert.ToInt64(reader.GetValue(reader.GetOrdinal("JobId")), CultureInfo.InvariantCulture); // Can be Int32 in older schemas
+                                var queue = reader.GetString(reader.GetOrdinal("Queue"));
+
+                                result = result == null
+                                    ? new SqlServerTransactionJob(_storage, connection, transaction, jobId.ToString(CultureInfo.InvariantCulture), queue)
+                                    : throw new InvalidOperationException("Multiple rows returned from SQL Server, while expecting single or none.");
                             }
+                        } while (reader.NextResult());
 
-                            var result = new SqlServerTransactionJob(_storage, connection, transaction,
-                                jobId.ToString(CultureInfo.InvariantCulture), queue);
-
+                        if (result != null)
+                        {
                             // We shouldn't dispose them, because their ownership is now related
                             // to the SqlServerTransactionJob instance.
                             connection = null;
