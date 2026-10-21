@@ -229,11 +229,52 @@ namespace Hangfire.SqlServer.Tests
             Assert.True(result);
         }
 
+        [Fact]
+        public void IsTransientException_ReturnsTrue_ForDirectDbException()
+        {
+            var storage = CreateStorage();
+
+            Assert.True(storage.IsTransientException(new FakeDbException()));
+        }
+
+        [Fact]
+        public void IsTransientException_ReturnsTrue_ForWrappedDbException()
+        {
+            var storage = CreateStorage();
+
+            Assert.True(storage.IsTransientException(
+                new InvalidOperationException("wrap", new FakeDbException())));
+        }
+
+        [Fact]
+        public void IsTransientException_ReturnsFalse_ForNonDbException()
+        {
+            var storage = CreateStorage();
+
+            Assert.False(storage.IsTransientException(new InvalidOperationException("nope")));
+        }
+
+        [Fact]
+        public void IsTransientException_ReturnsFalse_ForNull()
+        {
+            var storage = CreateStorage();
+
+            Assert.False(storage.IsTransientException(null));
+        }
+
         private SqlServerStorage CreateStorage()
         {
             return new SqlServerStorage(
                 ConnectionUtils.GetConnectionString(),
                 _options);
+        }
+
+        private sealed class FakeDbException : DbException
+        {
+            public FakeDbException()
+                : base("fake")
+            {
+            }
         }
     }
 }

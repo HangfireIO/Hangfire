@@ -50,6 +50,13 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void IsTransientException_ReturnsFalseByDefault()
+        {
+            Assert.False(_storage.Object.IsTransientException(new Exception()));
+            Assert.False(_storage.Object.IsTransientException(null));
+        }
+
+        [Fact]
         public void JobExpirationTimeout_HasDefaultTimeoutFromDays1()
         {
             Assert.Equal(TimeSpan.FromDays(1), _storage.Object.JobExpirationTimeout);
