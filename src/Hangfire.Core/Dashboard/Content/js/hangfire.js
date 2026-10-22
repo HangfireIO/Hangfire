@@ -342,6 +342,8 @@
             this.realtimeGraph = this._createRealtimeGraph('realtimeGraph', config.pollInterval);
             this.historyGraph = this._createHistoryGraph('historyGraph');
 
+            this._initializeListRefresh();
+
             this._poller.start();
         };
 
@@ -433,6 +435,8 @@
                 });
             };
 
+            this._updateRelativeDates = updateRelativeDates;
+
             updateRelativeDates();
             setInterval(updateRelativeDates, 30 * 1000);
 
@@ -509,7 +513,11 @@
                 e.preventDefault();
             });
 
-            $('.js-jobs-list').each(function () {
+            this._initializeJobsLists(document);
+        };
+
+        Page.prototype._initializeJobsLists = function (context) {
+            $('.js-jobs-list', context).each(function () {
                 var container = this;
 
                 var selectRow = function(row, isSelected) {
@@ -608,6 +616,83 @@
                 });
 
                 updateListState();
+            });
+        };
+
+        Page.prototype._initializeListRefresh = function () {
+            // Job lists are rendered on the server only once, while sidebar metrics are
+            // updated by the poller, so they become inconsistent after a while. Reload the
+            // list when the metric of the active sidebar item changes. Succeeded and Deleted
+            // lists are excluded, because they change too often on busy systems.
+            var refreshableMetrics = [
+                'enqueued-queues:count', 'scheduled:count', 'processing:count', 'failed:count', 'awaiting:count'
+            ];
+
+            var $content = $('#page-title').parent();
+            if ($content.length === 0) return;
+
+            var normalizeValue = function (value) {
+                return value === null || value === undefined ? '' : String(value).trim();
+            };
+
+            var getRenderedValues = function (context) {
+                var values = {};
+                $('#stats .list-group-item.active [data-metric]', context).each(function () {
+                    var name = $(this).data('metric');
+                    if (refreshableMetrics.indexOf(name) !== -1) {
+                        values[name] = normalizeValue($(this).text());
+                    }
+                });
+                return values;
+            };
+
+            var renderedValues = getRenderedValues(document);
+            if ($.isEmptyObject(renderedValues)) return;
+
+            // Don't touch the list while user is interacting with it.
+            var canReplaceContent = function () {
+                return !document.hidden &&
+                    $('.js-jobs-list-checkbox:checked', $content).length === 0 &&
+                    $('.expandable:visible', $content).length === 0;
+            };
+
+            var self = this;
+            var isRefreshing = false;
+
+            this._poller.addListener(function (metrics) {
+                var changed = false;
+                for (var name in renderedValues) {
+                    if (renderedValues.hasOwnProperty(name) && metrics.hasOwnProperty(name)) {
+                        var metric = metrics[name];
+                        if (normalizeValue(metric ? metric.value : null) !== renderedValues[name]) {
+                            changed = true;
+                        }
+                    }
+                }
+
+                if (!changed || isRefreshing || !canReplaceContent()) return;
+
+                isRefreshing = true;
+
+                $.ajax({ url: window.location.href, cache: false })
+                    .done(function (html) {
+                        var $page = $('<div></div>').append($.parseHTML(html));
+                        var $newContent = $page.find('#page-title').parent();
+
+                        if ($newContent.length === 0 || !canReplaceContent()) return;
+
+                        $('body > .tooltip').remove();
+                        $content.empty().append($newContent.contents());
+
+                        $.extend(renderedValues, getRenderedValues($page));
+
+                        self._updateRelativeDates();
+                        $('*[title]', $content).tooltip();
+                        self._initializeJobsLists($content);
+                    })
+                    .always(function () {
+                        isRefreshing = false;
+                    });
             });
         };
 
