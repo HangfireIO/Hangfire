@@ -27,8 +27,10 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void Ctor_ThrowsAnException_WhenTimeoutInSecondsIsNegative()
         {
-            Assert.Throws<ArgumentException>(
+            var exception = Assert.Throws<ArgumentException>(
                 () => new DisableConcurrentExecutionAttribute(-1));
+
+            Assert.Equal("Timeout argument value should be greater than or equal to zero.", exception.Message);
         }
 
         [Fact]
