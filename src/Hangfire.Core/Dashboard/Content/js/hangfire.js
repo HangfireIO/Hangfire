@@ -632,14 +632,14 @@
             if ($content.length === 0) return;
 
             var normalizeValue = function (value) {
-                return value === null || value === undefined ? '' : $.trim(String(value));
+                return value === null || value === undefined ? '' : String(value).trim();
             };
 
             var getRenderedValues = function (context) {
                 var values = {};
                 $('#stats .list-group-item.active [data-metric]', context).each(function () {
                     var name = $(this).data('metric');
-                    if ($.inArray(name, refreshableMetrics) !== -1) {
+                    if (refreshableMetrics.indexOf(name) !== -1) {
                         values[name] = normalizeValue($(this).text());
                     }
                 });
