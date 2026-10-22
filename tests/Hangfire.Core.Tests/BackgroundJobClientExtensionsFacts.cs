@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 using Hangfire.Common;
 using Hangfire.States;
 using Moq;
@@ -92,6 +93,98 @@ namespace Hangfire.Core.Tests
             _client.Object.Enqueue<BackgroundJobClientExtensionsFacts>(x => x.InstanceMethod());
 
             _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<EnqueuedState>()));
+        }
+
+        [Fact]
+        public void StaticContinueJobWith_WithQueueAndNullNextState_ShouldUseQueueForEnqueuedState()
+        {
+            _client.Object.ContinueJobWith("parent-id", "my-queue", () => StaticMethod(), null);
+
+            _client.Verify(x => x.Create(
+                It.Is<Job>(job => job.Queue == "my-queue"),
+                It.Is<AwaitingState>(state => ((EnqueuedState)state.NextState).Queue == "my-queue")));
+        }
+
+        [Fact]
+        public void StaticContinueJobWith_WithQueueAndExplicitNextState_ShouldPreserveNextState()
+        {
+            var nextState = new ScheduledState(TimeSpan.FromMinutes(1));
+
+            _client.Object.ContinueJobWith("parent-id", "my-queue", () => StaticMethod(), nextState);
+
+            _client.Verify(x => x.Create(
+                It.Is<Job>(job => job.Queue == "my-queue"),
+                It.Is<AwaitingState>(state => ReferenceEquals(state.NextState, nextState))));
+        }
+
+        [Fact]
+        public void StaticAsyncContinueJobWith_WithQueueAndNullNextState_ShouldUseQueueForEnqueuedState()
+        {
+            _client.Object.ContinueJobWith("parent-id", "my-queue", () => StaticAsyncMethod(), null);
+
+            _client.Verify(x => x.Create(
+                It.Is<Job>(job => job.Queue == "my-queue"),
+                It.Is<AwaitingState>(state => ((EnqueuedState)state.NextState).Queue == "my-queue")));
+        }
+
+        [Fact]
+        public void StaticAsyncContinueJobWith_WithQueueAndExplicitNextState_ShouldPreserveNextState()
+        {
+            var nextState = new ScheduledState(TimeSpan.FromMinutes(1));
+
+            _client.Object.ContinueJobWith("parent-id", "my-queue", () => StaticAsyncMethod(), nextState);
+
+            _client.Verify(x => x.Create(
+                It.Is<Job>(job => job.Queue == "my-queue"),
+                It.Is<AwaitingState>(state => ReferenceEquals(state.NextState, nextState))));
+        }
+
+        [Fact]
+        public void InstanceContinueJobWith_WithQueueAndNullNextState_ShouldUseQueueForEnqueuedState()
+        {
+            _client.Object.ContinueJobWith<BackgroundJobClientExtensionsFacts>(
+                "parent-id", "my-queue", x => x.InstanceMethod(), null);
+
+            _client.Verify(x => x.Create(
+                It.Is<Job>(job => job.Queue == "my-queue"),
+                It.Is<AwaitingState>(state => ((EnqueuedState)state.NextState).Queue == "my-queue")));
+        }
+
+        [Fact]
+        public void InstanceContinueJobWith_WithQueueAndExplicitNextState_ShouldPreserveNextState()
+        {
+            var nextState = new ScheduledState(TimeSpan.FromMinutes(1));
+
+            _client.Object.ContinueJobWith<BackgroundJobClientExtensionsFacts>(
+                "parent-id", "my-queue", x => x.InstanceMethod(), nextState);
+
+            _client.Verify(x => x.Create(
+                It.Is<Job>(job => job.Queue == "my-queue"),
+                It.Is<AwaitingState>(state => ReferenceEquals(state.NextState, nextState))));
+        }
+
+        [Fact]
+        public void InstanceAsyncContinueJobWith_WithQueueAndNullNextState_ShouldUseQueueForEnqueuedState()
+        {
+            _client.Object.ContinueJobWith<BackgroundJobClientExtensionsFacts>(
+                "parent-id", "my-queue", x => x.InstanceAsyncMethod(), null);
+
+            _client.Verify(x => x.Create(
+                It.Is<Job>(job => job.Queue == "my-queue"),
+                It.Is<AwaitingState>(state => ((EnqueuedState)state.NextState).Queue == "my-queue")));
+        }
+
+        [Fact]
+        public void InstanceAsyncContinueJobWith_WithQueueAndExplicitNextState_ShouldPreserveNextState()
+        {
+            var nextState = new ScheduledState(TimeSpan.FromMinutes(1));
+
+            _client.Object.ContinueJobWith<BackgroundJobClientExtensionsFacts>(
+                "parent-id", "my-queue", x => x.InstanceAsyncMethod(), nextState);
+
+            _client.Verify(x => x.Create(
+                It.Is<Job>(job => job.Queue == "my-queue"),
+                It.Is<AwaitingState>(state => ReferenceEquals(state.NextState, nextState))));
         }
 
         [Fact]
@@ -311,6 +404,18 @@ namespace Hangfire.Core.Tests
         [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
         public void InstanceMethod()
         {
+        }
+
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        public static Task StaticAsyncMethod()
+        {
+            return Task.FromResult(0);
+        }
+
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        public Task InstanceAsyncMethod()
+        {
+            return Task.FromResult(0);
         }
     }
 }
