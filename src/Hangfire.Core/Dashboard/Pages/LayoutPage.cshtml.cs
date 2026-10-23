@@ -587,11 +587,21 @@ WriteLiteral("\"\r\n             data-pollurl=\"");
             
             #line default
             #line hidden
-WriteLiteral("\"\r\n             data-darkmode=\"");
+WriteLiteral("\"\r\n             data-locale=\"");
 
 
             
             #line 124 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                     Write(CultureInfo.CurrentUICulture.Name.ToLowerInvariant());
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\"\r\n             data-darkmode=\"");
+
+
+            
+            #line 125 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                         Write(DashboardOptions.DarkModeEnabled.ToString().ToLowerInvariant());
 
             
@@ -601,7 +611,7 @@ WriteLiteral("\">\r\n        </div>\r\n\r\n        <script src=\"");
 
 
             
-            #line 127 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 128 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                 Write(Url.To($"/js{version.Major}{version.Minor}{version.Build}0{Math.Abs(DashboardRoutes.JavaScriptsHashCode)}"));
 
             

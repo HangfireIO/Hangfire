@@ -49,7 +49,8 @@
     hangfire.config = {
         pollInterval: $("#hangfireConfig").data("pollinterval"),
         pollUrl: $("#hangfireConfig").data("pollurl"),
-        locale: document.documentElement.lang,
+        lang: document.documentElement.lang,
+        locale: $("#hangfireConfig").data("locale"),
         darkMode: $("#hangfireConfig").data("darkmode")
     };
 
@@ -337,7 +338,7 @@
                 config.pollUrl,
                 config.pollInterval);
 
-            this._initialize(config.locale);
+            this._initialize(config.lang, config.locale);
 
             this.realtimeGraph = this._createRealtimeGraph('realtimeGraph', config.pollInterval);
             this.historyGraph = this._createHistoryGraph('historyGraph');
@@ -396,8 +397,10 @@
             return null;
         };
 
-        Page.prototype._initialize = function (locale) {
-            moment.locale(locale);
+        Page.prototype._initialize = function (lang, locale) {
+            if (moment.locale(locale) !== locale)
+                moment.locale(lang);
+
             var updateRelativeDates = function () {
                 $('*[data-moment]').each(function () {
                     var $this = $(this);
