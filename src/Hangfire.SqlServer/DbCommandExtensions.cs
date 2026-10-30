@@ -137,11 +137,9 @@ namespace Hangfire.SqlServer
             parameter.ParameterName = parameterName;
             parameter.DbType = dbType;
             
-            if (value is string strValue)
+            if (value is string strValue && strValue.Length <= DefaultStringSize)
             {
-                parameter.Size = strValue.Length <= DefaultStringSize
-                    ? DefaultStringSize
-                    : -1;
+                parameter.Size = DefaultStringSize;
             }
 
             if (size.HasValue)
