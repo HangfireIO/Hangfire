@@ -1115,7 +1115,7 @@ namespace Hangfire
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
-            var state = new AwaitingState(parentId, nextState ?? new EnqueuedState(), options);
+            var state = new AwaitingState(parentId, nextState ?? new EnqueuedState(queue), options);
             return client.Create(queue, methodCall, state);
         }
 
@@ -1188,7 +1188,7 @@ namespace Hangfire
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
-            var state = new AwaitingState(parentId, nextState ?? new EnqueuedState(), options);
+            var state = new AwaitingState(parentId, nextState ?? new EnqueuedState(queue), options);
             return client.Create(queue, methodCall, state);
         }
 
@@ -1255,7 +1255,7 @@ namespace Hangfire
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
-            var state = new AwaitingState(parentId, nextState ?? new EnqueuedState(), options);
+            var state = new AwaitingState(parentId, nextState ?? new EnqueuedState(queue), options);
             return client.Create(queue, methodCall, state);
         }
 
@@ -1328,7 +1328,7 @@ namespace Hangfire
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
-            var state = new AwaitingState(parentId, nextState ?? new EnqueuedState(), options);
+            var state = new AwaitingState(parentId, nextState ?? new EnqueuedState(queue), options);
             return client.Create(queue, methodCall, state);
         }
     }
