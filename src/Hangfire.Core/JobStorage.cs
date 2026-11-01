@@ -121,5 +121,20 @@ namespace Hangfire
             if (featureId == null) throw new ArgumentNullException(nameof(featureId));
             return false;
         }
+
+        /// <summary>
+        /// Determines whether the given exception is a transient one, i.e. a temporary
+        /// storage-level failure (connection drop, timeout, deadlock victim, failover, etc.)
+        /// that is expected to succeed on a later retry. Storage implementations should
+        /// override this to recognise their own transient failure conditions, since a
+        /// generic exception type alone (for example <c>System.Data.Common.DbException</c>)
+        /// is not enough to tell transient and permanent errors apart.
+        /// </summary>
+        /// <param name="exception">The exception to inspect. May be <see langword="null"/>.</param>
+        /// <returns><see langword="true"/> if the exception is considered transient; otherwise <see langword="false"/>.</returns>
+        public virtual bool IsTransientException([CanBeNull] Exception exception)
+        {
+            return false;
+        }
     }
 }

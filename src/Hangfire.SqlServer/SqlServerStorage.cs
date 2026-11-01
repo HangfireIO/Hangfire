@@ -205,6 +205,17 @@ namespace Hangfire.SqlServer
                 : base.HasFeature(featureId);
         }
 
+        public override bool IsTransientException(Exception exception)
+        {
+            while (exception != null)
+            {
+                if (exception is DbException) return true;
+                exception = exception.InnerException;
+            }
+
+            return false;
+        }
+
         public override string ToString()
         {
             const string canNotParseMessage = "<Connection string can not be parsed>";
