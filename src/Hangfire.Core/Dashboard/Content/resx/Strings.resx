@@ -578,4 +578,7 @@
   <data name="Metrics_SQLServer_LogFilesSize" xml:space="preserve">
     <value>Log File(s) Used (MB)</value>
   </data>
+  <data name="JobDetailsPage_Source" xml:space="preserve">
+    <value>Source</value>
+  </data>
 </root>
