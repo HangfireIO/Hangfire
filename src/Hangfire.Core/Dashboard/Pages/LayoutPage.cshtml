@@ -121,6 +121,7 @@
         <div id="hangfireConfig"
              data-pollinterval="@DashboardOptions.StatsPollingInterval"
              data-pollurl="@(Url.To("/stats"))"
+             data-locale="@CultureInfo.CurrentUICulture.Name.ToLowerInvariant()"
              data-darkmode="@(DashboardOptions.DarkModeEnabled.ToString().ToLowerInvariant())">
         </div>
 
