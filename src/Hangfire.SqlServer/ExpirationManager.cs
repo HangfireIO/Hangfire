@@ -17,6 +17,7 @@ using System;
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
+using System.Reflection;
 using System.Threading;
 using Hangfire.Common;
 using Hangfire.Logging;
@@ -29,6 +30,9 @@ namespace Hangfire.SqlServer
     internal sealed class ExpirationManager : IServerComponent, IBackgroundProcess
 #pragma warning restore 618
     {
+        // SQL Server error 1222: "Lock request time out period exceeded". The message text
+        // is localized, so the error number is the only reliable way to detect it.
+        private const int LockRequestTimeoutErrorNumber = 1222;
         private const string DistributedLockKey = "locks:expirationmanager";
         private static readonly TimeSpan DefaultLockTimeout = TimeSpan.FromMinutes(5);
         
@@ -240,12 +244,24 @@ delete top(@count) from cte option (maxdop 1);");
                 {
                     return command.ExecuteNonQuery();
                 }
-                catch (DbException ex) when (cancellationToken.IsCancellationRequested || ex.Message.Contains("Lock request time out period exceeded"))
+                catch (DbException ex) when (cancellationToken.IsCancellationRequested || IsLockRequestTimeout(ex))
                 {
                     // Exception was triggered due to the Cancel method call, ignoring
                     return 0;
                 }
             }
+        }
+
+        internal static bool IsLockRequestTimeout(DbException exception)
+        {
+            // Both System.Data.SqlClient and Microsoft.Data.SqlClient expose the error number
+            // through the SqlException.Number property, but Hangfire references neither of them.
+            var numberProperty = exception.GetType().GetProperty("Number", BindingFlags.Instance | BindingFlags.Public);
+
+            return numberProperty != null
+                && numberProperty.PropertyType == typeof(int)
+                && numberProperty.GetIndexParameters().Length == 0
+                && (int)numberProperty.GetValue(exception) == LockRequestTimeoutErrorNumber;
         }
     }
 }
