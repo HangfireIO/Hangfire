@@ -19,6 +19,22 @@ namespace Hangfire.SqlServer.Tests
             Assert.Throws<ArgumentNullException>(() => new ExpirationManager(null, TimeSpan.Zero, TimeSpan.FromTicks(1)));
         }
 
+        [Theory]
+        [InlineData(1222, "Lock request time out period exceeded.", true)]
+        [InlineData(1222, "Istek za cakanje na zaklep je potekel.", true)]
+        [InlineData(1205, "Lock request time out period exceeded.", false)]
+        [InlineData(2, "Timeout expired.", false)]
+        public void IsLockRequestTimeout_ChecksErrorNumber_IgnoringMessageLanguage(int number, string message, bool expected)
+        {
+            Assert.Equal(expected, ExpirationManager.IsLockRequestTimeout(new FakeSqlException(number, message)));
+        }
+
+        [Fact]
+        public void IsLockRequestTimeout_ReturnsFalse_WhenExceptionHasNoNumberProperty()
+        {
+            Assert.False(ExpirationManager.IsLockRequestTimeout(new FakeDbException("Lock request time out period exceeded.")));
+        }
+
         [Theory, CleanDatabase]
         [InlineData(false), InlineData(true)]
         public void Execute_RemovesOutdatedRecords(bool useMicrosoftDataSqlClient)
@@ -242,6 +258,25 @@ values (N'key', 1, @expireAt)";
         {
             var storage = new SqlServerStorage(() => ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient));
             return new ExpirationManager(storage, stateExpirationTimeout ?? TimeSpan.Zero, TimeSpan.FromTicks(1));
+        }
+
+        private sealed class FakeDbException : DbException
+        {
+            public FakeDbException(string message) : base(message)
+            {
+            }
+        }
+
+        // Mimics SqlException from both System.Data.SqlClient and Microsoft.Data.SqlClient,
+        // which expose the server error number through the public Number property.
+        private sealed class FakeSqlException : DbException
+        {
+            public FakeSqlException(int number, string message) : base(message)
+            {
+                Number = number;
+            }
+
+            public int Number { get; }
         }
     }
 }
