@@ -459,7 +459,7 @@ namespace Hangfire.Core.Tests.Common
             public override void BindToName(Type serializedType, out string assemblyName, out string typeName)
             {
                 assemblyName = "someAssembly";
-                typeName = serializedType.FullName.ToUpper();
+                typeName = serializedType.FullName.ToUpperInvariant();
             }
 
             public override Type BindToType(string assemblyName, string typeName)
